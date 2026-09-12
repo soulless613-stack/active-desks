@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#080c14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Active Desks">
+  <title>Active Desks - Personal Launchpad</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="app-container">
+
+    <!-- Top Header -->
+    <header class="header-bar">
+      <div class="brand-section">
+        <div class="brand-icon">✨</div>
+        <div>
+          <h1 class="brand-title">Active Desks</h1>
+          <div id="current-date" style="font-size: 0.76rem; color: var(--text-muted); font-weight: 500;">Today</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="desk-action-btn" onclick="openBrainDumpModal()" title="View Saved Thoughts" style="font-size: 1.1rem; padding: 6px 10px;">
+          🧠
+        </button>
+        <div class="sync-badge" onclick="openSyncModal()" title="Device Sync & Backup">
+          <span class="sync-dot"></span>
+          <span class="sync-text">Synced</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 3-Bucket Day Banner -->
+    <section class="bucket-banner" aria-label="Daily 3-Bucket Check">
+      <div class="bucket-header">
+        <div class="bucket-title-wrap">
+          <span style="font-size: 1.1rem;">⚖️</span>
+          <span class="bucket-title">Today's 3 Anchors</span>
+        </div>
+        <span id="bucket-status-tag" class="bucket-status-tag">0/3 Anchors Done</span>
+      </div>
+
+      <div class="bucket-grid">
+        <!-- 1. Home Anchor -->
+        <div id="bucket-home" class="bucket-card home" onclick="toggleBucket('home')">
+          <div class="bucket-check-indicator"></div>
+          <div class="bucket-icon">🏠</div>
+          <div class="bucket-name">Home Anchor</div>
+          <div class="bucket-sub">Family & Chores</div>
+        </div>
+
+        <!-- 2. Body Anchor -->
+        <div id="bucket-body" class="bucket-card body" onclick="toggleBucket('body')">
+          <div class="bucket-check-indicator"></div>
+          <div class="bucket-icon">💪</div>
+          <div class="bucket-name">Body Anchor</div>
+          <div class="bucket-sub">Walk, jog, stretch</div>
+        </div>
+
+        <!-- 3. Spark Anchor -->
+        <div id="bucket-spark" class="bucket-card spark" onclick="toggleBucket('spark')">
+          <div class="bucket-check-indicator"></div>
+          <div class="bucket-icon">✨</div>
+          <div class="bucket-name">Spark Anchor</div>
+          <div class="bucket-sub">Audiobook & Hobbies</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Desks Section Title -->
+    <div class="desks-section-header">
+      <span class="desks-section-title">Current Workbenches</span>
+    </div>
+
+    <!-- The 4 Active Desks Grid -->
+    <main class="desks-grid">
+
+      <!-- 1. Fiber Arts Desk -->
+      <article class="desk-card" aria-label="Fiber Arts Workbench">
+        <div class="desk-top">
+          <span class="desk-badge fiber">🧶 Fiber Arts</span>
+          <span class="meta-pill" id="fiber-type">Knitting WIP</span>
+        </div>
+
+        <div>
+          <h2 class="desk-title" id="fiber-title">Autumn Cardigan</h2>
+          <div class="desk-meta" id="fiber-specs" style="margin-top: 4px;">US 7 (4.5mm) • DK Weight</div>
+        </div>
+
+        <!-- Big Row Counter -->
+        <div class="counter-box">
+          <div class="counter-info">
+            <span class="counter-label">Current Row</span>
+            <span class="counter-number" id="fiber-rows">44</span>
+          </div>
+          <div class="counter-buttons">
+            <button class="btn-counter" onclick="changeRows(-1)" title="Decrease Row" aria-label="Decrease Row">−</button>
+            <button class="btn-counter" onclick="changeRows(1)" title="Increase Row" aria-label="Increase Row">+</button>
+          </div>
+        </div>
+
+        <div class="desk-footer">
+          <a id="fiber-link" href="https://www.ravelry.com" target="_blank" class="desk-link">
+            <span>Open Ravelry</span> ↗
+          </a>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Tap + to count</span>
+        </div>
+      </article>
+
+      <!-- 2. Recipes Shelf Desk -->
+      <article class="desk-card" aria-label="Kitchen & Recipe Shelf">
+        <div class="desk-top">
+          <span class="desk-badge recipe">🍳 Kitchen Shelf</span>
+          <span class="meta-pill">Instagram Saved</span>
+        </div>
+
+        <div>
+          <div class="recipe-selector" id="recipe-tabs">
+            <!-- Populated dynamically by app.js -->
+          </div>
+          <h2 class="desk-title" id="recipe-title" style="margin-top: 6px;">Butter Chicken Mac</h2>
+          <div class="desk-meta" id="recipe-source" style="margin-top: 2px;">Tom Walsh (@stealth_health_life)</div>
+        </div>
+
+        <div class="recipe-highlight">
+          <div class="recipe-snippet" id="recipe-highlight">
+            High protein slow cooker meal prep with Greek yogurt & sharp cheddar sauce.
+          </div>
+          <button class="view-recipe-btn" onclick="openRecipeModal()">
+            <span>📋 View Ingredients & Steps</span>
+          </button>
+        </div>
+
+        <div class="desk-footer">
+          <span style="font-size: 0.75rem; color: var(--text-muted);">2 recipes saved</span>
+          <span style="font-size: 0.75rem; color: var(--accent-recipe); font-weight: 600;">Slow Cooker</span>
+        </div>
+      </article>
+
+      <!-- 3. Reading Nook Desk -->
+      <article class="desk-card" aria-label="Reading Nook">
+        <div class="desk-top">
+          <span class="desk-badge reading">📚 Reading Nook</span>
+          <span class="meta-pill" id="reading-format">Audiobook</span>
+        </div>
+
+        <div>
+          <h2 class="desk-title" id="reading-title">Dune Messiah</h2>
+          <div class="desk-meta" id="reading-author" style="margin-top: 4px;">by Frank Herbert</div>
+        </div>
+
+        <!-- Progress Tracker -->
+        <div class="counter-box">
+          <div class="counter-info" style="flex: 1; padding-right: 12px;">
+            <div class="progress-labels">
+              <span class="counter-label">Progress</span>
+              <span id="reading-progress-label" style="font-weight: 600;">Ch. 8 of 24</span>
+            </div>
+            <div class="progress-bar-bg" style="margin-top: 6px;">
+              <div id="reading-progress-bar" class="progress-bar-fill" style="width: 33%;"></div>
+            </div>
+          </div>
+          <div class="counter-buttons">
+            <button class="btn-counter" onclick="changeChapter(-1)" title="Previous Chapter" aria-label="Previous Chapter">−</button>
+            <button class="btn-counter" onclick="changeChapter(1)" title="Next Chapter" aria-label="Next Chapter">+</button>
+          </div>
+        </div>
+
+        <div class="desk-footer">
+          <a id="reading-link" href="https://www.audible.com" target="_blank" class="desk-link">
+            <span>Open Audiobook</span> ↗
+          </a>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Breakfast Routine</span>
+        </div>
+      </article>
+
+      <!-- 4. Gaming Rig Desk -->
+      <article class="desk-card" aria-label="Gaming Rig">
+        <div class="desk-top">
+          <span class="desk-badge gaming">🎮 Game Rig</span>
+          <span class="meta-pill" id="gaming-platform">PC / Steam</span>
+        </div>
+
+        <div>
+          <h2 class="desk-title" id="gaming-title">Baldur's Gate 3</h2>
+          <div class="desk-meta" style="margin-top: 4px;">Active Playthrough</div>
+        </div>
+
+        <!-- Active Quest Note -->
+        <div class="quest-box">
+          <span class="quest-icon">⚔️</span>
+          <div class="quest-text" id="gaming-quest">
+            Underdark: Forge the Adamantine armor & find Grymforge secrets.
+          </div>
+        </div>
+
+        <div class="desk-footer">
+          <a id="gaming-link" href="https://bg3.wiki" target="_blank" class="desk-link">
+            <span>Game Wiki</span> ↗
+          </a>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">Current Goal</span>
+        </div>
+      </article>
+
+    </main>
+
+  </div> <!-- End App Container -->
+
+  <!-- Sticky Bottom Quick-Capture Bar -->
+  <div class="quick-capture-wrapper">
+    <form class="quick-capture-box" onsubmit="handleQuickCapture(event)">
+      <input type="text" id="quick-capture-input" class="quick-capture-input" placeholder="Capture a stray thought, link, or grocery item..." autocomplete="off">
+      <button type="submit" class="quick-capture-btn">
+        <span>Save</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Modal: Recipe Details Viewer -->
+  <div id="recipe-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="modal-recipe-title">Recipe Details</h3>
+          <div id="modal-recipe-source" style="font-size: 0.8rem; color: var(--text-muted);">Source</div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('recipe-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="modal-recipe-stats" class="recipe-stats-row"></div>
+        
+        <div>
+          <h4 class="recipe-section-heading">🛒 Ingredients Checklist (Tap to check off)</h4>
+          <div id="modal-recipe-ingredients" style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;"></div>
+        </div>
+
+        <div>
+          <h4 class="recipe-section-heading">🧑‍🍳 Step-by-Step Instructions</h4>
+          <div id="modal-recipe-steps" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
+        </div>
+
+        <div style="padding-top: 12px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <a id="modal-recipe-link" href="#" target="_blank" class="desk-link" style="color: var(--accent-recipe); font-weight: 600;">
+            View Original Instagram Reel ↗
+          </a>
+          <button class="desk-action-btn" onclick="closeModal('recipe-modal')">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Brain Dump / Captured Thoughts -->
+  <div id="brain-dump-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">🧠</span>
+          <h3 class="modal-title">Quick-Captured Thoughts</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('brain-dump-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.84rem; color: var(--text-secondary);">
+          Stray notes captured on the fly. Review them whenever you sit down.
+        </p>
+        <div id="captures-list" class="capture-items-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Sync & Cross-Device Pairing -->
+  <div id="sync-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">📱</span>
+          <h3 class="modal-title">Phone & Device Sync</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('sync-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-home); margin-bottom: 6px;">📲 Install on Your Phone</h4>
+          <ol style="font-size: 0.85rem; color: var(--text-secondary); padding-left: 18px; line-height: 1.6;">
+            <li>Open this app on your phone's browser (Safari or Chrome).</li>
+            <li>Tap the <strong>Share</strong> button (iOS) or <strong>Three Dots</strong> (Android).</li>
+            <li>Select <strong>"Add to Home Screen"</strong>.</li>
+            <li>The app will launch full-screen with its own icon!</li>
+          </ol>
+        </div>
+
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-spark); margin-bottom: 6px;">💾 Local Backup & Export</h4>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+            Your data is saved locally on your device. You can download a backup JSON file anytime.
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <button class="quick-capture-btn" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-subtle); color: var(--text-primary);" onclick="exportData()">
+              Export JSON Backup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('active_desks_data_v1') || '{}');
+      const dlAnchorElem = document.createElement('a');
+      dlAnchorElem.setAttribute("href", dataStr);
+      dlAnchorElem.setAttribute("download", `active_desks_backup_${new Date().toISOString().split('T')[0]}.json`);
+      dlAnchorElem.click();
+    }
+  </script>
+</body>
+</html>

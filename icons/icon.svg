@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+  
+  <!-- Rounded Base -->
+  <rect width="512" height="512" rx="128" fill="url(#bg)" />
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4" />
+  
+  <!-- 4 Orbiting Rings/Dots representing the 4 desks -->
+  <g filter="url(#shadow)">
+    <!-- Central Hexagon / Emblem -->
+    <circle cx="256" cy="256" r="160" fill="none" stroke="url(#glow)" stroke-width="12" stroke-dasharray="8 16" opacity="0.4" />
+    <circle cx="256" cy="256" r="110" fill="#1e293b" stroke="rgba(255,255,255,0.15)" stroke-width="3" />
+    
+    <!-- Desk 1: Fiber Arts (Yarn/Needle top left) -->
+    <circle cx="180" cy="180" r="44" fill="#047857" opacity="0.9" />
+    <text x="180" y="194" font-family="sans-serif" font-size="34" text-anchor="middle" fill="#ffffff">🧶</text>
+    
+    <!-- Desk 2: Kitchen/Recipe (Top Right) -->
+    <circle cx="332" cy="180" r="44" fill="#b45309" opacity="0.9" />
+    <text x="332" y="194" font-family="sans-serif" font-size="34" text-anchor="middle" fill="#ffffff">🍳</text>
+    
+    <!-- Desk 3: Reading (Bottom Left) -->
+    <circle cx="180" cy="332" r="44" fill="#4338ca" opacity="0.9" />
+    <text x="180" y="334" font-family="sans-serif" font-size="34" text-anchor="middle" fill="#ffffff">📚</text>
+    
+    <!-- Desk 4: Gaming (Bottom Right) -->
+    <circle cx="332" cy="332" r="44" fill="#0f766e" opacity="0.9" />
+    <text x="332" y="334" font-family="sans-serif" font-size="34" text-anchor="middle" fill="#ffffff">🎮</text>
+    
+    <!-- Center Spark -->
+    <circle cx="256" cy="256" r="28" fill="#f59e0b" />
+    <text x="256" y="266" font-family="sans-serif" font-size="24" text-anchor="middle" fill="#ffffff">✨</text>
+  </g>
+</svg>
