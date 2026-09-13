@@ -801,7 +801,31 @@ function openBrainDumpModal() {
 // --------------------------------------------------------------------------
 // Sync / Pair Devices Modal
 // --------------------------------------------------------------------------
+const APP_VERSION = '285493e';
+
+async function updateCommitTag() {
+  const tag = document.getElementById('app-commit-tag');
+  if (!tag) return;
+  tag.textContent = `#${APP_VERSION}`;
+
+  try {
+    const token = localStorage.getItem('active_desks_github_token');
+    const headers = { 'Accept': 'application/vnd.github+json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch('https://api.github.com/repos/soulless613-stack/active-desks/commits/main', { headers });
+    if (res.ok) {
+      const data = await res.json();
+      const latestSha = data.sha.substring(0, 7);
+      tag.textContent = `#${latestSha}`;
+    }
+  } catch (e) {
+    // If offline or network error, fallback to APP_VERSION
+  }
+}
+
 function openSyncModal() {
+  updateCommitTag();
   document.getElementById('sync-modal').classList.add('active');
 }
 
