@@ -120,12 +120,14 @@
       <article class="desk-card" aria-label="Kitchen & Recipe Shelf">
         <div class="desk-top">
           <span class="desk-badge recipe">🍳 Kitchen Shelf</span>
-          <span class="meta-pill">Instagram Saved</span>
+          <span class="meta-pill" id="recipe-pill-count">Saved Recipes</span>
         </div>
 
         <div>
-          <div class="recipe-selector" id="recipe-tabs">
-            <!-- Populated dynamically by app.js -->
+          <div class="recipe-select-wrapper">
+            <select id="recipe-select" class="recipe-select" onchange="selectRecipe(this.value)" aria-label="Select Recipe">
+              <!-- Populated dynamically by app.js -->
+            </select>
           </div>
           <h2 class="desk-title" id="recipe-title" style="margin-top: 6px;">Butter Chicken Mac</h2>
           <div class="desk-meta" id="recipe-source" style="margin-top: 2px;">Tom Walsh (@stealth_health_life)</div>
@@ -141,8 +143,8 @@
         </div>
 
         <div class="desk-footer">
-          <span style="font-size: 0.75rem; color: var(--text-muted);">2 recipes saved</span>
-          <span style="font-size: 0.75rem; color: var(--accent-recipe); font-weight: 600;">Slow Cooker</span>
+          <span id="recipe-footer-count" style="font-size: 0.75rem; color: var(--text-muted);">3 recipes saved</span>
+          <span id="recipe-category" style="font-size: 0.75rem; color: var(--accent-recipe); font-weight: 600;">Saved</span>
         </div>
       </article>
 

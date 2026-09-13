@@ -505,31 +505,47 @@ body {
   gap: 8px;
 }
 
-.recipe-selector {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
+.recipe-select-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 6px;
 }
 
-.recipe-tab {
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.05);
+.recipe-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(15, 23, 42, 0.7);
   border: 1px solid var(--border-subtle);
-  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  padding: 8px 34px 8px 12px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.86rem;
   font-weight: 600;
-  color: var(--text-secondary);
   cursor: pointer;
-  white-space: nowrap;
+  outline: none;
+  box-sizing: border-box;
   transition: all 0.2s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
 }
 
-.recipe-tab.active {
-  background: rgba(249, 115, 22, 0.2);
+.recipe-select:hover {
+  border-color: rgba(249, 115, 22, 0.4);
+  background-color: rgba(22, 30, 46, 0.85);
+}
+
+.recipe-select:focus {
   border-color: var(--accent-recipe);
-  color: var(--accent-recipe);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+}
+
+.recipe-select option {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 8px;
 }
 
 .recipe-snippet {

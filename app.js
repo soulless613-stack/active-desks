@@ -303,19 +303,32 @@ function renderRecipeDesk() {
   document.getElementById('recipe-source').textContent = activeRecipe.source;
   document.getElementById('recipe-highlight').textContent = activeRecipe.highlight;
   
-  // Render recipe switcher tabs
-  const tabsContainer = document.getElementById('recipe-tabs');
-  if (tabsContainer) {
-    tabsContainer.innerHTML = rState.recipes.map((rec, idx) => `
-      <button class="recipe-tab ${idx === rState.selectedIndex ? 'active' : ''}" onclick="selectRecipe(${idx})">
-        ${rec.title.split(' ')[0]} ${rec.title.split(' ')[1] || ''}
-      </button>
+  // Render recipe select dropdown options
+  const selectEl = document.getElementById('recipe-select');
+  if (selectEl) {
+    selectEl.innerHTML = rState.recipes.map((rec, idx) => `
+      <option value="${idx}" ${idx === rState.selectedIndex ? 'selected' : ''}>
+        🍽️ ${rec.title}
+      </option>
     `).join('');
+    selectEl.value = rState.selectedIndex;
+  }
+
+  // Update recipe counts and category
+  const pillCount = document.getElementById('recipe-pill-count');
+  if (pillCount) pillCount.textContent = `${rState.recipes.length} Saved`;
+
+  const footerCount = document.getElementById('recipe-footer-count');
+  if (footerCount) footerCount.textContent = `${rState.recipes.length} recipes saved`;
+
+  const categoryEl = document.getElementById('recipe-category');
+  if (categoryEl) {
+    categoryEl.textContent = activeRecipe.id.includes('focaccia') ? 'Baking' : (activeRecipe.id.includes('mac') ? 'Slow Cooker' : 'Savory');
   }
 }
 
 function selectRecipe(index) {
-  state.desks.recipe.selectedIndex = index;
+  state.desks.recipe.selectedIndex = parseInt(index, 10) || 0;
   saveState();
 }
 
