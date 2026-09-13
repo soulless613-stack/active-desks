@@ -576,7 +576,7 @@ async function handleScreenshotUpload(event) {
 
     const promptText = "Examine this screenshot from StoryGraph or a reading app. Extract the currently reading book's details. Return ONLY valid JSON matching this schema: {\"title\": \"string\", \"author\": \"string\", \"currentPage\": number, \"totalPages\": number}. If represented as chapters, provide chapter numbers. Return ONLY valid JSON, no markdown, no explanation.";
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`;
     const payload = {
       contents: [{
         parts: [
@@ -831,3 +831,5 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchReadingFromRepo();
   checkDevicePairingHash();
 });
+
+window.addEventListener('hashchange', checkDevicePairingHash);
