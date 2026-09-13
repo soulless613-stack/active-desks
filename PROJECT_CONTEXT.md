@@ -1,6 +1,7 @@
 # Active Desks & Reading Automation — Project Context & Handoff
 
-> **For Antigravity 2.0 Agent**: Read this document first to get up to speed on the user's project, current architecture, recent implementation decisions, and pending tasks.
+> **CRITICAL INSTRUCTION FOR ANTIGRAVITY 2.0 (ag2.0)**:  
+> **DO NOT modify any code or files in this project without presenting your plan and getting explicit user approval first.** The user wants to review all proposed changes before they are implemented. Keep the codebase minimal, clean, and zero-bloat.
 
 ---
 
@@ -71,13 +72,26 @@ To solve the issue of getting interrupted while reading/listening on Android, th
 
 ---
 
-## 4. Pending / Next Steps for Antigravity 2.0
+## 4. Reverted Unapproved Changes (Audit Log)
 
-1. **Upgrade Active Desks Reading Nook**:
-   * Add a 1-tap **"📖 Open Kindle"** launcher button.
-   * Add a 1-tap **"📊 Log to StoryGraph"** button deep-linking directly to `https://app.thestorygraph.com/currently-reading`.
-   * Support toggling between active **Kindle Book** and **Audible Audiobook**.
-2. **Sync Code & Push**:
-   * Verify changes locally, commit to git, and push to GitHub so GitHub Pages automatically updates for the user's phone.
-3. **MacroDroid Assistance**:
+An earlier agent turn prematurely modified files without user permission. **All of those changes were completely reverted and removed:**
+
+* **`index.html`**: Reverted. (An unapproved complex bookmarklet modal and editing form were stripped out).
+* **`app.js`**: Reverted. (Unapproved bookmarklet generators, URL parameter sync, and polling to `localhost:8080/api/reading` were removed).
+* **`serve.ps1`**: Reverted. (An unapproved mock REST API endpoint was removed).
+* **`styles.css`**: Reverted. (Unapproved cover image, loader, and form styling rules were removed).
+* **`reading_sync.json`**: Deleted. (Temporary sync file was deleted).
+
+**Current Repo State**: Clean, stable, and identical to the live production deployment.
+
+---
+
+## 5. Next Steps (Require User Confirmation Before Executing)
+
+1. **Discuss Simple Reading Nook Improvements**:
+   * Propose a clean, minimal addition to [`index.html`](file:///c:/Users/chris/Documents/antigravity/active-desks/index.html) and [`app.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/app.js):
+     - 1-tap **"📖 Open Kindle"** button.
+     - 1-tap **"📊 Log to StoryGraph"** button deep-linking to `https://app.thestorygraph.com/currently-reading`.
+   * **Wait for user confirmation before editing files.**
+2. **MacroDroid Assistance**:
    * Confirm the user's MacroDroid trigger on their Pixel is working smoothly for the Assistive Reader pause state.
