@@ -150,7 +150,9 @@
       <article class="desk-card" aria-label="Reading Nook">
         <div class="desk-top">
           <span class="desk-badge reading">📚 Reading Nook</span>
-          <span class="meta-pill" id="reading-format">Audiobook</span>
+          <button class="desk-action-btn" onclick="openReadingModal()" title="Update Reading Progress" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+            ✏️ Update
+          </button>
         </div>
 
         <div>
@@ -159,27 +161,21 @@
         </div>
 
         <!-- Progress Tracker -->
-        <div class="counter-box">
-          <div class="counter-info" style="flex: 1; padding-right: 12px;">
-            <div class="progress-labels">
-              <span class="counter-label">Progress</span>
-              <span id="reading-progress-label" style="font-weight: 600;">Ch. 8 of 24</span>
-            </div>
-            <div class="progress-bar-bg" style="margin-top: 6px;">
-              <div id="reading-progress-bar" class="progress-bar-fill" style="width: 33%;"></div>
-            </div>
+        <div class="progress-box">
+          <div class="progress-labels">
+            <span class="counter-label">StoryGraph Progress</span>
+            <span id="reading-progress-label" style="font-weight: 700; color: var(--text-primary);">Ch. 8 of 24 (33%)</span>
           </div>
-          <div class="counter-buttons">
-            <button class="btn-counter" onclick="changeChapter(-1)" title="Previous Chapter" aria-label="Previous Chapter">−</button>
-            <button class="btn-counter" onclick="changeChapter(1)" title="Next Chapter" aria-label="Next Chapter">+</button>
+          <div class="progress-bar-bg" style="margin-top: 6px;">
+            <div id="reading-progress-bar" class="progress-bar-fill" style="width: 33%;"></div>
           </div>
         </div>
 
         <div class="desk-footer">
-          <a id="reading-link" href="https://www.audible.com" target="_blank" class="desk-link">
-            <span>Open Audiobook</span> ↗
+          <a id="reading-link" href="https://app.thestorygraph.com/profile/soulless613" target="_blank" class="desk-link" style="color: var(--accent-reading); font-weight: 600;">
+            <span>📊 The StoryGraph</span> ↗
           </a>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Breakfast Routine</span>
+          <span id="reading-updated-tag" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
         </div>
       </article>
 
@@ -311,6 +307,97 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Reading Nook Update & Sync -->
+  <div id="reading-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">📚</span>
+          <h3 class="modal-title">Update Reading</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('reading-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Option A: AI Screenshot Scan -->
+        <div class="reading-scan-section">
+          <input type="file" id="reading-screenshot-input" accept="image/*" style="display: none;" onchange="handleScreenshotUpload(event)">
+          <button type="button" class="reading-scan-btn" onclick="triggerScreenshotPicker()" id="reading-scan-btn">
+            <span style="font-size: 1.2rem;">📸</span>
+            <span id="reading-scan-btn-text">Scan Screenshot (Auto-Fill)</span>
+          </button>
+          <div id="reading-scan-status" class="reading-scan-status">
+            Take a screenshot of StoryGraph, tap to auto-extract book & page.
+          </div>
+        </div>
+
+        <div class="modal-divider"><span>OR ADJUST MANUALLY</span></div>
+
+        <!-- Option B: Manual Adjustments Form -->
+        <form onsubmit="handleReadingSave(event)" style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <label class="input-label">Book Title</label>
+            <input type="text" id="edit-reading-title" class="form-input" required placeholder="e.g. Dune Messiah">
+          </div>
+          <div>
+            <label class="input-label">Author</label>
+            <input type="text" id="edit-reading-author" class="form-input" required placeholder="e.g. Frank Herbert">
+          </div>
+          
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label class="input-label">Current Page / Chapter</label>
+              <div class="quick-increment-pills">
+                <button type="button" class="pill-btn" onclick="adjustCurrentPage(1)">+1</button>
+                <button type="button" class="pill-btn" onclick="adjustCurrentPage(5)">+5</button>
+                <button type="button" class="pill-btn" onclick="adjustCurrentPage(10)">+10</button>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;">
+              <div>
+                <input type="number" id="edit-reading-current" class="form-input" required min="0" placeholder="Current">
+              </div>
+              <div>
+                <input type="number" id="edit-reading-total" class="form-input" required min="1" placeholder="Total">
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 4px;">
+            <button type="submit" class="quick-capture-btn" id="reading-save-btn" style="flex: 1; justify-content: center;">
+              <span>💾 Save & Sync to GitHub</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Collapsible API Configuration -->
+        <details class="config-details">
+          <summary class="config-summary">⚙️ Cloud Sync & API Settings</summary>
+          <div class="config-body">
+            <div>
+              <label class="input-label">Gemini API Key (for screenshot scanning)</label>
+              <input type="password" id="cfg-gemini-key" class="form-input" placeholder="AIzaSy...">
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">
+                Free from <a href="https://aistudio.google.com/app/api-keys" target="_blank" style="color: var(--accent-spark);">Google AI Studio</a>. Stored only on this device.
+              </div>
+            </div>
+            <div style="margin-top: 10px;">
+              <label class="input-label">GitHub Token (for reading.json cloud commits)</label>
+              <input type="password" id="cfg-github-token" class="form-input" placeholder="github_pat_...">
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">
+                Fine-grained PAT with <code>Contents: Read & Write</code> for <code>active-desks</code>.
+              </div>
+            </div>
+            <button type="button" class="quick-capture-btn" style="margin-top: 10px; background: rgba(255,255,255,0.08); border: 1px solid var(--border-subtle); color: var(--text-primary);" onclick="saveApiKeys()">
+              Save Keys
+            </button>
+          </div>
+        </details>
+
       </div>
     </div>
   </div>

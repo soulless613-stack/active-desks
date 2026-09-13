@@ -93,11 +93,11 @@ const DEFAULT_STATE = {
     reading: {
       title: "Dune Messiah",
       author: "Frank Herbert",
-      format: "Audiobook (Breakfast routine)",
-      currentChapter: 8,
-      totalChapters: 24,
-      linkText: "Open Audiobook",
-      linkUrl: "https://www.audible.com"
+      currentPage: 8,
+      totalPages: 24,
+      unit: "chapters",
+      storygraphUrl: "https://app.thestorygraph.com/profile/soulless613",
+      lastUpdated: new Date().toISOString()
     },
     gaming: {
       title: "Baldur's Gate 3",
@@ -129,6 +129,19 @@ function loadState() {
         parsed.buckets.body.checked = false;
         parsed.buckets.spark.checked = false;
       }
+
+      // Migration for reading state
+      if (parsed.desks && parsed.desks.reading) {
+        if (!parsed.desks.reading.storygraphUrl) {
+          parsed.desks.reading.storygraphUrl = "https://app.thestorygraph.com/profile/soulless613";
+        }
+        if (parsed.desks.reading.currentPage === undefined) {
+          parsed.desks.reading.currentPage = parsed.desks.reading.currentChapter || 8;
+          parsed.desks.reading.totalPages = parsed.desks.reading.totalChapters || 24;
+          parsed.desks.reading.unit = "chapters";
+        }
+      }
+
       return parsed;
     }
   } catch (e) {
@@ -305,29 +318,301 @@ function toggleIngredientCheck(labelEl) {
 }
 
 // --------------------------------------------------------------------------
-// Reading Nook Desk
+// Reading Nook Desk (Display-Centric & Cross-Device Sync)
 // --------------------------------------------------------------------------
 function renderReadingDesk() {
   const b = state.desks.reading;
-  document.getElementById('reading-title').textContent = b.title;
-  document.getElementById('reading-author').textContent = `by ${b.author}`;
-  document.getElementById('reading-format').textContent = b.format;
+  const titleEl = document.getElementById('reading-title');
+  const authorEl = document.getElementById('reading-author');
+  const labelEl = document.getElementById('reading-progress-label');
+  const barEl = document.getElementById('reading-progress-bar');
+  const linkEl = document.getElementById('reading-link');
+  const updatedTag = document.getElementById('reading-updated-tag');
+
+  if (titleEl) titleEl.textContent = b.title || 'No Book Selected';
+  if (authorEl) authorEl.textContent = b.author ? `by ${b.author}` : 'The StoryGraph';
   
-  const pct = Math.min(100, Math.round((b.currentChapter / b.totalChapters) * 100));
-  document.getElementById('reading-progress-label').textContent = `Ch. ${b.currentChapter} of ${b.totalChapters} (${pct}%)`;
-  document.getElementById('reading-progress-bar').style.width = `${pct}%`;
-  
-  const link = document.getElementById('reading-link');
-  if (link) {
-    link.textContent = b.linkText || 'Open Book';
-    link.href = b.linkUrl || '#';
+  const total = Math.max(1, b.totalPages || 1);
+  const current = Math.max(0, Math.min(total, b.currentPage || 0));
+  const pct = Math.min(100, Math.max(0, Math.round((current / total) * 100)));
+  const unitLabel = b.unit === 'chapters' ? 'Ch.' : 'Page';
+
+  if (labelEl) {
+    labelEl.textContent = `${unitLabel} ${current} of ${total} (${pct}%)`;
+  }
+  if (barEl) {
+    barEl.style.width = `${pct}%`;
+  }
+  if (linkEl) {
+    linkEl.href = b.storygraphUrl || 'https://app.thestorygraph.com/profile/soulless613';
+  }
+  if (updatedTag && b.lastUpdated) {
+    const timeStr = new Date(b.lastUpdated).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    updatedTag.textContent = `Updated ${timeStr}`;
   }
 }
 
-function changeChapter(delta) {
+// Fetch shared reading data from repository on startup
+async function fetchReadingFromRepo() {
+  try {
+    const res = await fetch('./reading.json?t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.title) {
+        state.desks.reading.title = data.title;
+        if (data.author) state.desks.reading.author = data.author;
+        if (data.currentPage !== undefined) state.desks.reading.currentPage = data.currentPage;
+        if (data.totalPages !== undefined) state.desks.reading.totalPages = data.totalPages;
+        if (data.unit) state.desks.reading.unit = data.unit;
+        if (data.storygraphUrl) state.desks.reading.storygraphUrl = data.storygraphUrl;
+        if (data.lastUpdated) state.desks.reading.lastUpdated = data.lastUpdated;
+        saveState();
+      }
+    }
+  } catch (e) {
+    console.log('Using local reading state (offline or local server)');
+  }
+}
+
+// Modal Handlers & Quick Adjustments
+function openReadingModal() {
   const b = state.desks.reading;
-  b.currentChapter = Math.max(1, Math.min(b.totalChapters, b.currentChapter + delta));
+  document.getElementById('edit-reading-title').value = b.title || '';
+  document.getElementById('edit-reading-author').value = b.author || '';
+  document.getElementById('edit-reading-current').value = b.currentPage || 0;
+  document.getElementById('edit-reading-total').value = b.totalPages || 100;
+
+  // Load saved keys from localStorage
+  const geminiKey = localStorage.getItem('active_desks_gemini_key') || '';
+  const githubToken = localStorage.getItem('active_desks_github_token') || '';
+  const geminiInput = document.getElementById('cfg-gemini-key');
+  const githubInput = document.getElementById('cfg-github-token');
+  if (geminiInput) geminiInput.value = geminiKey;
+  if (githubInput) githubInput.value = githubToken;
+
+  const statusEl = document.getElementById('reading-scan-status');
+  if (statusEl) {
+    statusEl.textContent = 'Take a screenshot of StoryGraph, tap to auto-extract book & page.';
+    statusEl.style.color = 'var(--text-muted)';
+  }
+
+  document.getElementById('reading-modal').classList.add('active');
+}
+
+function adjustCurrentPage(delta) {
+  const curInput = document.getElementById('edit-reading-current');
+  const totInput = document.getElementById('edit-reading-total');
+  let cur = parseInt(curInput.value, 10) || 0;
+  let tot = parseInt(totInput.value, 10) || 100;
+  cur = Math.max(0, Math.min(tot, cur + delta));
+  curInput.value = cur;
+}
+
+function saveApiKeys() {
+  const geminiKey = document.getElementById('cfg-gemini-key').value.trim();
+  const githubToken = document.getElementById('cfg-github-token').value.trim();
+  if (geminiKey) localStorage.setItem('active_desks_gemini_key', geminiKey);
+  else localStorage.removeItem('active_desks_gemini_key');
+  if (githubToken) localStorage.setItem('active_desks_github_token', githubToken);
+  else localStorage.removeItem('active_desks_github_token');
+  alert('API Keys saved locally on this device!');
+}
+
+// Option A: Gemini Vision Screenshot Scanning
+function triggerScreenshotPicker() {
+  const geminiKey = localStorage.getItem('active_desks_gemini_key');
+  if (!geminiKey) {
+    const entered = prompt('Enter your Google Gemini API Key for screenshot scanning:\n(Free key available at aistudio.google.com/app/api-keys)');
+    if (entered && entered.trim()) {
+      localStorage.setItem('active_desks_gemini_key', entered.trim());
+      const cfgInput = document.getElementById('cfg-gemini-key');
+      if (cfgInput) cfgInput.value = entered.trim();
+    } else {
+      return;
+    }
+  }
+  document.getElementById('reading-screenshot-input').click();
+}
+
+async function handleScreenshotUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const btn = document.getElementById('reading-scan-btn');
+  const btnText = document.getElementById('reading-scan-btn-text');
+  const statusEl = document.getElementById('reading-scan-status');
+
+  if (btn) btn.classList.add('scanning');
+  if (btnText) btnText.textContent = 'Analyzing Screenshot...';
+  if (statusEl) {
+    statusEl.textContent = 'Gemini Vision is extracting book title, author, and progress...';
+    statusEl.style.color = 'var(--accent-spark)';
+  }
+
+  try {
+    const base64Data = await fileToBase64(file);
+    const geminiKey = localStorage.getItem('active_desks_gemini_key');
+
+    const promptText = "Examine this screenshot from StoryGraph or a reading app. Extract the currently reading book's details. Return ONLY valid JSON matching this schema: {\"title\": \"string\", \"author\": \"string\", \"currentPage\": number, \"totalPages\": number}. If represented as chapters, provide chapter numbers. Return ONLY valid JSON, no markdown, no explanation.";
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
+    const payload = {
+      contents: [{
+        parts: [
+          { text: promptText },
+          { inlineData: { mimeType: file.type || 'image/jpeg', data: base64Data } }
+        ]
+      }],
+      generationConfig: {
+        responseMimeType: 'application/json'
+      }
+    };
+
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      throw new Error(`Gemini API error (${res.status}): ${errBody}`);
+    }
+
+    const resJson = await res.json();
+    const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text;
+    const parsed = JSON.parse(rawText);
+
+    if (parsed) {
+      if (parsed.title) document.getElementById('edit-reading-title').value = parsed.title;
+      if (parsed.author) document.getElementById('edit-reading-author').value = parsed.author;
+      if (parsed.currentPage !== undefined) document.getElementById('edit-reading-current').value = parsed.currentPage;
+      if (parsed.totalPages !== undefined) document.getElementById('edit-reading-total').value = parsed.totalPages;
+
+      if (statusEl) {
+        statusEl.textContent = `✨ Auto-filled: "${parsed.title}" (Page ${parsed.currentPage} of ${parsed.totalPages})! Review below and tap Save.`;
+        statusEl.style.color = 'var(--accent-fiber)';
+      }
+    }
+  } catch (err) {
+    console.error('Screenshot scanning error:', err);
+    if (statusEl) {
+      statusEl.textContent = 'Scan error: ' + err.message + '. You can still adjust manually below.';
+      statusEl.style.color = '#ef4444';
+    }
+  } finally {
+    if (btn) btn.classList.remove('scanning');
+    if (btnText) btnText.textContent = 'Scan Screenshot (Auto-Fill)';
+    event.target.value = '';
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Save locally and commit to GitHub reading.json
+async function handleReadingSave(e) {
+  if (e) e.preventDefault();
+
+  const title = document.getElementById('edit-reading-title').value.trim();
+  const author = document.getElementById('edit-reading-author').value.trim();
+  const currentPage = parseInt(document.getElementById('edit-reading-current').value, 10) || 0;
+  const totalPages = parseInt(document.getElementById('edit-reading-total').value, 10) || 100;
+  const now = new Date().toISOString();
+
+  // 1. Immediate local UI & state update
+  state.desks.reading.title = title;
+  state.desks.reading.author = author;
+  state.desks.reading.currentPage = currentPage;
+  state.desks.reading.totalPages = totalPages;
+  state.desks.reading.unit = totalPages <= 50 ? 'chapters' : 'pages';
+  state.desks.reading.lastUpdated = now;
   saveState();
+
+  const saveBtn = document.getElementById('reading-save-btn');
+  const originalText = saveBtn ? saveBtn.innerHTML : '';
+  if (saveBtn) saveBtn.innerHTML = '<span>⏳ Syncing to GitHub...</span>';
+
+  // 2. Commit to GitHub repo if token is configured
+  const githubToken = localStorage.getItem('active_desks_github_token');
+  if (githubToken) {
+    try {
+      await commitReadingToGithub({
+        title,
+        author,
+        currentPage,
+        totalPages,
+        unit: state.desks.reading.unit,
+        storygraphUrl: state.desks.reading.storygraphUrl || 'https://app.thestorygraph.com/profile/soulless613',
+        lastUpdated: now
+      }, githubToken);
+    } catch (err) {
+      console.error('GitHub commit error:', err);
+      alert('Saved locally on this device, but GitHub commit failed: ' + err.message);
+    }
+  }
+
+  if (saveBtn) saveBtn.innerHTML = originalText;
+  closeModal('reading-modal');
+}
+
+async function commitReadingToGithub(readingData, token) {
+  const repo = 'soulless613-stack/active-desks';
+  const filePath = 'reading.json';
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+
+  // Step 1: Get current file SHA
+  let currentSha = null;
+  try {
+    const getRes = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json'
+      }
+    });
+    if (getRes.ok) {
+      const fileInfo = await getRes.json();
+      currentSha = fileInfo.sha;
+    }
+  } catch (e) {
+    console.warn('Could not fetch existing SHA', e);
+  }
+
+  // Step 2: PUT updated file
+  const jsonString = JSON.stringify(readingData, null, 2);
+  const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+  const putBody = {
+    message: `Update reading progress: ${readingData.title} (${readingData.unit} ${readingData.currentPage}/${readingData.totalPages})`,
+    content: base64Content
+  };
+  if (currentSha) {
+    putBody.sha = currentSha;
+  }
+
+  const putRes = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(putBody)
+  });
+
+  if (!putRes.ok) {
+    const errText = await putRes.text();
+    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -422,4 +707,5 @@ if ('serviceWorker' in navigator) {
 // Initial render
 document.addEventListener('DOMContentLoaded', () => {
   render();
+  fetchReadingFromRepo();
 });
