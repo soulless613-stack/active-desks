@@ -87,6 +87,43 @@ const DEFAULT_STATE = {
             "Flatten a ball of potato dough in your palm, add a spoonful of spiced meat, and seal into a smooth ball.",
             "Deep fry in hot oil (350°F / 175°C) for 4–5 minutes until golden and crackly crispy. Drain and serve hot!"
           ]
+        },
+        {
+          id: 'cheesy-garlic-sourdough-focaccia',
+          title: "Cheesy Garlic Sourdough Focaccia",
+          source: "Amy Coyne (@amybakesbread)",
+          url: "https://www.instagram.com/reel/DE23ak3pGsq/",
+          yield: "16 Slices (9x13 Pan / 12\" Skillet)",
+          calories: "349 kcal",
+          protein: "14g",
+          carbs: "33g",
+          fat: "17g",
+          highlight: "Crispy, bubbly sourdough focaccia loaded with herb-tossed cheddar, mozzarella, jack, parmesan, and bubbling garlic butter.",
+          ingredients: [
+            "100g bubbly active sourdough starter (or levain)",
+            "425g warm water (approx. 1 ¾ cups)",
+            "500g bread flour (approx. 3 ½ cups)",
+            "13g fine salt (approx. 2 tsp)",
+            "150g shredded mozzarella cheese (1 ½ cups)",
+            "100g shredded sharp cheddar cheese (1 cup)",
+            "100g shredded Monterey Jack cheese (1 cup)",
+            "70g shredded parmesan cheese (½ cup)",
+            "55g extra virgin olive oil (¼ cup)",
+            "35g unsalted butter, melted (2 ½ tbsp)",
+            "2 cloves fresh garlic, finely minced",
+            "3g garlic powder (1 tsp) + 2g salt (¼ tsp)",
+            "4g dried oregano (1 tbsp) + 4g dried basil (1 tbsp)"
+          ],
+          steps: [
+            "Mix Levain & Dough: Whisk active sourdough starter, warm water, salt, and bread flour until a shaggy dough forms. Rest covered for 30 minutes.",
+            "Coil Fold #1: With wet hands, reach under dough, stretch upwards and fold under itself 4–6 times. Rest covered for 30 minutes.",
+            "Cheese Inclusions (Coil Folds #2–4): Toss cheeses with dried herbs. During Coil Fold #2, gently fold in half the cheese. Perform Coil Folds #3 & #4 at 30-minute intervals.",
+            "Bulk Ferment: Cover and rest at ~78°F for 1.5–2 hours until puffy, domed, and aerated (30–40% volume rise).",
+            "Garlic Herb Oil & Pan Prep: Whisk olive oil, melted butter, garlic powder, salt, and dried herbs. Coat bottom of a 9x13\" metal pan (or 12\" skillet) with half the garlic butter oil.",
+            "Pan Stretch & Second Proof: Transfer dough into pan, gently stretch toward corners, and pour remaining garlic oil on top. Proof at 78–80°F for 3–5 hours until doubled, puffy, and jiggly.",
+            "Dimple & Top: Preheat oven to 425°F. Scatter minced fresh garlic and reserved cheese over surface. Dimple deeply with oiled fingers all over.",
+            "Bake: Bake at 425°F for 25–30 minutes until golden, crispy, and bubbling (internal temp 200°F). Cool 10 minutes, slice into 16 cheesy squares!"
+          ]
         }
       ]
     },
@@ -136,10 +173,19 @@ function loadState() {
           parsed.desks.reading.storygraphUrl = "https://app.thestorygraph.com/profile/soulless613";
         }
         if (parsed.desks.reading.currentPage === undefined) {
-          parsed.desks.reading.currentPage = parsed.desks.reading.currentChapter || 8;
-          parsed.desks.reading.totalPages = parsed.desks.reading.totalChapters || 24;
+          parsed.desks.reading.currentPage = 8;
+          parsed.desks.reading.totalPages = 24;
           parsed.desks.reading.unit = "chapters";
         }
+      }
+
+      // Sync recipes to ensure newly added default recipes exist in state
+      if (parsed.desks && parsed.desks.recipe && Array.isArray(parsed.desks.recipe.recipes)) {
+        DEFAULT_STATE.desks.recipe.recipes.forEach(defRecipe => {
+          if (!parsed.desks.recipe.recipes.some(r => r.id === defRecipe.id)) {
+            parsed.desks.recipe.recipes.push(defRecipe);
+          }
+        });
       }
 
       return parsed;

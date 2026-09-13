@@ -35,6 +35,7 @@
    * Recipes housed in [`active-desks/recipes/`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/):
      - [`butter-chicken-mac-n-cheese.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/butter-chicken-mac-n-cheese.md)
      - [`crispy-potato-meatballs.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/crispy-potato-meatballs.md)
+     - [`cheesy-garlic-sourdough-focaccia.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/cheesy-garlic-sourdough-focaccia.md)
 3. **Fiber Arts Desk**:
    * Knitting WIP tracker (US 7 / 4.5mm needles, worsted yarn).
    * Large, thumb-friendly `+` and `−` row counter.
