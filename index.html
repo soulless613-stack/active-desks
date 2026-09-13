@@ -307,6 +307,16 @@
             </button>
           </div>
         </div>
+
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-home); margin-bottom: 6px;">📱 Pair Another Device</h4>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+            Transfer your saved Gemini & GitHub keys to your phone or tablet instantly without typing.
+          </p>
+          <button class="quick-capture-btn" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: var(--accent-home); width: 100%; justify-content: center;" onclick="showPairingModal()">
+            Show Setup QR Code
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -392,9 +402,14 @@
                 Fine-grained PAT with <code>Contents: Read & Write</code> for <code>active-desks</code>.
               </div>
             </div>
-            <button type="button" class="quick-capture-btn" style="margin-top: 10px; background: rgba(255,255,255,0.08); border: 1px solid var(--border-subtle); color: var(--text-primary);" onclick="saveApiKeys()">
-              Save Keys
-            </button>
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+              <button type="button" class="quick-capture-btn" style="flex: 1; justify-content: center; background: rgba(255,255,255,0.08); border: 1px solid var(--border-subtle); color: var(--text-primary);" onclick="saveApiKeys()">
+                Save Keys
+              </button>
+              <button type="button" class="quick-capture-btn" style="flex: 1; justify-content: center; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: var(--accent-home);" onclick="showPairingModal()">
+                📱 Pair Device (QR)
+              </button>
+            </div>
           </div>
         </details>
 
@@ -402,7 +417,49 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <!-- Modal: QR Code Device Pairing -->
+  <div id="qr-pair-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 440px; text-align: center;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">📱</span>
+          <h3 class="modal-title">Pair Device</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('qr-pair-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" style="align-items: center;">
+        <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5;">
+          Point your phone's camera at this QR code to load your saved keys into your phone instantly.
+        </p>
+        
+        <div class="qr-canvas-card">
+          <canvas id="qr-canvas"></canvas>
+        </div>
+
+        <div style="font-size: 0.74rem; color: var(--text-muted); max-width: 320px;">
+          🔒 Uses a secure client-only URL hash. Keys are stored strictly on your device and never sent to any server.
+        </div>
+
+        <div style="display: flex; gap: 10px; width: 100%; margin-top: 8px;">
+          <button type="button" class="quick-capture-btn" id="copy-pair-btn" style="flex: 1; justify-content: center; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-subtle); color: var(--text-primary);" onclick="copyPairingLink()">
+            📋 Copy Setup Link
+          </button>
+          <button type="button" class="desk-action-btn" style="padding: 10px 20px;" onclick="closeModal('qr-pair-modal')">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Device Pairing Toast -->
+  <div id="pair-toast" class="toast-notification">
+    <span id="pair-toast-icon">✨</span>
+    <span id="pair-toast-msg">Device paired successfully!</span>
+  </div>
+
+  <script src="qrious.min.js" defer></script>
+  <script src="app.js" defer></script>
   <script>
     function exportData() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('active_desks_data_v1') || '{}');

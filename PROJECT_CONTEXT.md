@@ -39,7 +39,10 @@
    * Knitting WIP tracker (US 7 / 4.5mm needles, worsted yarn).
    * Large, thumb-friendly `+` and `−` row counter.
 4. **Reading Nook Desk**:
-   * Currently tracks *Dune Messiah* audiobook (Ch. 8 of 24 progress bar).
+   * Tracks *Dune Messiah* audiobook (Ch. 8 of 24 progress bar) with link to StoryGraph profile.
+   * Gemini Vision screenshot auto-extraction for zero-typing progress updates on mobile.
+   * Cross-device repository sync via `reading.json`.
+   * On-screen QR code pairing for zero-typing transfer of API keys across devices.
 5. **Game Rig Desk**:
    * Current game: *Baldur's Gate 3* with active quest tracker and wiki quick-link.
 6. **Quick Capture Bar (Sticky Bottom)**:

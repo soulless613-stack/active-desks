@@ -415,8 +415,129 @@ function saveApiKeys() {
   else localStorage.removeItem('active_desks_gemini_key');
   if (githubToken) localStorage.setItem('active_desks_github_token', githubToken);
   else localStorage.removeItem('active_desks_github_token');
-  alert('API Keys saved locally on this device!');
+  showToast('API keys saved locally on this device!', '💾');
 }
+
+// --------------------------------------------------------------------------
+// On-Screen QR Code Device Pairing
+// --------------------------------------------------------------------------
+function generatePairingUrl() {
+  const geminiKey = document.getElementById('cfg-gemini-key')?.value.trim() || localStorage.getItem('active_desks_gemini_key') || '';
+  const githubToken = document.getElementById('cfg-github-token')?.value.trim() || localStorage.getItem('active_desks_github_token') || '';
+
+  if (!geminiKey && !githubToken) {
+    return null;
+  }
+
+  const payload = {
+    gemini: geminiKey,
+    github: githubToken
+  };
+
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const base = window.location.origin + window.location.pathname;
+  return `${base}#setup=${encoded}`;
+}
+
+function showPairingModal() {
+  const url = generatePairingUrl();
+  if (!url) {
+    alert('Please enter at least your Gemini API Key or GitHub Token first before pairing.');
+    return;
+  }
+
+  const canvas = document.getElementById('qr-canvas');
+  if (!canvas) return;
+
+  if (typeof QRious === 'undefined') {
+    alert('QR code generator library is still loading. Please try again in a moment.');
+    return;
+  }
+
+  new QRious({
+    element: canvas,
+    value: url,
+    size: 220,
+    level: 'M'
+  });
+
+  canvas.dataset.pairingUrl = url;
+
+  // Close any open modals and show QR modal
+  closeModal('reading-modal');
+  closeModal('sync-modal');
+  document.getElementById('qr-pair-modal').classList.add('active');
+}
+
+function copyPairingLink() {
+  const canvas = document.getElementById('qr-canvas');
+  const url = canvas?.dataset?.pairingUrl || generatePairingUrl();
+  if (!url) return;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copy-pair-btn');
+      if (btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ Copied to Clipboard!';
+        setTimeout(() => { btn.innerHTML = originalText; }, 2500);
+      }
+    }).catch(() => {
+      prompt('Copy this setup link:', url);
+    });
+  } else {
+    prompt('Copy this setup link:', url);
+  }
+}
+
+function showToast(msg, icon = '✨') {
+  const toast = document.getElementById('pair-toast');
+  const toastMsg = document.getElementById('pair-toast-msg');
+  const toastIcon = document.getElementById('pair-toast-icon');
+  if (!toast) return;
+
+  if (toastMsg) toastMsg.textContent = msg;
+  if (toastIcon) toastIcon.textContent = icon;
+  toast.classList.add('active');
+
+  setTimeout(() => {
+    toast.classList.remove('active');
+  }, 4000);
+}
+
+function checkDevicePairingHash() {
+  const hash = window.location.hash;
+  if (!hash || !hash.startsWith('#setup=')) return;
+
+  try {
+    const encoded = hash.replace(/^#setup=/, '');
+    const jsonString = decodeURIComponent(escape(atob(encoded)));
+    const payload = JSON.parse(jsonString);
+
+    let updated = false;
+    if (payload.gemini) {
+      localStorage.setItem('active_desks_gemini_key', payload.gemini);
+      const cfgGemini = document.getElementById('cfg-gemini-key');
+      if (cfgGemini) cfgGemini.value = payload.gemini;
+      updated = true;
+    }
+    if (payload.github) {
+      localStorage.setItem('active_desks_github_token', payload.github);
+      const cfgGithub = document.getElementById('cfg-github-token');
+      if (cfgGithub) cfgGithub.value = payload.github;
+      updated = true;
+    }
+
+    if (updated) {
+      // Clean URL hash so credentials aren't visible or kept in history
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+      showToast('Device paired successfully! Keys saved locally on this device.', '📱');
+    }
+  } catch (err) {
+    console.error('Error parsing device pairing setup hash:', err);
+  }
+}
+
 
 // Option A: Gemini Vision Screenshot Scanning
 function triggerScreenshotPicker() {
@@ -708,4 +829,5 @@ if ('serviceWorker' in navigator) {
 document.addEventListener('DOMContentLoaded', () => {
   render();
   fetchReadingFromRepo();
+  checkDevicePairingHash();
 });
