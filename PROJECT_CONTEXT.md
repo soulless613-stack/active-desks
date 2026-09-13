@@ -1,101 +1,138 @@
 # Active Desks & Reading Automation — Project Context & Handoff
 
-> **CRITICAL INSTRUCTION FOR ANTIGRAVITY 2.0 (ag2.0)**:  
-> **DO NOT modify any code or files in this project without presenting your plan and getting explicit user approval first.** The user wants to review all proposed changes before they are implemented. Keep the codebase minimal, clean, and zero-bloat.
+> **CRITICAL INSTRUCTION FOR THE ANTIGRAVITY IDE & AGENTS**:  
+> **DO NOT modify any code or files in this project without presenting your plan and getting explicit user approval first.** The user strictly requires review and sign-off on all proposed changes before implementation. Maintain the minimal, clean, zero-bloat philosophy.
 
 ---
 
-## 1. Project Overview & Infrastructure
+## 1. Project Infrastructure & Repositories
 
 * **Project Name**: Active Desks
-* **Location**: [`c:/Users/chris/Documents/antigravity/active-desks`](file:///c:/Users/chris/Documents/antigravity/active-desks)
+* **Local Directory**: [`c:/Users/chris/Documents/antigravity/active-desks`](file:///c:/Users/chris/Documents/antigravity/active-desks)
 * **Parent Workspace**: [`c:/Users/chris/Documents/antigravity`](file:///c:/Users/chris/Documents/antigravity)
 * **Live GitHub Pages URL**: [https://soulless613-stack.github.io/active-desks/](https://soulless613-stack.github.io/active-desks/)
 * **GitHub Repository**: [https://github.com/soulless613-stack/active-desks](https://github.com/soulless613-stack/active-desks)
-* **Local Git Branch**: `main` (clean, synchronized with `origin/main`)
-
-### Technology Stack
-* **Architecture**: Mobile-first Progressive Web App (PWA) with offline capabilities.
-* **Core Code**: Vanilla HTML5, modern CSS3 (glassmorphic dark UI, CSS variables), Vanilla JavaScript (ES6 reactive state manager). Zero external runtime dependencies.
-* **PWA Assets**:
-  * [`manifest.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/manifest.json) — App metadata and icons for home screen installability.
-  * [`sw.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/sw.js) — Service worker caching assets for offline use.
-  * [`serve.ps1`](file:///c:/Users/chris/Documents/antigravity/active-desks/serve.ps1) — Local zero-dependency PowerShell static web server.
+* **Git Branch**: `main` (clean, synchronized with `origin/main`)
+* **Local Dev Server**: Zero-dependency PowerShell HTTP server:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .\serve.ps1
+  ```
+  Runs on `http://localhost:8080/`.
 
 ---
 
-## 2. Implemented Features in Active Desks
+## 2. Architectural Principles & Technology Stack
 
-1. **Daily 3 Anchors (Top Banner)**:
-   * Tracks daily rhythms: **Home** (Family/Chores), **Body** (Walk/Workout), **Spark** (Hobbies/Audiobook).
-   * Tap to mark complete; non-guilt daily auto-reset based on local calendar day.
-2. **Kitchen & Recipe Shelf Desk**:
-   * Replaced previous D&D section with user's saved Instagram cooking reels.
-   * Modals with interactive ingredient checklist and step-by-step instructions.
-   * Recipes housed in [`active-desks/recipes/`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/):
-     - [`butter-chicken-mac-n-cheese.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/butter-chicken-mac-n-cheese.md)
-     - [`crispy-potato-meatballs.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/crispy-potato-meatballs.md)
-     - [`cheesy-garlic-sourdough-focaccia.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/cheesy-garlic-sourdough-focaccia.md)
-3. **Fiber Arts Desk**:
-   * Knitting WIP tracker (US 7 / 4.5mm needles, worsted yarn).
-   * Large, thumb-friendly `+` and `−` row counter.
-4. **Reading Nook Desk**:
-   * Tracks *Dune Messiah* audiobook (Ch. 8 of 24 progress bar) with link to StoryGraph profile.
-   * Gemini Vision screenshot auto-extraction for zero-typing progress updates on mobile.
-   * Cross-device repository sync via `reading.json`.
-   * On-screen QR code pairing for zero-typing transfer of API keys across devices.
-5. **Game Rig Desk**:
-   * Current game: *Baldur's Gate 3* with active quest tracker and wiki quick-link.
-6. **Quick Capture Bar (Sticky Bottom)**:
-   * Fast brain-dump input field storing stray thoughts into local storage.
+1. **Zero-Bloat Philosophy**:
+   * Pure **Vanilla HTML5**, modern **CSS3** (glassmorphic dark UI, CSS custom properties, responsive container queries), and **Vanilla ES6 JavaScript**.
+   * **Zero build pipelines**: No Vite, Webpack, Node.js packages, npm scripts, or frontend frameworks (React/Vue/Svelte).
+   * Assets run directly in standard browsers and GitHub Pages.
+2. **Progressive Web App (PWA)**:
+   * [`manifest.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/manifest.json) — App metadata and icons for home screen installability on mobile (Google Pixel 11 Pro Fold) and desktop.
+   * [`sw.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/sw.js) — Service worker providing offline capabilities with `stale-while-revalidate` caching strategy.
+   * **Service Worker Caching Rule**: Whenever core assets (`index.html`, `app.js`, `styles.css`) are changed, **increment `CACHE_NAME`** in `sw.js` (e.g. `active-desks-v4` $\rightarrow$ `active-desks-v5`).
+3. **Security & Secrets Management**:
+   * Google Gemini API keys and GitHub Personal Access Tokens (PAT) live **strictly in browser `localStorage`**.
+   * **NEVER** commit API keys, personal access tokens, or private secrets into tracked files (`app.js`, `reading.json`, etc.).
+   * The repository is public on GitHub; client-side repository sync reads from and commits to `reading.json` using the user's PAT stored exclusively on the user's devices.
 
 ---
 
-## 3. Reading Log & StoryGraph Integration: Research & Decisions
+## 3. Current Feature Catalog & Implementation Details
 
-### The Goal
-The user reads on their **Google Pixel (Android)** using the **Kindle app** (with Assistive Reader / TTS) and listens to **Audible**, and wants their reading logs and progress tracked in **The StoryGraph**.
+### 1. Daily 3 Anchors (Top Banner)
+* Tracks three daily core rhythms: **Home** (Family/Chores), **Body** (Walk/Workout), **Spark** (Hobbies/Audiobook).
+* Tap to mark complete. Automatically resets on calendar-day change without guilt streaks or punitive mechanics.
 
-### Technical Realities & Constraints
-1. **No Public APIs**: Neither StoryGraph nor Amazon/Kindle provides a public write/sync API for real-time progress syncing.
-2. **Where Data Lives**:
-   * **Kindle Books & Dates**: Visible in [Amazon Manage Your Content](https://www.amazon.com/hz/mycd/digital-console/contentlist/booksAll/dateDsc/) and [Amazon Reading Insights](https://www.amazon.com/kindle/reading/insights).
-   * **Audible Library**: Can be exported via the free [Audible Library Extractor](https://audible-library-extractor.github.io/) browser extension to CSV.
-   * **Granular Minutes/Pages**: Amazon only records exact reading minutes in its backend telemetry database, exportable via [Amazon Privacy Data Request](https://www.amazon.com/hz/privacy-central/data-requests/preview.html) (`Kindle.ReadingSession.csv`). StoryGraph does not accept historical minute backfills anyway—it imports books, dates finished, and ratings.
+### 2. Kitchen & Recipe Shelf Desk
+* **Recipe Selector**: Compact `<select id="recipe-select">` dropdown list selector with custom chevron styling. Effortlessly scales from 3 to 30+ recipes without crowding mobile screens.
+* **Bundled Recipes** (Markdown source files stored in [`active-desks/recipes/`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/)):
+  1. [`butter-chicken-mac-n-cheese.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/butter-chicken-mac-n-cheese.md) — 480 kcal, 45g P, 38g C, 16g F.
+  2. [`crispy-potato-meatballs.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/crispy-potato-meatballs.md) — 410 kcal, 32g P, 28g C, 18g F.
+  3. [`cheesy-garlic-sourdough-focaccia.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/cheesy-garlic-sourdough-focaccia.md) — 349 kcal, 14g P, 33g C, 17g F (by Amy Coyne @amybakesbread).
+* **Interactive Modal**: Tapping "View Ingredients & Steps" opens a glassmorphic sheet with macro badges, an interactive checklist of ingredients, step-by-step instructions, and original creator links.
+* **Auto-Sync Migration**: `loadState()` in `app.js` merges default recipes into existing user `localStorage` if new recipes are added in code.
 
-### Android Automation Solution (Google Pixel)
-To solve the issue of getting interrupted while reading/listening on Android, the user is configuring **MacroDroid** on their Pixel:
+### 3. Fiber Arts Desk
+* Knitting WIP tracker (US 7 / 4.5mm needles, worsted yarn).
+* Large, thumb-friendly `+` and `−` row counter with quick-reset dialog.
 
-1. **Trigger 1: Kindle App Closed / Swiped Away**
-   * *Trigger*: Applications $\rightarrow$ Application Closed $\rightarrow$ Kindle.
-   * *Action*: Show notification or open The StoryGraph (`https://app.thestorygraph.com/currently-reading`).
-2. **Trigger 2: Assistive Reader Paused / Interrupted**
-   * *Trigger*: Media $\rightarrow$ **Music/Sound Playing** $\rightarrow$ **Music / Sound Stopped Playing** (or **Media Button Pressed** $\rightarrow$ Play/Pause).
-   * *Constraint*: Applications $\rightarrow$ Application Running in Foreground or Background $\rightarrow$ **Kindle** (prevents triggering when pausing Spotify/YouTube).
-   * *Action*: Display high-priority notification: `"📖 Reading Paused — Interrupted? Tap to log progress in StoryGraph"`.
+### 4. Reading Nook Desk & Cross-Device Sync
+* **Current State**: Tracking *Oathbringer* by Brandon Sanderson (pages 1119/1243, 90%).
+* **Gemini Vision Screenshot Parsing**:
+  * Uploading a screenshot of The StoryGraph or Kindle triggers client-side OCR via `gemini-3.6-flash:generateContent`.
+  * *Model Note*: Google AI Studio retired `gemini-2.5-flash` (returns 404). Always use `gemini-3.6-flash`.
+  * Prompts the model to return structured JSON: `{ title, author, current_progress, total_progress, unit, percentage }`.
+* **Cross-Device Repository Sync (`reading.json`)**:
+  * Reads and commits reading progress directly to `reading.json` on `main` via GitHub REST API (`GET`/`PUT /repos/soulless613-stack/active-desks/contents/reading.json`).
+  * Both desktop and mobile remain synchronized in real time.
+* **On-Screen QR Code Device Pairing**:
+  * Embedded local library [`qrious.min.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/qrious.min.js) (~17KB, zero CDN reliance).
+  * Clicking "Show Mobile Pairing QR Code" generates a QR code encoding `#setup=<base64-json>` containing the Gemini Key and GitHub PAT.
+  * Scanning the PC monitor with the Google Pixel camera opens the live PWA, imports the keys into `localStorage`, erases the hash from the browser URL via `history.replaceState` for privacy, and displays a success toast.
+* **Commit Verification Tag**:
+  * The `#sync-modal` header displays the running commit hash (`#ea2ab15` / `#...`) in grey monospace next to "Phone & Device Sync". This allows instant verification of whether mobile has reloaded the latest deployment or is still serving a cached Service Worker bundle.
+
+### 5. Game Rig Desk
+* Current game: *Baldur's Gate 3* with active quest tracker and wiki quick-link.
+
+### 6. Quick Capture Bar (Sticky Bottom)
+* Always-available quick note capture dock storing stray thoughts directly into `localStorage`.
 
 ---
 
-## 4. Reverted Unapproved Changes (Audit Log)
+## 4. Reading Log & StoryGraph Integration: Research, Status & IDE Handoff
 
-An earlier agent turn prematurely modified files without user permission. **All of those changes were completely reverted and removed:**
+### Motivation for Moving Back to the Antigravity IDE
+The user tested and verified the screenshot vision pipeline, QR pairing, and GitHub sync on their Google Pixel 11 Pro Fold. **Technically, everything works.** However, the user explicitly shared their feedback:
+> *"I still think there is a better way we can pull the info from storygraph but i get that it isn't in the cards right now. I have tried using this interface but I don't think I enjoy it. Can you update PROJECT_CONTEXT.md with all the relavent info need to move back to the antigravity IDE?"*
 
-* **`index.html`**: Reverted. (An unapproved complex bookmarklet modal and editing form were stripped out).
-* **`app.js`**: Reverted. (Unapproved bookmarklet generators, URL parameter sync, and polling to `localhost:8080/api/reading` were removed).
-* **`serve.ps1`**: Reverted. (An unapproved mock REST API endpoint was removed).
-* **`styles.css`**: Reverted. (Unapproved cover image, loader, and form styling rules were removed).
-* **`reading_sync.json`**: Deleted. (Temporary sync file was deleted).
+The manual friction of taking a screenshot, opening the web app, and uploading the file is cumbersome. The user wants to explore better, lower-friction alternatives inside the Antigravity IDE.
 
-**Current Repo State**: Clean, stable, and identical to the live production deployment.
+### Technical Realities & Constraints Discovered
+1. **No Public APIs**:
+   * Neither **The StoryGraph** nor **Amazon Kindle** provides an official, public API for programmatic read/write sync.
+2. **Cloudflare Turnstile Bot Protection**:
+   * The StoryGraph employs Cloudflare Turnstile anti-bot protection. Direct scraping, curl, headless browsers, or public CORS proxies fail or are blocked.
+3. **Data Sources**:
+   * **Kindle Reading Insights**: Available at `https://www.amazon.com/kindle/reading/insights`.
+   * **Audible Library**: Can be exported via the free [Audible Library Extractor](https://audible-library-extractor.github.io/) browser extension.
+   * **Kindle Telemetry**: Exact minutes read are only stored internally in Amazon's telemetry database (`Kindle.ReadingSession.csv` via Amazon Privacy request); StoryGraph does not accept minute backfills anyway.
+
+### Exploration Vectors for Future IDE Development
+When exploring better StoryGraph/reading sync workflows in the Antigravity IDE, consider these approaches:
+
+1. **Authenticated Browser Bookmarklet / UserScript**:
+   * Runs directly inside the user's authenticated desktop or mobile browser tab on `app.thestorygraph.com/currently-reading`.
+   * Completely bypasses Cloudflare bot protection because the user is already authenticated in their browser.
+   * A single click extracts the current book title, page count, and progress, and can dispatch an authenticated `fetch()` directly to GitHub API to update `reading.json`.
+2. **Android MacroDroid Automation (Google Pixel 11 Pro Fold)**:
+   * The user reads via the Kindle app (with Assistive Reader / TTS) and listens on Audible on their Pixel Fold.
+   * MacroDroid trigger options:
+     - **Kindle App Closed**: Triggers when the Kindle app is swiped away.
+     - **Assistive Reader Paused**: Triggers when audio stops while Kindle is in foreground/background.
+     - Action: Pop a rich notification: *"Reading paused: Log progress?"* with 1-tap deep link to `https://app.thestorygraph.com/currently-reading`.
+3. **Lightweight Companion Script or Webhook**:
+   * A local CLI tool or background companion script that allows quick command-line logging or hotkey progress entry.
+4. **Streamlined Manual Quick-Input**:
+   * An ultra-fast, 1-tap numeric stepper or percentage slider directly on the Active Desks Reading card, avoiding the need for screenshot uploads altogether.
 
 ---
 
-## 5. Next Steps (Require User Confirmation Before Executing)
+## 5. Development & Deployment Playbook
 
-1. **Discuss Simple Reading Nook Improvements**:
-   * Propose a clean, minimal addition to [`index.html`](file:///c:/Users/chris/Documents/antigravity/active-desks/index.html) and [`app.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/app.js):
-     - 1-tap **"📖 Open Kindle"** button.
-     - 1-tap **"📊 Log to StoryGraph"** button deep-linking to `https://app.thestorygraph.com/currently-reading`.
-   * **Wait for user confirmation before editing files.**
-2. **MacroDroid Assistance**:
-   * Confirm the user's MacroDroid trigger on their Pixel is working smoothly for the Assistive Reader pause state.
+1. **Making Changes**:
+   * Always present an implementation plan and obtain user approval first.
+   * Test locally with `serve.ps1`.
+   * If modifying `index.html`, `app.js`, or `styles.css`, increment `CACHE_NAME` in [`sw.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/sw.js) (e.g. `active-desks-v5`).
+2. **Deploying to GitHub Pages**:
+   ```bash
+   git add .
+   git commit -m "feat/fix: description"
+   git push origin main
+   ```
+   * GitHub Pages builds and deploys within ~1–2 minutes.
+3. **Verifying on Mobile**:
+   * Open `https://soulless613-stack.github.io/active-desks/`.
+   * Open the Sync Modal and verify that the commit hash tag matches the latest git commit.
+   * If an older commit is shown, refresh the page or close and re-open the PWA to let the new Service Worker activate.
