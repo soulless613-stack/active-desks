@@ -124,6 +124,35 @@ const DEFAULT_STATE = {
             "Dimple & Top: Preheat oven to 425°F. Scatter minced fresh garlic and reserved cheese over surface. Dimple deeply with oiled fingers all over.",
             "Bake: Bake at 425°F for 25–30 minutes until golden, crispy, and bubbling (internal temp 200°F). Cool 10 minutes, slice into 16 cheesy squares!"
           ]
+        },
+        {
+          id: 'chocolate-chip-cookie-donut-loaf',
+          title: "Chocolate Chip Cookie Donut Loaf",
+          source: "Angela Heckler (@obsessedwithcashews)",
+          url: "https://www.instagram.com/reel/DcbhSQLNA4N/",
+          yield: "10 Slices (9x5\" Pan)",
+          calories: "395 kcal",
+          protein: "5g",
+          carbs: "59g",
+          fat: "16g",
+          highlight: "Old-fashioned cake donut loaf with soft vanilla crumb, mini chocolate chips, buttery cookie streusel, and crackly glaze.",
+          ingredients: [
+            "Streusel: 60g flour, 32g sugar, 16g brown sugar, 45g cold butter, ¼ tsp vanilla, 48g mini choc chips",
+            "Batter: 208g flour, 12g cornstarch, 1 ½ tsp baking powder, ¼ tsp baking soda, ¾ tsp salt",
+            "Bakery Donut Spice: ¼ tsp freshly ground nutmeg",
+            "Wet: 175g sugar, 96g neutral oil, 160g plain yogurt, 108g milk, 2 ½ tsp vanilla, ½ tsp cider vinegar",
+            "Inclusions: 100g–120g mini semi-sweet chocolate chips",
+            "Glaze: 250g powdered sugar, 60g milk, 1 tsp vanilla bean paste, pinch salt",
+            "Finishing: Flaky Maldon sea salt & optional coarse sanding sugar"
+          ],
+          steps: [
+            "Cut cold butter into flour, sugars, salt, and vanilla until clumpy pea-sized crumbs form. Stir in mini chips and refrigerate.",
+            "Whisk sugar, oil, yogurt, milk, vanilla, and cider vinegar until smooth and emulsified.",
+            "Sift in flour, cornstarch, baking powder, baking soda, salt, and nutmeg. Whisk gently just until combined, then fold in mini chocolate chips.",
+            "Pour into greased, parchment-lined 9x5\" loaf pan. Scatter chilled streusel on top (and coarse sugar if desired).",
+            "Bake at 350°F (175°C) for 50–65 mins (tent with foil at 45m). Loaf is done when skewer comes out clean (internal temp ~205°F).",
+            "Sprinkle with flaky sea salt immediately. Cool 25 mins in pan, then transfer to rack. Drizzle crackly vanilla glaze over warm loaf!"
+          ]
         }
       ]
     },

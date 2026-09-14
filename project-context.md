@@ -54,6 +54,7 @@
   1. [`butter-chicken-mac-n-cheese.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/butter-chicken-mac-n-cheese.md) — 480 kcal, 45g P, 38g C, 16g F.
   2. [`crispy-potato-meatballs.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/crispy-potato-meatballs.md) — 410 kcal, 32g P, 28g C, 18g F.
   3. [`cheesy-garlic-sourdough-focaccia.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/cheesy-garlic-sourdough-focaccia.md) — 349 kcal, 14g P, 33g C, 17g F (by Amy Coyne @amybakesbread).
+  4. [`chocolate-chip-cookie-donut-loaf.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/chocolate-chip-cookie-donut-loaf.md) — 395 kcal, 5g P, 59g C, 16g F (by Angela Heckler @obsessedwithcashews).
 * **Interactive Modal**: Tapping "View Ingredients & Steps" opens a glassmorphic sheet with macro badges, an interactive checklist of ingredients, step-by-step instructions, and original creator links.
 * **Auto-Sync Migration**: `loadState()` in `app.js` merges default recipes into existing user `localStorage` if new recipes are added in code.
 
