@@ -279,9 +279,15 @@ function loadState() {
         });
       }
 
-      // Ensure recipeInbox exists
+      // Ensure recipeInbox exists & prune any items that are already in the recipe catalog
       if (!Array.isArray(parsed.recipeInbox)) {
         parsed.recipeInbox = [];
+      } else if (parsed.desks && parsed.desks.recipe && Array.isArray(parsed.desks.recipe.recipes)) {
+        const catalogUrls = parsed.desks.recipe.recipes.map(r => (r.url || '').split('?')[0].replace(/\/$/, '').toLowerCase());
+        parsed.recipeInbox = parsed.recipeInbox.filter(item => {
+          const cleanUrl = (item.url || '').split('?')[0].replace(/\/$/, '').toLowerCase();
+          return !catalogUrls.some(cu => cu && (cleanUrl.includes(cu) || cu.includes(cleanUrl)));
+        });
       }
 
       return parsed;
@@ -592,6 +598,21 @@ async function removeQueuedRecipe(id) {
   }
 }
 
+function pruneExtractedFromInbox() {
+  if (state.recipeInbox && Array.isArray(state.recipeInbox) && state.desks && state.desks.recipe && Array.isArray(state.desks.recipe.recipes)) {
+    const catalogUrls = state.desks.recipe.recipes.map(r => (r.url || '').split('?')[0].replace(/\/$/, '').toLowerCase());
+    const initialLen = state.recipeInbox.length;
+    state.recipeInbox = state.recipeInbox.filter(item => {
+      const cleanUrl = (item.url || '').split('?')[0].replace(/\/$/, '').toLowerCase();
+      return !catalogUrls.some(cu => cu && (cleanUrl.includes(cu) || cu.includes(cleanUrl)));
+    });
+    if (state.recipeInbox.length !== initialLen) {
+      saveState();
+      renderRecipeInbox();
+    }
+  }
+}
+
 async function fetchRecipeInboxFromRepo() {
   try {
     const res = await fetch('./recipe-inbox.json?t=' + Date.now(), { cache: 'no-store' });
@@ -604,6 +625,7 @@ async function fetchRecipeInboxFromRepo() {
             state.recipeInbox.push(remoteItem);
           }
         });
+        pruneExtractedFromInbox();
         saveState();
         renderRecipeInbox();
       }
@@ -1216,12 +1238,22 @@ window.addEventListener('click', (e) => {
   }
 });
 
-// Register Service Worker for PWA
+// Register Service Worker for PWA with auto-reload on update
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(err => {
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      reg.update();
+    }).catch(err => {
       console.log('SW registration note: PWA active in standalone mode', err);
     });
+  });
+
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
   });
 }
 
