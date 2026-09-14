@@ -153,6 +153,35 @@ const DEFAULT_STATE = {
             "Bake at 350°F (175°C) for 50–65 mins (tent with foil at 45m). Loaf is done when skewer comes out clean (internal temp ~205°F).",
             "Sprinkle with flaky sea salt immediately. Cool 25 mins in pan, then transfer to rack. Drizzle crackly vanilla glaze over warm loaf!"
           ]
+        },
+        {
+          id: 'savory-pizza-cinnamon-rolls',
+          title: "Savory Pizza Cinnamon Rolls",
+          source: "Lauren Ketterman (@barefoot.mimosas)",
+          url: "https://www.instagram.com/reel/DcjzA-vgND-/",
+          yield: "12 Rolls (12\" Skillet / 9x13\" Pan)",
+          calories: "285 kcal",
+          protein: "12g",
+          carbs: "26g",
+          fat: "14g",
+          highlight: "Fluffy yeast dough rolled with marinara, mozzarella, parmesan, and pepperoni, baked golden and brushed with garlic herb butter.",
+          ingredients: [
+            "Dough: 360g bread flour, 7g yeast, 240ml warm milk, 25g olive oil, 15g honey, 6g salt",
+            "Dough Seasoning: ½ tsp garlic powder & ½ tsp dried oregano",
+            "Filling: 180g thick pizza sauce / marinara",
+            "Cheese: 250g whole milk mozzarella & 40g grated parmesan",
+            "Inclusions: 120g chopped pepperoni & 1 tsp Italian seasoning",
+            "Glaze: 30g melted butter, 2 cloves minced garlic, fresh parsley",
+            "Serving: Warm marinara sauce for dipping"
+          ],
+          steps: [
+            "Mix warm milk, honey, and yeast until frothy. Knead in flour, oil, salt, garlic powder, and oregano into a smooth dough. Rise 60 mins until doubled.",
+            "Punch down and roll into a 12x18\" rectangle. Spread pizza sauce, then scatter mozzarella, parmesan, pepperoni, and Italian seasoning.",
+            "Roll up tightly into an 18-inch cylinder. Slice into 12 rolls using unflavored floss or a sharp knife.",
+            "Arrange in a greased 12\" skillet or 9x13\" pan. Rise 30 mins until puffy.",
+            "Brush with garlic herb butter, top with extra mozzarella and pepperoni.",
+            "Bake at 375°F (190°C) for 22–28 mins until bubbling and golden. Brush with remaining garlic butter and serve warm!"
+          ]
         }
       ]
     },
@@ -495,14 +524,21 @@ async function handleQueueRecipe(e) {
   const token = localStorage.getItem('active_desks_github_token');
   if (token) {
     const originalText = submitBtn ? submitBtn.innerHTML : '';
-    if (submitBtn) submitBtn.innerHTML = '<span>⏳ Syncing Queue...</span>';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>⏳ Syncing Queue...</span>';
+    }
     try {
       await commitRecipeInboxToGithub(state.recipeInbox, token);
       showToast('Queue synced to GitHub!', '☁️');
     } catch (err) {
       console.warn('Could not sync recipe inbox to GitHub:', err);
+      showToast('GitHub sync warning: check connection', '⚠️');
     } finally {
-      if (submitBtn) submitBtn.innerHTML = originalText;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
     }
   }
 }
@@ -526,7 +562,7 @@ async function removeQueuedRecipe(id) {
 
 async function fetchRecipeInboxFromRepo() {
   try {
-    const res = await fetch('./recipe-inbox.json?t=' + Date.now());
+    const res = await fetch('./recipe-inbox.json?t=' + Date.now(), { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -545,51 +581,82 @@ async function fetchRecipeInboxFromRepo() {
   }
 }
 
-async function commitRecipeInboxToGithub(inboxData, token) {
+async function commitRecipeInboxToGithub(inboxData, token, maxRetries = 3) {
   const repo = 'soulless613-stack/active-desks';
   const filePath = 'recipe-inbox.json';
   const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
-  let currentSha = null;
-  try {
-    const getRes = await fetch(apiUrl, {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let currentSha = null;
+    try {
+      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        currentSha = fileInfo.sha;
+      }
+    } catch (e) {
+      console.warn('Could not fetch recipe-inbox.json SHA', e);
+    }
+
+    const jsonString = JSON.stringify(inboxData, null, 2);
+    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const putBody = {
+      message: `Update recipe inbox (${inboxData.length} pending)`,
+      content: base64Content
+    };
+    if (currentSha) {
+      putBody.sha = currentSha;
+    }
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json'
-      }
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(putBody)
     });
-    if (getRes.ok) {
-      const fileInfo = await getRes.json();
-      currentSha = fileInfo.sha;
+
+    if (putRes.ok) {
+      return true;
     }
-  } catch (e) {
-    console.warn('Could not fetch recipe-inbox.json SHA', e);
-  }
 
-  const jsonString = JSON.stringify(inboxData, null, 2);
-  const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+    // If 409 Conflict (SHA collision on rapid updates), wait and retry with fresh SHA
+    if (putRes.status === 409 && attempt < maxRetries) {
+      console.warn(`GitHub SHA collision (attempt ${attempt + 1}), retrying in ${(attempt + 1) * 800}ms...`);
+      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
+      continue;
+    }
 
-  const putBody = {
-    message: `Update recipe inbox (${inboxData.length} pending)`,
-    content: base64Content
-  };
-  if (currentSha) {
-    putBody.sha = currentSha;
-  }
-
-  const putRes = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(putBody)
-  });
-
-  if (!putRes.ok) {
     const errText = await putRes.text();
     throw new Error(`GitHub API ${putRes.status}: ${errText}`);
+  }
+}
+
+async function syncRecipeInboxManually() {
+  const token = localStorage.getItem('active_desks_github_token');
+  if (!token) {
+    showToast('GitHub token not set. Open Sync menu to configure.', '⚠️');
+    return;
+  }
+  const syncBtn = document.getElementById('inbox-manual-sync-btn');
+  if (syncBtn) syncBtn.textContent = '⏳ Syncing...';
+  try {
+    await commitRecipeInboxToGithub(state.recipeInbox || [], token);
+    showToast('Queue synced to GitHub!', '☁️');
+  } catch (err) {
+    console.error('Manual queue sync failed:', err);
+    showToast('Sync failed: check connection', '⚠️');
+  } finally {
+    if (syncBtn) syncBtn.textContent = '🔄 Sync to GitHub';
   }
 }
 
