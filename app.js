@@ -137,13 +137,30 @@ const DEFAULT_STATE = {
           fat: "16g",
           highlight: "Old-fashioned cake donut loaf with soft vanilla crumb, mini chocolate chips, buttery cookie streusel, and crackly glaze.",
           ingredients: [
-            "Streusel: 60g flour, 32g sugar, 16g brown sugar, 45g cold butter, ¼ tsp vanilla, 48g mini choc chips",
-            "Batter: 208g flour, 12g cornstarch, 1 ½ tsp baking powder, ¼ tsp baking soda, ¾ tsp salt",
-            "Bakery Donut Spice: ¼ tsp freshly ground nutmeg",
-            "Wet: 175g sugar, 96g neutral oil, 160g plain yogurt, 108g milk, 2 ½ tsp vanilla, ½ tsp cider vinegar",
+            "Streusel: 60g (1/2 cup) all-purpose flour",
+            "Streusel: 32g (2 tbsp + 1 3/4 tsp) granulated sugar",
+            "Streusel: 16g (1 tbsp + 1/2 tsp) light brown sugar",
+            "Streusel: 1/4 tsp fine sea salt",
+            "Streusel: 45g (3 tbsp + 1/2 tsp) cold butter, cubed",
+            "Streusel: 1/4 tsp vanilla bean paste",
+            "Streusel: 48g (1/4 cup) mini chocolate chips",
+            "Optional: 1 tbsp coarse sanding sugar (for crunchy top)",
+            "Batter: 208g (1 3/4 cups) all-purpose flour",
+            "Batter: 12g (1 tbsp + 2 1/4 tsp) cornstarch",
+            "Batter: 1 1/2 tsp baking powder & 1/4 tsp baking soda",
+            "Batter: 3/4 tsp fine sea salt",
+            "Donut Spice: 1/4 tsp freshly ground nutmeg",
+            "Wet: 175g (7/8 cup) granulated sugar",
+            "Wet: 96g (3/8 cup) neutral vegetable oil",
+            "Wet: 160g (2/3 cup) plain unsweetened yogurt",
+            "Wet: 108g (1/2 cup) whole milk, room temp",
+            "Wet: 2 1/2 tsp vanilla bean paste",
+            "Wet: 1/2 tsp apple cider vinegar",
             "Inclusions: 100g–120g mini semi-sweet chocolate chips",
-            "Glaze: 250g powdered sugar, 60g milk, 1 tsp vanilla bean paste, pinch salt",
-            "Finishing: Flaky Maldon sea salt & optional coarse sanding sugar"
+            "Glaze: 250g (2 cups) powdered sugar, sifted",
+            "Glaze: 60g (1/4 cup) whole milk, warm",
+            "Glaze: 1 tsp vanilla bean paste & pinch of salt",
+            "Finishing: Flaky Maldon sea salt"
           ],
           steps: [
             "Cut cold butter into flour, sugars, salt, and vanilla until clumpy pea-sized crumbs form. Stir in mini chips and refrigerate.",
@@ -166,12 +183,23 @@ const DEFAULT_STATE = {
           fat: "14g",
           highlight: "Fluffy yeast dough rolled with marinara, mozzarella, parmesan, and pepperoni, baked golden and brushed with garlic herb butter.",
           ingredients: [
-            "Dough: 360g bread flour, 7g yeast, 240ml warm milk, 25g olive oil, 15g honey, 6g salt",
-            "Dough Seasoning: ½ tsp garlic powder & ½ tsp dried oregano",
-            "Filling: 180g thick pizza sauce / marinara",
-            "Cheese: 250g whole milk mozzarella & 40g grated parmesan",
-            "Inclusions: 120g chopped pepperoni & 1 tsp Italian seasoning",
-            "Glaze: 30g melted butter, 2 cloves minced garlic, fresh parsley",
+            "Dough: 360g (3 cups) bread flour or all-purpose flour",
+            "Dough: 7g (2 1/4 tsp / 1 packet) active dry or instant yeast",
+            "Dough: 240ml (1 cup) warm whole milk (105°F–110°F)",
+            "Dough: 25g (2 tbsp) olive oil or melted butter",
+            "Dough: 15g (1 tbsp) sugar or honey",
+            "Dough: 6g (1 tsp) fine sea salt",
+            "Dough Seasoning: 1/2 tsp garlic powder",
+            "Dough Seasoning: 1/2 tsp dried oregano",
+            "Filling: 180g (3/4 cup) thick pizza sauce or crushed marinara",
+            "Filling: 250g (2 1/2 cups) whole milk mozzarella, shredded",
+            "Filling: 40g (1/2 cup) grated Parmesan or Romano cheese",
+            "Filling: 120g (~40–50 slices) pepperoni, roughly chopped",
+            "Filling: 1 tsp Italian herb seasoning",
+            "Optional: 1/4 tsp crushed red pepper flakes",
+            "Glaze: 30g (2 tbsp) unsalted butter, melted",
+            "Glaze: 2 cloves fresh garlic, finely minced",
+            "Glaze: 1 tbsp fresh parsley or Italian herbs, chopped",
             "Serving: Warm marinara sauce for dipping"
           ],
           steps: [
@@ -238,11 +266,15 @@ function loadState() {
         }
       }
 
-      // Sync recipes to ensure newly added default recipes exist in state
+      // Sync recipes to ensure newly added default recipes exist in state & updates reflect immediately
       if (parsed.desks && parsed.desks.recipe && Array.isArray(parsed.desks.recipe.recipes)) {
         DEFAULT_STATE.desks.recipe.recipes.forEach(defRecipe => {
-          if (!parsed.desks.recipe.recipes.some(r => r.id === defRecipe.id)) {
+          const idx = parsed.desks.recipe.recipes.findIndex(r => r.id === defRecipe.id);
+          if (idx === -1) {
             parsed.desks.recipe.recipes.push(defRecipe);
+          } else {
+            // Refresh recipe fields so ingredient checklist updates reflect immediately in existing storage
+            parsed.desks.recipe.recipes[idx] = { ...defRecipe };
           }
         });
       }
