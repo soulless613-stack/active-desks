@@ -133,8 +133,9 @@ When exploring better StoryGraph/reading sync workflows in the Antigravity IDE, 
    ```bash
    git add .
    git commit -m "feat/fix: description"
-   git push origin main
+   git pull --rebase origin main && git push origin main
    ```
+   * Checking remote and rebasing first prevents push rejections caused by real-time mobile sync (`reading.json` and `recipe-inbox.json`).
    * GitHub Pages builds and deploys within ~1–2 minutes.
 3. **Verifying on Mobile**:
    * Open `https://soulless613-stack.github.io/active-desks/`.
