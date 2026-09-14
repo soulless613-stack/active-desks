@@ -120,7 +120,9 @@
       <article class="desk-card" aria-label="Kitchen & Recipe Shelf">
         <div class="desk-top">
           <span class="desk-badge recipe">🍳 Kitchen Shelf</span>
-          <span class="meta-pill" id="recipe-pill-count">Saved Recipes</span>
+          <button class="desk-action-btn" onclick="openRecipeInboxModal()" title="Recipe Queue" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+            📥 Queue (<span id="inbox-count">0</span>)
+          </button>
         </div>
 
         <div>
@@ -251,6 +253,50 @@
             View Original Instagram Reel ↗
           </a>
           <button class="desk-action-btn" onclick="closeModal('recipe-modal')">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Recipe Inbox (Link Queue) -->
+  <div id="recipe-inbox-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">📥</span>
+          <h3 class="modal-title">Recipe Queue & Inbox</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('recipe-inbox-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5;">
+          Queue Instagram cooking reels or recipe links here. When you're at your computer, the Antigravity agent will batch-extract them into full recipes with macros and steps!
+        </p>
+
+        <!-- Queue Form -->
+        <form id="recipe-inbox-form" onsubmit="handleQueueRecipe(event)" style="display: flex; flex-direction: column; gap: 10px; background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div>
+            <label for="inbox-url-input" style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Recipe / Reel URL *</label>
+            <input type="url" id="inbox-url-input" class="reading-input" placeholder="https://www.instagram.com/reel/..." required style="width: 100%;">
+          </div>
+          <div>
+            <label for="inbox-note-input" style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Optional Note or Title</label>
+            <input type="text" id="inbox-note-input" class="reading-input" placeholder="e.g. high protein chicken bowls, focaccia" style="width: 100%;">
+          </div>
+          <button type="submit" id="inbox-submit-btn" class="quick-capture-btn" style="background: var(--accent-recipe); color: #fff; width: 100%; justify-content: center; font-weight: 700;">
+            <span>➕ Queue Recipe Link</span>
+          </button>
+        </form>
+
+        <!-- Queued Links List -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; margin-top: 6px;">
+            <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary);">Pending Extraction</h4>
+            <span id="inbox-pending-badge" style="font-size: 0.74rem; background: rgba(249, 115, 22, 0.15); color: var(--accent-recipe); padding: 2px 8px; border-radius: 12px; font-weight: 600;">0 queued</span>
+          </div>
+          <div id="recipe-inbox-list" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Populated dynamically -->
+          </div>
         </div>
       </div>
     </div>

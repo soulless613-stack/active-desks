@@ -147,7 +147,8 @@ const DEFAULT_STATE = {
   captures: [
     { id: 1, text: "Check yarn stash for 4.5mm circular needles with 32-inch cord", time: "Sep 12" },
     { id: 2, text: "Buy extra FAGE Greek yogurt and sharp cheddar for meal prep", time: "Sep 12" }
-  ]
+  ],
+  recipeInbox: []
 };
 
 // State Store
@@ -186,6 +187,11 @@ function loadState() {
             parsed.desks.recipe.recipes.push(defRecipe);
           }
         });
+      }
+
+      // Ensure recipeInbox exists
+      if (!Array.isArray(parsed.recipeInbox)) {
+        parsed.recipeInbox = [];
       }
 
       return parsed;
@@ -238,8 +244,9 @@ function render() {
   renderReadingDesk();
   renderGamingDesk();
 
-  // 3. Render Captures
+  // 3. Render Captures & Recipe Inbox
   renderCaptures();
+  renderRecipeInbox();
 }
 
 function renderBuckets() {
@@ -375,6 +382,188 @@ function toggleIngredientCheck(labelEl) {
   const checkbox = labelEl.querySelector('input[type="checkbox"]');
   labelEl.classList.toggle('checked', checkbox.checked);
 }
+
+// --------------------------------------------------------------------------
+// Recipe Inbox & Link Queue
+// --------------------------------------------------------------------------
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function openRecipeInboxModal() {
+  renderRecipeInbox();
+  document.getElementById('recipe-inbox-modal').classList.add('active');
+  const urlInput = document.getElementById('inbox-url-input');
+  if (urlInput) setTimeout(() => urlInput.focus(), 150);
+}
+
+function renderRecipeInbox() {
+  const inbox = state.recipeInbox || [];
+  const countEl = document.getElementById('inbox-count');
+  if (countEl) countEl.textContent = inbox.length;
+
+  const badgeEl = document.getElementById('inbox-pending-badge');
+  if (badgeEl) badgeEl.textContent = `${inbox.length} queued`;
+
+  const listEl = document.getElementById('recipe-inbox-list');
+  if (!listEl) return;
+
+  if (inbox.length === 0) {
+    listEl.innerHTML = `
+      <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.84rem; background: rgba(15, 23, 42, 0.4); border-radius: var(--radius-sm); border: 1px dashed var(--border-subtle);">
+        <span>✨ Inbox is empty!</span><br>
+        <span style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 4px; display: inline-block;">
+          Paste an Instagram Reel or recipe link above to queue it for batch extraction.
+        </span>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = inbox.map(item => `
+    <div class="inbox-item">
+      <div class="inbox-item-content">
+        <span class="inbox-item-title">${escapeHtml(item.note || 'Queued Recipe Link')}</span>
+        <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="inbox-item-url" title="${escapeHtml(item.url)}">
+          🔗 ${escapeHtml(item.url)}
+        </a>
+      </div>
+      <button class="inbox-item-del-btn" onclick="removeQueuedRecipe(${item.id})" title="Remove from queue">✕</button>
+    </div>
+  `).join('');
+}
+
+async function handleQueueRecipe(e) {
+  if (e) e.preventDefault();
+  const urlInput = document.getElementById('inbox-url-input');
+  const noteInput = document.getElementById('inbox-note-input');
+  const submitBtn = document.getElementById('inbox-submit-btn');
+
+  const url = urlInput ? urlInput.value.trim() : '';
+  const note = noteInput ? noteInput.value.trim() : '';
+  if (!url) return;
+
+  if (!state.recipeInbox) state.recipeInbox = [];
+
+  const newItem = {
+    id: Date.now(),
+    url: url,
+    note: note,
+    addedAt: new Date().toISOString()
+  };
+
+  state.recipeInbox.unshift(newItem);
+  saveState();
+  renderRecipeInbox();
+
+  if (urlInput) urlInput.value = '';
+  if (noteInput) noteInput.value = '';
+
+  showToast('Recipe queued in inbox!', '📥');
+
+  // Sync to GitHub repo if token configured
+  const token = localStorage.getItem('active_desks_github_token');
+  if (token) {
+    const originalText = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) submitBtn.innerHTML = '<span>⏳ Syncing Queue...</span>';
+    try {
+      await commitRecipeInboxToGithub(state.recipeInbox, token);
+      showToast('Queue synced to GitHub!', '☁️');
+    } catch (err) {
+      console.warn('Could not sync recipe inbox to GitHub:', err);
+    } finally {
+      if (submitBtn) submitBtn.innerHTML = originalText;
+    }
+  }
+}
+
+async function removeQueuedRecipe(id) {
+  if (!state.recipeInbox) return;
+  state.recipeInbox = state.recipeInbox.filter(item => item.id !== id);
+  saveState();
+  renderRecipeInbox();
+  showToast('Removed from queue', '🗑️');
+
+  const token = localStorage.getItem('active_desks_github_token');
+  if (token) {
+    try {
+      await commitRecipeInboxToGithub(state.recipeInbox, token);
+    } catch (err) {
+      console.warn('Could not sync queue deletion to GitHub:', err);
+    }
+  }
+}
+
+async function fetchRecipeInboxFromRepo() {
+  try {
+    const res = await fetch('./recipe-inbox.json?t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        if (!state.recipeInbox) state.recipeInbox = [];
+        data.forEach(remoteItem => {
+          if (!state.recipeInbox.some(localItem => localItem.url === remoteItem.url)) {
+            state.recipeInbox.push(remoteItem);
+          }
+        });
+        saveState();
+        renderRecipeInbox();
+      }
+    }
+  } catch (e) {
+    console.log('Using local recipe inbox (offline or local server)');
+  }
+}
+
+async function commitRecipeInboxToGithub(inboxData, token) {
+  const repo = 'soulless613-stack/active-desks';
+  const filePath = 'recipe-inbox.json';
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+
+  let currentSha = null;
+  try {
+    const getRes = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json'
+      }
+    });
+    if (getRes.ok) {
+      const fileInfo = await getRes.json();
+      currentSha = fileInfo.sha;
+    }
+  } catch (e) {
+    console.warn('Could not fetch recipe-inbox.json SHA', e);
+  }
+
+  const jsonString = JSON.stringify(inboxData, null, 2);
+  const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+  const putBody = {
+    message: `Update recipe inbox (${inboxData.length} pending)`,
+    content: base64Content
+  };
+  if (currentSha) {
+    putBody.sha = currentSha;
+  }
+
+  const putRes = await fetch(apiUrl, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(putBody)
+  });
+
+  if (!putRes.ok) {
+    const errText = await putRes.text();
+    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
+  }
+}
+
 
 // --------------------------------------------------------------------------
 // Reading Nook Desk (Display-Centric & Cross-Device Sync)
@@ -912,6 +1101,7 @@ if ('serviceWorker' in navigator) {
 document.addEventListener('DOMContentLoaded', () => {
   render();
   fetchReadingFromRepo();
+  fetchRecipeInboxFromRepo();
   checkDevicePairingHash();
 });
 
