@@ -1,16 +1,5 @@
 [
   {
-    "id": "17896158573312mcn",
-    "time": "2026-09-17T03:30:57.331Z",
-    "displayTime": "11:30:57 PM",
-    "device": "mobile",
-    "target": "captures.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Updated captured thoughts on GitHub (0 remaining)",
-    "details": null
-  },
-  {
     "id": "1789615856499om4d",
     "time": "2026-09-17T03:30:56.499Z",
     "displayTime": "11:30:56 PM",
