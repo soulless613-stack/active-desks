@@ -210,6 +210,35 @@ const DEFAULT_STATE = {
             "Brush with garlic herb butter, top with extra mozzarella and pepperoni.",
             "Bake at 375°F (190°C) for 22–28 mins until bubbling and golden. Brush with remaining garlic butter and serve warm!"
           ]
+        },
+        {
+          id: 'glazed-donut-bread-pudding',
+          title: "Glazed Donut Bread Pudding",
+          source: "12 Tomatoes (@12_tomatoes)",
+          url: "https://www.instagram.com/reel/DdRs-Ofj5uI/",
+          yield: "12 Servings (9x13\" Dish)",
+          calories: "455 kcal",
+          protein: "7g",
+          carbs: "65g",
+          fat: "19g",
+          highlight: "Dump-and-bake dessert layering glazed donut holes, evaporated & condensed milk, vanilla cake mix, cinnamon, and butter.",
+          ingredients: [
+            "24 glazed or old-fashioned donut holes",
+            "1 can (12 oz / 354ml) evaporated milk",
+            "1 can (14 oz / 396g) sweetened condensed milk",
+            "1 box (13.25 oz / 375g) French vanilla cake mix (dry)",
+            "2 tsp ground cinnamon",
+            "1/2 cup (1 stick / 115g) unsalted butter, cubed into small pats",
+            "Optional: Vanilla ice cream or whipped cream (for serving)"
+          ],
+          steps: [
+            "Preheat oven to 350°F (175°C) and lightly grease a 9x13-inch baking dish.",
+            "Arrange all 24 donut holes in an even single layer across the bottom of the dish.",
+            "Pour the evaporated milk and sweetened condensed milk evenly over the donut holes.",
+            "Sprinkle dry French vanilla cake mix evenly across the top, followed by 2 tsp cinnamon.",
+            "Distribute cubed butter pats evenly over the cake mix layer.",
+            "Bake at 350°F (175°C) for 35–45 minutes until golden brown and bubbly. Rest 10 minutes and serve warm!"
+          ]
         }
       ]
     },

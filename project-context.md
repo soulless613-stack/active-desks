@@ -56,6 +56,7 @@
   3. [`cheesy-garlic-sourdough-focaccia.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/cheesy-garlic-sourdough-focaccia.md) — 349 kcal, 14g P, 33g C, 17g F (by Amy Coyne @amybakesbread).
   4. [`chocolate-chip-cookie-donut-loaf.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/chocolate-chip-cookie-donut-loaf.md) — 395 kcal, 5g P, 59g C, 16g F (by Angela Heckler @obsessedwithcashews).
   5. [`savory-pizza-cinnamon-rolls.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/savory-pizza-cinnamon-rolls.md) — 285 kcal, 12g P, 26g C, 14g F (by Lauren Ketterman @barefoot.mimosas).
+  6. [`glazed-donut-bread-pudding.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/glazed-donut-bread-pudding.md) — 455 kcal, 7g P, 65g C, 19g F (by 12 Tomatoes @12_tomatoes).
 * **Interactive Modal**: Tapping "View Ingredients & Steps" opens a glassmorphic sheet with macro badges, an interactive checklist of ingredients, step-by-step instructions, and original creator links.
 * **Auto-Sync Migration & Robust Queue Sync**:
   * `loadState()` in `app.js` merges default recipes into existing user `localStorage` if new recipes are added in code.
