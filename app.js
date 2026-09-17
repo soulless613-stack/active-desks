@@ -1158,23 +1158,35 @@ function renderGamingDesk() {
 }
 
 // --------------------------------------------------------------------------
-// Quick-Capture Brain Dump
+// Quick-Capture Brain Dump (Cross-Device GitHub Sync)
 // --------------------------------------------------------------------------
-function handleQuickCapture(e) {
+async function handleQuickCapture(e) {
   if (e) e.preventDefault();
   const input = document.getElementById('quick-capture-input');
   const text = input.value.trim();
   if (!text) return;
   
-  state.captures.unshift({
+  const newCapture = {
     id: Date.now(),
     text: text,
     time: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-  });
-  
+  };
+
+  state.captures.unshift(newCapture);
   input.value = '';
   saveState();
   openBrainDumpModal();
+  showToast('Thought captured!', '💡');
+
+  const token = localStorage.getItem('active_desks_github_token');
+  if (token) {
+    try {
+      await commitCapturesToGithub(state.captures, token);
+      showToast('Thoughts synced to GitHub!', '☁️');
+    } catch (err) {
+      console.warn('Could not sync captures to GitHub:', err);
+    }
+  }
 }
 
 function renderCaptures() {
@@ -1194,13 +1206,128 @@ function renderCaptures() {
   `).join('');
 }
 
-function deleteCapture(id) {
+async function deleteCapture(id) {
   state.captures = state.captures.filter(c => c.id !== id);
   saveState();
+  renderCaptures();
+  showToast('Thought removed', '🗑️');
+
+  const token = localStorage.getItem('active_desks_github_token');
+  if (token) {
+    try {
+      await commitCapturesToGithub(state.captures, token);
+    } catch (err) {
+      console.warn('Could not sync capture deletion to GitHub:', err);
+    }
+  }
 }
 
 function openBrainDumpModal() {
   document.getElementById('brain-dump-modal').classList.add('active');
+  fetchCapturesFromRepo();
+}
+
+async function fetchCapturesFromRepo() {
+  try {
+    const res = await fetch('./captures.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        if (!state.captures) state.captures = [];
+        let changed = false;
+        data.forEach(remoteItem => {
+          if (!state.captures.some(localItem => localItem.id === remoteItem.id || localItem.text === remoteItem.text)) {
+            state.captures.push(remoteItem);
+            changed = true;
+          }
+        });
+        if (changed) {
+          saveState();
+        }
+        renderCaptures();
+      }
+    }
+  } catch (e) {
+    console.log('Using local captures (offline or local server)');
+  }
+}
+
+async function commitCapturesToGithub(capturesData, token, maxRetries = 3) {
+  const repo = 'soulless613-stack/active-desks';
+  const filePath = 'captures.json';
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let currentSha = null;
+    try {
+      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        currentSha = fileInfo.sha;
+      }
+    } catch (e) {
+      console.warn('Could not fetch captures.json SHA', e);
+    }
+
+    const jsonString = JSON.stringify(capturesData, null, 2);
+    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const putBody = {
+      message: `Update captured thoughts (${capturesData.length} items)`,
+      content: base64Content
+    };
+    if (currentSha) {
+      putBody.sha = currentSha;
+    }
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(putBody)
+    });
+
+    if (putRes.ok) {
+      return true;
+    }
+
+    if (putRes.status === 409 && attempt < maxRetries) {
+      console.warn(`GitHub SHA collision for captures (attempt ${attempt + 1}), retrying in ${(attempt + 1) * 800}ms...`);
+      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
+      continue;
+    }
+
+    const errText = await putRes.text();
+    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
+  }
+}
+
+async function syncCapturesManually() {
+  const token = localStorage.getItem('active_desks_github_token');
+  if (!token) {
+    showToast('GitHub token not set. Open Sync menu to configure.', '⚠️');
+    return;
+  }
+  const syncBtn = document.getElementById('captures-manual-sync-btn');
+  if (syncBtn) syncBtn.textContent = '⏳ Syncing...';
+  try {
+    await commitCapturesToGithub(state.captures || [], token);
+    showToast('Thoughts synced to GitHub!', '☁️');
+  } catch (err) {
+    console.error('Manual captures sync failed:', err);
+    showToast('Sync failed: check connection', '⚠️');
+  } finally {
+    if (syncBtn) syncBtn.textContent = '🔄 Sync to GitHub';
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -1259,6 +1386,7 @@ document.addEventListener('DOMContentLoaded', () => {
   render();
   fetchReadingFromRepo();
   fetchRecipeInboxFromRepo();
+  fetchCapturesFromRepo();
   checkDevicePairingHash();
 });
 

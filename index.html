@@ -315,11 +315,16 @@
           <span style="font-size: 1.2rem;">🧠</span>
           <h3 class="modal-title">Quick-Captured Thoughts</h3>
         </div>
-        <button class="modal-close-btn" onclick="closeModal('brain-dump-modal')" aria-label="Close">✕</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" id="captures-manual-sync-btn" onclick="syncCapturesManually()" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); color: var(--accent-spark); border: 1px solid rgba(56, 189, 248, 0.3); cursor: pointer; font-weight: 600;">
+            🔄 Sync to GitHub
+          </button>
+          <button class="modal-close-btn" onclick="closeModal('brain-dump-modal')" aria-label="Close">✕</button>
+        </div>
       </div>
       <div class="modal-body">
         <p style="font-size: 0.84rem; color: var(--text-secondary);">
-          Stray notes captured on the fly. Review them whenever you sit down.
+          Stray notes captured on the fly. Synced across your devices via GitHub.
         </p>
         <div id="captures-list" class="capture-items-list">
           <!-- Populated dynamically -->

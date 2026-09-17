@@ -86,8 +86,10 @@
 ### 5. Game Rig Desk
 * Current game: *Baldur's Gate 3* with active quest tracker and wiki quick-link.
 
-### 6. Quick Capture Bar (Sticky Bottom)
-* Always-available quick note capture dock storing stray thoughts directly into `localStorage`.
+### 6. Quick Capture Bar & Cross-Device Sync (`captures.json`)
+* Always-available quick note capture dock storing stray thoughts directly into `localStorage` and syncing across devices via GitHub REST API.
+* Stored in [`active-desks/captures.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/captures.json) on `main`.
+* Features deduplicating merge on page/modal load (`fetchCapturesFromRepo()`), automatic background push on capture or delete (`commitCapturesToGithub()`) with 409-conflict retry handling, and a manual "🔄 Sync to GitHub" button in the modal header.
 
 ---
 
