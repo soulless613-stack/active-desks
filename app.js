@@ -589,18 +589,41 @@ async function handleQueueRecipe(e) {
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span>⏳ Syncing Queue...</span>';
     }
+    updateHeaderSyncStatus('syncing');
     try {
       await commitRecipeInboxToGithub(state.recipeInbox, token);
+      addSyncLog({
+        target: 'recipe-inbox.json',
+        action: 'commit',
+        status: 'success',
+        message: `Synced recipe inbox (${state.recipeInbox.length} queued)`
+      });
       showToast('Queue synced to GitHub!', '☁️');
+      commitSyncLogToGithub(token).catch(() => {});
     } catch (err) {
       console.warn('Could not sync recipe inbox to GitHub:', err);
-      showToast('GitHub sync warning: check connection', '⚠️');
+      addSyncLog({
+        target: 'recipe-inbox.json',
+        action: 'commit',
+        status: 'error',
+        message: 'Failed to sync recipe inbox to GitHub',
+        details: err.message
+      });
+      showToast('Recipe queued locally; GitHub sync error', '⚠️');
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
       }
+      updateHeaderSyncStatus();
     }
+  } else {
+    addSyncLog({
+      target: 'recipe-inbox.json',
+      action: 'commit',
+      status: 'warning',
+      message: 'Recipe queued locally; no GitHub token configured'
+    });
   }
 }
 
@@ -613,10 +636,27 @@ async function removeQueuedRecipe(id) {
 
   const token = localStorage.getItem('active_desks_github_token');
   if (token) {
+    updateHeaderSyncStatus('syncing');
     try {
       await commitRecipeInboxToGithub(state.recipeInbox, token);
+      addSyncLog({
+        target: 'recipe-inbox.json',
+        action: 'commit',
+        status: 'success',
+        message: `Updated recipe queue deletion on GitHub (${state.recipeInbox.length} remaining)`
+      });
+      commitSyncLogToGithub(token).catch(() => {});
     } catch (err) {
       console.warn('Could not sync queue deletion to GitHub:', err);
+      addSyncLog({
+        target: 'recipe-inbox.json',
+        action: 'commit',
+        status: 'error',
+        message: 'Failed to sync recipe queue deletion to GitHub',
+        details: err.message
+      });
+    } finally {
+      updateHeaderSyncStatus();
     }
   }
 }
@@ -705,19 +745,41 @@ async function commitRecipeInboxToGithub(inboxData, token, maxRetries = 3) {
 async function syncRecipeInboxManually() {
   const token = localStorage.getItem('active_desks_github_token');
   if (!token) {
+    addSyncLog({
+      target: 'recipe-inbox.json',
+      action: 'commit',
+      status: 'warning',
+      message: 'Manual recipe sync skipped: no GitHub token configured'
+    });
     showToast('GitHub token not set. Open Sync menu to configure.', '⚠️');
     return;
   }
   const syncBtn = document.getElementById('inbox-manual-sync-btn');
   if (syncBtn) syncBtn.textContent = '⏳ Syncing...';
+  updateHeaderSyncStatus('syncing');
   try {
     await commitRecipeInboxToGithub(state.recipeInbox || [], token);
+    addSyncLog({
+      target: 'recipe-inbox.json',
+      action: 'commit',
+      status: 'success',
+      message: `Manually synced recipe inbox (${(state.recipeInbox || []).length} queued) to GitHub`
+    });
     showToast('Queue synced to GitHub!', '☁️');
+    commitSyncLogToGithub(token).catch(() => {});
   } catch (err) {
     console.error('Manual queue sync failed:', err);
+    addSyncLog({
+      target: 'recipe-inbox.json',
+      action: 'commit',
+      status: 'error',
+      message: 'Manual recipe queue sync failed',
+      details: err.message
+    });
     showToast('Sync failed: check connection', '⚠️');
   } finally {
     if (syncBtn) syncBtn.textContent = '🔄 Sync to GitHub';
+    updateHeaderSyncStatus();
   }
 }
 
@@ -820,7 +882,11 @@ function saveApiKeys() {
   else localStorage.removeItem('active_desks_gemini_key');
   if (githubToken) localStorage.setItem('active_desks_github_token', githubToken);
   else localStorage.removeItem('active_desks_github_token');
+  updateHeaderSyncStatus();
   showToast('API keys saved locally on this device!', '💾');
+  if (githubToken) {
+    testGitHubConnection();
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -1071,6 +1137,7 @@ async function handleReadingSave(e) {
   // 2. Commit to GitHub repo if token is configured
   const githubToken = localStorage.getItem('active_desks_github_token');
   if (githubToken) {
+    updateHeaderSyncStatus('syncing');
     try {
       await commitReadingToGithub({
         title,
@@ -1081,10 +1148,34 @@ async function handleReadingSave(e) {
         storygraphUrl: state.desks.reading.storygraphUrl || 'https://app.thestorygraph.com/profile/soulless613',
         lastUpdated: now
       }, githubToken);
+      addSyncLog({
+        target: 'reading.json',
+        action: 'commit',
+        status: 'success',
+        message: `Synced reading progress: ${title} (${currentPage}/${totalPages} ${state.desks.reading.unit})`
+      });
+      showToast('Reading synced to GitHub!', '☁️');
+      commitSyncLogToGithub(githubToken).catch(() => {});
     } catch (err) {
       console.error('GitHub commit error:', err);
-      alert('Saved locally on this device, but GitHub commit failed: ' + err.message);
+      addSyncLog({
+        target: 'reading.json',
+        action: 'commit',
+        status: 'error',
+        message: 'Failed to sync reading progress to GitHub',
+        details: err.message
+      });
+      showToast('Reading saved locally; GitHub sync error', '⚠️');
+    } finally {
+      updateHeaderSyncStatus();
     }
+  } else {
+    addSyncLog({
+      target: 'reading.json',
+      action: 'commit',
+      status: 'warning',
+      message: 'Reading saved locally; no GitHub token configured'
+    });
   }
 
   if (saveBtn) saveBtn.innerHTML = originalText;
@@ -1099,7 +1190,8 @@ async function commitReadingToGithub(readingData, token) {
   // Step 1: Get current file SHA
   let currentSha = null;
   try {
-    const getRes = await fetch(apiUrl, {
+    const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+      cache: 'no-store',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github+json'
@@ -1180,12 +1272,37 @@ async function handleQuickCapture(e) {
 
   const token = localStorage.getItem('active_desks_github_token');
   if (token) {
+    updateHeaderSyncStatus('syncing');
     try {
       await commitCapturesToGithub(state.captures, token);
+      addSyncLog({
+        target: 'captures.json',
+        action: 'commit',
+        status: 'success',
+        message: `Synced ${state.captures.length} captured thoughts to GitHub`
+      });
       showToast('Thoughts synced to GitHub!', '☁️');
+      commitSyncLogToGithub(token).catch(() => {});
     } catch (err) {
       console.warn('Could not sync captures to GitHub:', err);
+      addSyncLog({
+        target: 'captures.json',
+        action: 'commit',
+        status: 'error',
+        message: 'Failed to sync captured thoughts to GitHub',
+        details: err.message
+      });
+      showToast('Thought saved locally; GitHub sync error', '⚠️');
+    } finally {
+      updateHeaderSyncStatus();
     }
+  } else {
+    addSyncLog({
+      target: 'captures.json',
+      action: 'commit',
+      status: 'warning',
+      message: 'Thought saved locally; no GitHub token configured'
+    });
   }
 }
 
@@ -1214,10 +1331,27 @@ async function deleteCapture(id) {
 
   const token = localStorage.getItem('active_desks_github_token');
   if (token) {
+    updateHeaderSyncStatus('syncing');
     try {
       await commitCapturesToGithub(state.captures, token);
+      addSyncLog({
+        target: 'captures.json',
+        action: 'commit',
+        status: 'success',
+        message: `Updated captured thoughts on GitHub (${state.captures.length} remaining)`
+      });
+      commitSyncLogToGithub(token).catch(() => {});
     } catch (err) {
       console.warn('Could not sync capture deletion to GitHub:', err);
+      addSyncLog({
+        target: 'captures.json',
+        action: 'commit',
+        status: 'error',
+        message: 'Failed to sync capture deletion to GitHub',
+        details: err.message
+      });
+    } finally {
+      updateHeaderSyncStatus();
     }
   }
 }
@@ -1314,19 +1448,409 @@ async function commitCapturesToGithub(capturesData, token, maxRetries = 3) {
 async function syncCapturesManually() {
   const token = localStorage.getItem('active_desks_github_token');
   if (!token) {
+    addSyncLog({
+      target: 'captures.json',
+      action: 'commit',
+      status: 'warning',
+      message: 'Manual captures sync skipped: no GitHub token configured'
+    });
     showToast('GitHub token not set. Open Sync menu to configure.', '⚠️');
     return;
   }
   const syncBtn = document.getElementById('captures-manual-sync-btn');
   if (syncBtn) syncBtn.textContent = '⏳ Syncing...';
+  updateHeaderSyncStatus('syncing');
   try {
     await commitCapturesToGithub(state.captures || [], token);
+    addSyncLog({
+      target: 'captures.json',
+      action: 'commit',
+      status: 'success',
+      message: `Manually synced ${(state.captures || []).length} captured thoughts to GitHub`
+    });
     showToast('Thoughts synced to GitHub!', '☁️');
+    commitSyncLogToGithub(token).catch(() => {});
   } catch (err) {
     console.error('Manual captures sync failed:', err);
+    addSyncLog({
+      target: 'captures.json',
+      action: 'commit',
+      status: 'error',
+      message: 'Manual captures sync failed',
+      details: err.message
+    });
     showToast('Sync failed: check connection', '⚠️');
   } finally {
     if (syncBtn) syncBtn.textContent = '🔄 Sync to GitHub';
+    updateHeaderSyncStatus();
+  }
+}
+
+// --------------------------------------------------------------------------
+// Sync & Error Activity Logging Engine (sync-log.json)
+// --------------------------------------------------------------------------
+const SYNC_LOG_STORAGE_KEY = 'active_desks_sync_log';
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getSyncLogs() {
+  try {
+    const raw = localStorage.getItem(SYNC_LOG_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveSyncLogs(logs) {
+  try {
+    const trimmed = (logs || []).slice(0, 50);
+    localStorage.setItem(SYNC_LOG_STORAGE_KEY, JSON.stringify(trimmed));
+  } catch (e) {
+    console.warn('Could not save sync logs to localStorage', e);
+  }
+}
+
+function addSyncLog({ target, action, status, message, details = null }) {
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  const now = new Date();
+  const entry = {
+    id: Date.now() + Math.random().toString(36).substring(2, 6),
+    time: now.toISOString(),
+    displayTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    device: isMobile ? 'mobile' : 'desktop',
+    target: target || 'system',
+    action: action || 'sync',
+    status: status || 'info', // 'success', 'error', 'warning', 'info'
+    message: message || '',
+    details: details ? (typeof details === 'object' ? JSON.stringify(details) : String(details)) : null
+  };
+
+  const logs = getSyncLogs();
+  logs.unshift(entry);
+  saveSyncLogs(logs);
+
+  updateHeaderSyncStatus();
+  renderSyncLogs();
+  return entry;
+}
+
+function updateHeaderSyncStatus(overrideState) {
+  const badge = document.getElementById('header-sync-badge');
+  const dot = document.getElementById('header-sync-dot');
+  const text = document.getElementById('header-sync-text');
+  if (!badge || !dot || !text) return;
+
+  badge.classList.remove('syncing', 'error', 'warning');
+  dot.classList.remove('syncing', 'error', 'warning', 'offline');
+
+  if (overrideState === 'syncing') {
+    badge.classList.add('syncing');
+    dot.classList.add('syncing');
+    text.textContent = 'Syncing...';
+    return;
+  }
+
+  if (!navigator.onLine) {
+    dot.classList.add('offline');
+    text.textContent = 'Offline';
+    return;
+  }
+
+  const token = localStorage.getItem('active_desks_github_token');
+  if (!token) {
+    badge.classList.add('warning');
+    dot.classList.add('warning');
+    text.textContent = 'No Token';
+    return;
+  }
+
+  const logs = getSyncLogs();
+  if (logs.length > 0 && logs[0].status === 'error') {
+    badge.classList.add('error');
+    dot.classList.add('error');
+    text.textContent = 'Sync Error';
+    return;
+  }
+
+  text.textContent = 'Synced';
+}
+
+function renderSyncLogs() {
+  const listEl = document.getElementById('sync-log-list');
+  const badgeEl = document.getElementById('sync-log-summary-badge');
+  if (!listEl) return;
+
+  const logs = getSyncLogs();
+
+  if (badgeEl) {
+    const errorCount = logs.filter(l => l.status === 'error').length;
+    const token = localStorage.getItem('active_desks_github_token');
+    if (!token) {
+      badgeEl.style.background = 'rgba(245, 158, 11, 0.15)';
+      badgeEl.style.color = '#fbbf24';
+      badgeEl.textContent = 'No Token';
+    } else if (errorCount > 0) {
+      badgeEl.style.background = 'rgba(239, 68, 68, 0.15)';
+      badgeEl.style.color = '#f87171';
+      badgeEl.textContent = `${errorCount} Error${errorCount === 1 ? '' : 's'}`;
+    } else {
+      badgeEl.style.background = 'rgba(52, 211, 153, 0.15)';
+      badgeEl.style.color = '#34d399';
+      badgeEl.textContent = 'All Healthy';
+    }
+  }
+
+  if (logs.length === 0) {
+    listEl.innerHTML = '<div class="sync-log-empty">No sync events recorded yet.</div>';
+    return;
+  }
+
+  listEl.innerHTML = logs.map(log => `
+    <div class="sync-log-entry ${escapeHtml(log.status)}">
+      <div class="sync-log-header">
+        <div class="sync-log-meta">
+          <span class="sync-log-target">${escapeHtml(log.target)}</span>
+          <span class="sync-log-time">${escapeHtml(log.displayTime)}</span>
+        </div>
+        <span class="sync-log-status-pill ${escapeHtml(log.status)}">${escapeHtml(log.status)}</span>
+      </div>
+      <div class="sync-log-msg">${escapeHtml(log.message)}</div>
+      ${log.details ? `<div class="sync-log-details">${escapeHtml(log.details)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function clearSyncLogs() {
+  saveSyncLogs([]);
+  renderSyncLogs();
+  updateHeaderSyncStatus();
+  showToast('Sync log cleared', '🗑️');
+}
+
+function copySyncLogs() {
+  const logs = getSyncLogs();
+  if (logs.length === 0) {
+    showToast('No logs to copy', 'ℹ️');
+    return;
+  }
+
+  const text = logs.map(l => {
+    let line = `[${l.displayTime || l.time}] [${(l.status || 'INFO').toUpperCase()}] [${l.target}] ${l.message}`;
+    if (l.details) line += ` | Details: ${l.details}`;
+    return line;
+  }).join('\n');
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Sync log copied to clipboard!', '📋');
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('Sync log copied to clipboard!', '📋');
+  } catch (e) {
+    showToast('Could not copy log', '⚠️');
+  }
+  document.body.removeChild(ta);
+}
+
+async function testGitHubConnection() {
+  const btn = document.getElementById('test-connection-btn');
+  const originalText = btn ? btn.textContent : '';
+  if (btn) btn.textContent = '⏳ Testing...';
+
+  const token = localStorage.getItem('active_desks_github_token');
+  if (!token) {
+    addSyncLog({
+      target: 'auth',
+      action: 'test',
+      status: 'error',
+      message: 'No GitHub token configured on this device',
+      details: 'Save a GitHub Personal Access Token in Reading Settings or pair via QR.'
+    });
+    showToast('No GitHub token found', '⚠️');
+    if (btn) btn.textContent = originalText;
+    return;
+  }
+
+  try {
+    const res = await fetch('https://api.github.com/repos/soulless613-stack/active-desks', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json'
+      }
+    });
+
+    const rateRemaining = res.headers.get('x-ratelimit-remaining');
+
+    if (res.ok) {
+      const data = await res.json();
+      const pushAccess = data.permissions && data.permissions.push;
+      addSyncLog({
+        target: 'auth',
+        action: 'test',
+        status: 'success',
+        message: `GitHub token verified! Connected to ${data.full_name}`,
+        details: `Write permission: ${pushAccess ? 'YES' : 'NO'}. API calls remaining: ${rateRemaining || 'N/A'}`
+      });
+      showToast('GitHub token verified!', '✅');
+    } else {
+      const errText = await res.text();
+      addSyncLog({
+        target: 'auth',
+        action: 'test',
+        status: 'error',
+        message: `GitHub test failed: HTTP ${res.status}`,
+        details: errText.substring(0, 200)
+      });
+      showToast(`GitHub error: HTTP ${res.status}`, '⚠️');
+    }
+  } catch (err) {
+    addSyncLog({
+      target: 'auth',
+      action: 'test',
+      status: 'error',
+      message: 'Network connection failed during GitHub test',
+      details: err.message
+    });
+    showToast('Connection test failed', '⚠️');
+  } finally {
+    if (btn) btn.textContent = originalText;
+  }
+}
+
+async function commitSyncLogToGithub(token, maxRetries = 2) {
+  if (!token) token = localStorage.getItem('active_desks_github_token');
+  if (!token) return false;
+
+  const repo = 'soulless613-stack/active-desks';
+  const filePath = 'sync-log.json';
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+  const logs = getSyncLogs();
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let currentSha = null;
+    try {
+      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        currentSha = fileInfo.sha;
+      }
+    } catch (e) {
+      // Continue without SHA if file doesn't exist yet
+    }
+
+    const jsonString = JSON.stringify(logs, null, 2);
+    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const putBody = {
+      message: `Update sync & error log (${logs.length} events)`,
+      content: base64Content
+    };
+    if (currentSha) {
+      putBody.sha = currentSha;
+    }
+
+    try {
+      const putRes = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(putBody)
+      });
+
+      if (putRes.ok) {
+        return true;
+      }
+
+      if (putRes.status === 409 && attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, (attempt + 1) * 800));
+        continue;
+      }
+    } catch (netErr) {
+      return false;
+    }
+  }
+  return false;
+}
+
+async function flushSyncLogToGithubManual() {
+  const token = localStorage.getItem('active_desks_github_token');
+  if (!token) {
+    showToast('GitHub token not set. Open Sync menu to configure.', '⚠️');
+    return;
+  }
+  const btn = document.getElementById('push-log-btn');
+  if (btn) btn.textContent = '⏳ Pushing...';
+  try {
+    const ok = await commitSyncLogToGithub(token);
+    if (ok) {
+      showToast('Sync log pushed to GitHub!', '☁️');
+    } else {
+      showToast('Could not push log to GitHub', '⚠️');
+    }
+  } catch (err) {
+    showToast('Push log failed', '⚠️');
+  } finally {
+    if (btn) btn.textContent = '☁️ Push Log to GitHub';
+  }
+}
+
+async function fetchSyncLogFromRepo() {
+  try {
+    const res = await fetch('./sync-log.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const remoteLogs = await res.json();
+      if (Array.isArray(remoteLogs)) {
+        const localLogs = getSyncLogs();
+        let changed = false;
+        remoteLogs.forEach(r => {
+          if (!localLogs.some(l => l.id === r.id || (l.time === r.time && l.message === r.message))) {
+            localLogs.push(r);
+            changed = true;
+          }
+        });
+        if (changed) {
+          localLogs.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+          saveSyncLogs(localLogs);
+        }
+        renderSyncLogs();
+        updateHeaderSyncStatus();
+      }
+    }
+  } catch (e) {
+    // Offline or local server
   }
 }
 
@@ -1358,6 +1882,8 @@ async function updateCommitTag() {
 
 function openSyncModal() {
   updateCommitTag();
+  renderSyncLogs();
+  updateHeaderSyncStatus();
   document.getElementById('sync-modal').classList.add('active');
 }
 
@@ -1387,7 +1913,9 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchReadingFromRepo();
   fetchRecipeInboxFromRepo();
   fetchCapturesFromRepo();
+  fetchSyncLogFromRepo();
   checkDevicePairingHash();
+  updateHeaderSyncStatus();
 });
 
 window.addEventListener('hashchange', checkDevicePairingHash);

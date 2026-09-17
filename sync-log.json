@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "time": "2026-09-16T23:12:00.000Z",
+    "displayTime": "11:12 PM",
+    "device": "desktop",
+    "target": "system",
+    "action": "init",
+    "status": "success",
+    "message": "Sync & error log system initialized"
+  }
+]

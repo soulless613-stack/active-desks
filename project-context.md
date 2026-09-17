@@ -91,6 +91,12 @@
 * Stored in [`active-desks/captures.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/captures.json) on `main`.
 * Features deduplicating merge on page/modal load (`fetchCapturesFromRepo()`), automatic background push on capture or delete (`commitCapturesToGithub()`) with 409-conflict retry handling, and a manual "🔄 Sync to GitHub" button in the modal header.
 
+### 7. Dual-Layer Sync & Error Activity Log (`sync-log.json`)
+* **Live Status Badge**: Header `.sync-badge` reflects real-time status: Green (`Synced`), Pulsing Blue (`Syncing...`), Red (`Sync Error`), Amber (`No Token` / `Warning`).
+* **On-Device Logging**: All commit/fetch operations across `reading.json`, `recipe-inbox.json`, and `captures.json` log detailed timestamps, target files, status codes, and error bodies into `localStorage['active_desks_sync_log']` (ring buffer of 50 entries).
+* **Repository Sync (`sync-log.json`)**: Whenever connected and authorized, background sync flushes recent events to [`active-desks/sync-log.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/sync-log.json) via GitHub REST API so error logs can be inspected directly in the Antigravity IDE.
+* **Diagnostics UI**: The `#sync-modal` provides an on-screen log viewer, a "🔌 Test Connection" button to probe GitHub PAT permissions and rate limits, a "☁️ Push Log to GitHub" button, and "📋 Copy Log" / "🗑️ Clear Log" tools.
+
 ---
 
 ## 4. Reading Log & StoryGraph Integration: Research, Status & IDE Handoff

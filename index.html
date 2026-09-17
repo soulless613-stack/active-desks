@@ -32,9 +32,9 @@
         <button class="desk-action-btn" onclick="openBrainDumpModal()" title="View Saved Thoughts" style="font-size: 1.1rem; padding: 6px 10px;">
           🧠
         </button>
-        <div class="sync-badge" onclick="openSyncModal()" title="Device Sync & Backup">
-          <span class="sync-dot"></span>
-          <span class="sync-text">Synced</span>
+        <div class="sync-badge" id="header-sync-badge" onclick="openSyncModal()" title="Device Sync & Backup">
+          <span class="sync-dot" id="header-sync-dot"></span>
+          <span class="sync-text" id="header-sync-text">Synced</span>
         </div>
       </div>
     </header>
@@ -375,6 +375,44 @@
           <button class="quick-capture-btn" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: var(--accent-home); width: 100%; justify-content: center;" onclick="showPairingModal()">
             Show Setup QR Code
           </button>
+        </div>
+
+        <!-- Sync & Error Activity Log Section -->
+        <div style="background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1rem;">📋</span>
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0;">Sync & Error Log</h4>
+            </div>
+            <span id="sync-log-summary-badge" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; background: rgba(52, 211, 153, 0.15); color: #34d399; font-weight: 600;">
+              All Healthy
+            </span>
+          </div>
+
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">
+            Audit trail of cross-device commits to GitHub (<code style="color: var(--accent-spark); font-size: 0.75rem;">sync-log.json</code>).
+          </p>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+            <button type="button" id="test-connection-btn" class="quick-capture-btn" style="flex: 1; min-width: 120px; justify-content: center; font-size: 0.75rem; padding: 6px 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: var(--accent-home);" onclick="testGitHubConnection()">
+              🔌 Test Connection
+            </button>
+            <button type="button" id="push-log-btn" class="quick-capture-btn" style="flex: 1; min-width: 120px; justify-content: center; font-size: 0.75rem; padding: 6px 10px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc;" onclick="flushSyncLogToGithubManual()">
+              ☁️ Push Log to GitHub
+            </button>
+            <button type="button" class="quick-capture-btn" style="justify-content: center; font-size: 0.75rem; padding: 6px 10px; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-subtle); color: var(--text-secondary);" onclick="copySyncLogs()">
+              📋 Copy
+            </button>
+            <button type="button" class="quick-capture-btn" style="justify-content: center; font-size: 0.75rem; padding: 6px 10px; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border-subtle); color: var(--text-secondary);" onclick="clearSyncLogs()">
+              🗑️ Clear
+            </button>
+          </div>
+
+          <!-- Log entries list -->
+          <div id="sync-log-list" class="sync-log-container">
+            <!-- Populated dynamically -->
+          </div>
         </div>
       </div>
     </div>
