@@ -49,7 +49,7 @@
 * **Recipe Inbox & Link Queue (`recipe-inbox.json`)**:
   * Tap **"📥 Queue"** in the Kitchen Shelf header to quickly drop Instagram Reel or recipe links from mobile or desktop.
   * Links are stored in `state.recipeInbox` and synced to `recipe-inbox.json` on GitHub via REST API.
-  * In the Antigravity IDE, saying *"Process my recipe inbox"* batch-extracts queued links using Gemini, generates slug-case `recipes/<slug>.md` markdown files, registers them into `app.js`, and clears the queue.
+  * In the Antigravity IDE, saying *"Process my recipe inbox"* activates the [`active-desks-recipe-extractor`](file:///c:/Users/chris/Documents/antigravity/active-desks/.agents/skills/active-desks-recipe-extractor/SKILL.md) skill to autonomously extract queued links, locate creator blogs/grams, enforce 1-ingredient-per-checkbox formatting, generate `recipes/<slug>.md` markdown files, register them into `app.js`, clear the queue, bump the SW cache, and deploy to GitHub.
 * **Bundled Recipes** (Markdown source files stored in [`active-desks/recipes/`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/)):
   1. [`butter-chicken-mac-n-cheese.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/butter-chicken-mac-n-cheese.md) — 480 kcal, 45g P, 38g C, 16g F.
   2. [`crispy-potato-meatballs.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/crispy-potato-meatballs.md) — 410 kcal, 32g P, 28g C, 18g F.
