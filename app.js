@@ -667,12 +667,7 @@ async function fetchRecipeInboxFromRepo() {
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
-        if (!state.recipeInbox) state.recipeInbox = [];
-        data.forEach(remoteItem => {
-          if (!state.recipeInbox.some(localItem => localItem.url === remoteItem.url)) {
-            state.recipeInbox.push(remoteItem);
-          }
-        });
+        state.recipeInbox = data;
         saveState();
         renderRecipeInbox();
       }
@@ -1367,17 +1362,8 @@ async function fetchCapturesFromRepo() {
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
-        if (!state.captures) state.captures = [];
-        let changed = false;
-        data.forEach(remoteItem => {
-          if (!state.captures.some(localItem => localItem.id === remoteItem.id || localItem.text === remoteItem.text)) {
-            state.captures.push(remoteItem);
-            changed = true;
-          }
-        });
-        if (changed) {
-          saveState();
-        }
+        state.captures = data;
+        saveState();
         renderCaptures();
       }
     }
