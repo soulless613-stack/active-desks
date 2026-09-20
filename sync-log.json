@@ -1,5 +1,16 @@
 [
   {
+    "id": "1789935256623bjcl",
+    "time": "2026-09-20T20:14:16.623Z",
+    "displayTime": "04:14:16 PM",
+    "device": "mobile",
+    "target": "reading.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Synced reading progress: Rhythm of War (132/1230 pages)",
+    "details": null
+  },
+  {
     "id": "1789769000000clr",
     "time": "2026-09-19T21:24:00.000Z",
     "displayTime": "05:24:00 PM",
