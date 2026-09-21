@@ -88,7 +88,12 @@
       <article class="desk-card" aria-label="Fiber Arts Workbench">
         <div class="desk-top">
           <span class="desk-badge fiber">🧶 Fiber Arts</span>
-          <span class="meta-pill" id="fiber-type">Knitting WIP</span>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span class="meta-pill" id="fiber-type">Knitting WIP</span>
+            <button class="desk-action-btn" onclick="openFiberModal()" title="Edit Fiber Project" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+              ✏️ Update
+            </button>
+          </div>
         </div>
 
         <div>
@@ -112,7 +117,7 @@
           <a id="fiber-link" href="https://www.ravelry.com" target="_blank" class="desk-link">
             <span>Open Ravelry</span> ↗
           </a>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Tap + to count</span>
+          <span id="fiber-sync-status" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
         </div>
       </article>
 
@@ -187,7 +192,12 @@
       <article class="desk-card" aria-label="Gaming Rig">
         <div class="desk-top">
           <span class="desk-badge gaming">🎮 Game Rig</span>
-          <span class="meta-pill" id="gaming-platform">PC / Steam</span>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span class="meta-pill" id="gaming-platform">PC / Steam</span>
+            <button class="desk-action-btn" onclick="openGamingModal()" title="Edit Game Quest" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+              ✏️ Update
+            </button>
+          </div>
         </div>
 
         <div>
@@ -207,7 +217,7 @@
           <a id="gaming-link" href="https://bg3.wiki" target="_blank" class="desk-link">
             <span>Game Wiki</span> ↗
           </a>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">Current Goal</span>
+          <span id="gaming-updated-tag" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
         </div>
       </article>
 
@@ -545,6 +555,88 @@
             Done
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Fiber Arts Project -->
+  <div id="fiber-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">🧶</span>
+          <h3 class="modal-title">Edit Fiber Arts Project</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('fiber-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="handleFiberSave(event)" style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <label class="input-label" for="edit-fiber-title">Project Name</label>
+            <input type="text" id="edit-fiber-title" class="form-input" required placeholder="e.g. Autumn Cardigan">
+          </div>
+          <div>
+            <label class="input-label" for="edit-fiber-type">Craft / WIP Type</label>
+            <input type="text" id="edit-fiber-type" class="form-input" required placeholder="e.g. Knitting WIP, Crochet, Embroidery">
+          </div>
+          <div>
+            <label class="input-label" for="edit-fiber-specs">Yarn & Needle Specs</label>
+            <input type="text" id="edit-fiber-specs" class="form-input" placeholder="e.g. US 7 (4.5mm) • DK Weight">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label class="input-label" for="edit-fiber-rows">Current Row</label>
+              <input type="number" id="edit-fiber-rows" class="form-input" required min="0" placeholder="e.g. 44">
+            </div>
+            <div>
+              <label class="input-label" for="edit-fiber-target">Target Rows (Optional)</label>
+              <input type="number" id="edit-fiber-target" class="form-input" min="0" placeholder="e.g. 120">
+            </div>
+          </div>
+          <div>
+            <label class="input-label" for="edit-fiber-link">Pattern / Notes Link</label>
+            <input type="url" id="edit-fiber-link" class="form-input" placeholder="https://www.ravelry.com/patterns/library/...">
+          </div>
+          <button type="submit" class="quick-capture-btn" id="fiber-save-btn" style="justify-content: center; margin-top: 4px;">
+            <span>💾 Save & Sync to GitHub</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Gaming Rig Quest -->
+  <div id="gaming-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">🎮</span>
+          <h3 class="modal-title">Edit Gaming Rig Quest</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('gaming-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="handleGamingSave(event)" style="display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <label class="input-label" for="edit-gaming-title">Game Title</label>
+            <input type="text" id="edit-gaming-title" class="form-input" required placeholder="e.g. Baldur's Gate 3">
+          </div>
+          <div>
+            <label class="input-label" for="edit-gaming-platform">Platform / Status</label>
+            <input type="text" id="edit-gaming-platform" class="form-input" required placeholder="e.g. PC / Steam, Switch, PS5">
+          </div>
+          <div>
+            <label class="input-label" for="edit-gaming-quest">Active Quest / Goal</label>
+            <textarea id="edit-gaming-quest" class="form-input" rows="3" required placeholder="e.g. Underdark: Forge the Adamantine armor..."></textarea>
+          </div>
+          <div>
+            <label class="input-label" for="edit-gaming-link">Wiki or Guide Link</label>
+            <input type="url" id="edit-gaming-link" class="form-input" placeholder="https://bg3.wiki">
+          </div>
+          <button type="submit" class="quick-capture-btn" id="gaming-save-btn" style="justify-content: center; margin-top: 4px;">
+            <span>💾 Save & Sync to GitHub</span>
+          </button>
+        </form>
       </div>
     </div>
   </div>

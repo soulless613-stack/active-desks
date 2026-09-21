@@ -40,9 +40,12 @@
 
 ## 3. Current Feature Catalog & Implementation Details
 
-### 1. Daily 3 Anchors (Top Banner)
+### 1. Daily 3 Anchors (Top Banner & `anchors.json`)
 * Tracks three daily core rhythms: **Home** (Family/Chores), **Body** (Walk/Workout), **Spark** (Hobbies/Audiobook).
 * Tap to mark complete. Automatically resets on calendar-day change without guilt streaks or punitive mechanics.
+* **Cross-Device Repository Sync (`anchors.json`)**:
+  * Check/uncheck states sync to `anchors.json` on GitHub with 1.5s debounce.
+  * Date-aware: on startup (`fetchAnchorsFromRepo()`), if the remote record is from a previous calendar day, the local midnight reset is preserved.
 
 ### 2. Kitchen & Recipe Shelf Desk
 * **Recipe Selector**: Compact `<select id="recipe-select">` dropdown list selector with custom chevron styling. Effortlessly scales from 3 to 30+ recipes without crowding mobile screens.
@@ -63,11 +66,14 @@
   * `commitRecipeInboxToGithub()` features automatic 409-conflict retries with exponential backoff and `no-store` cache-busting to prevent SHA collisions during rapid successive mobile queues.
   * Includes a **"🔄 Sync to GitHub"** button in the Recipe Inbox modal for on-demand manual pushes.
 
-### 3. Fiber Arts Desk
-* Knitting WIP tracker (US 7 / 4.5mm needles, worsted yarn).
-* Large, thumb-friendly `+` and `−` row counter with quick-reset dialog.
+### 3. Fiber Arts Desk (`fiber.json`)
+* Knitting & crochet WIP tracker with row counter, target row goals, needle/yarn specs, and pattern links.
+* **5-Minute Inactivity Debounce + Instant Flush**:
+  * Tapping `+`/`−` updates local count and starts/resets a 5-minute inactivity debounce timer.
+  * **Instant Flush on Mobile Sleep / App Switch**: When phone screen locks or user switches apps / changes tabs (`document.visibilityState === 'hidden'` or `pagehide`), the app instantly flushes the latest count to `fiber.json` before the OS can freeze background timers.
+* **✏️ Update Modal**: Modal allows editing project title, WIP type, yarn/needle specs, target rows, and pattern link, committing immediately to GitHub.
 
-### 4. Reading Nook Desk & Cross-Device Sync
+### 4. Reading Nook Desk & Cross-Device Sync (`reading.json`)
 * **Current State**: Tracking *Oathbringer* by Brandon Sanderson (pages 1119/1243, 90%).
 * **Gemini Vision Screenshot Parsing**:
   * Uploading a screenshot of The StoryGraph or Kindle triggers client-side OCR via `gemini-3.6-flash:generateContent`.
@@ -83,8 +89,9 @@
 * **Commit Verification Tag**:
   * The `#sync-modal` header displays the running commit hash (`#ea2ab15` / `#...`) in grey monospace next to "Phone & Device Sync". This allows instant verification of whether mobile has reloaded the latest deployment or is still serving a cached Service Worker bundle.
 
-### 5. Game Rig Desk
-* Current game: *Baldur's Gate 3* with active quest tracker and wiki quick-link.
+### 5. Game Rig Desk (`gaming.json`)
+* Tracks active playthrough (*Baldur's Gate 3*), gaming platform (PC / Steam, Switch, PS5), active quest/secrets goal, and wiki link.
+* **✏️ Update Modal**: Modal allows updating game title, platform, active quest note, and wiki link, syncing directly to `gaming.json` on GitHub.
 
 ### 6. Quick Capture Bar & Cross-Device Sync (`captures.json`)
 * Always-available quick note capture dock storing stray thoughts directly into `localStorage` and syncing across devices via GitHub REST API.
@@ -93,7 +100,7 @@
 
 ### 7. Dual-Layer Sync & Error Activity Log (`sync-log.json`)
 * **Live Status Badge**: Header `.sync-badge` reflects real-time status: Green (`Synced`), Pulsing Blue (`Syncing...`), Red (`Sync Error`), Amber (`No Token` / `Warning`).
-* **On-Device Logging**: All commit/fetch operations across `reading.json`, `recipe-inbox.json`, and `captures.json` log detailed timestamps, target files, status codes, and error bodies into `localStorage['active_desks_sync_log']` (ring buffer of 50 entries).
+* **On-Device Logging**: All commit/fetch operations across `reading.json`, `recipe-inbox.json`, `captures.json`, `fiber.json`, `gaming.json`, and `anchors.json` log detailed timestamps, target files, status codes, and error bodies into `localStorage['active_desks_sync_log']` (ring buffer of 50 entries).
 * **Repository Sync (`sync-log.json`)**: Whenever connected and authorized, background sync flushes recent events to [`active-desks/sync-log.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/sync-log.json) via GitHub REST API so error logs can be inspected directly in the Antigravity IDE.
 * **Diagnostics UI**: The `#sync-modal` provides an on-screen log viewer, a "🔌 Test Connection" button to probe GitHub PAT permissions and rate limits, a "☁️ Push Log to GitHub" button, and "📋 Copy Log" / "🗑️ Clear Log" tools.
 

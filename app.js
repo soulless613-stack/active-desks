@@ -17,9 +17,11 @@ const DEFAULT_STATE = {
       name: 'Autumn Cardigan',
       type: 'Knitting WIP',
       rows: 44,
+      targetRows: 120,
       specs: 'US 7 (4.5mm) • DK Weight',
       linkText: 'Open Ravelry',
-      linkUrl: 'https://www.ravelry.com'
+      linkUrl: 'https://www.ravelry.com',
+      lastUpdated: null
     },
     recipe: {
       selectedIndex: 0,
@@ -255,8 +257,9 @@ const DEFAULT_STATE = {
       title: "Baldur's Gate 3",
       platform: "PC / Steam",
       quest: "Underdark: Forge the Adamantine armor & find Grymforge secrets.",
-      linkText: "View Quest Wiki",
-      linkUrl: "https://bg3.wiki"
+      linkText: "Game Wiki",
+      linkUrl: "https://bg3.wiki",
+      lastUpdated: null
     }
   },
   captures: [
@@ -311,6 +314,16 @@ function loadState() {
       // Ensure recipeInbox exists
       if (!Array.isArray(parsed.recipeInbox)) {
         parsed.recipeInbox = [];
+      }
+
+      // Ensure fiber defaults
+      if (parsed.desks && parsed.desks.fiber) {
+        if (parsed.desks.fiber.targetRows === undefined) parsed.desks.fiber.targetRows = 120;
+      }
+
+      // Ensure gaming defaults
+      if (parsed.desks && !parsed.desks.gaming) {
+        parsed.desks.gaming = JSON.parse(JSON.stringify(DEFAULT_STATE.desks.gaming));
       }
 
       return parsed;
@@ -394,28 +407,377 @@ function renderBuckets() {
 function toggleBucket(key) {
   state.buckets[key].checked = !state.buckets[key].checked;
   saveState();
+  scheduleAnchorsSync();
+}
+
+let anchorsSyncTimer = null;
+
+function scheduleAnchorsSync() {
+  if (anchorsSyncTimer) clearTimeout(anchorsSyncTimer);
+  anchorsSyncTimer = setTimeout(() => {
+    flushAnchorsSync();
+  }, 1500);
+}
+
+async function flushAnchorsSync() {
+  if (anchorsSyncTimer) {
+    clearTimeout(anchorsSyncTimer);
+    anchorsSyncTimer = null;
+  }
+  const token = localStorage.getItem('active_desks_github_token');
+  const today = new Date().toISOString().split('T')[0];
+  const payload = {
+    date: today,
+    home: !!state.buckets.home.checked,
+    body: !!state.buckets.body.checked,
+    spark: !!state.buckets.spark.checked,
+    lastUpdated: new Date().toISOString()
+  };
+
+  if (token) {
+    updateHeaderSyncStatus('syncing');
+    try {
+      await commitAnchorsToGithub(payload, token);
+      const count = [payload.home, payload.body, payload.spark].filter(Boolean).length;
+      addSyncLog({
+        target: 'anchors.json',
+        action: 'commit',
+        status: 'success',
+        message: `Synced daily anchors (${count}/3 complete)`
+      });
+      commitSyncLogToGithub(token).catch(() => {});
+    } catch (err) {
+      console.warn('Could not sync anchors to GitHub:', err);
+      addSyncLog({
+        target: 'anchors.json',
+        action: 'commit',
+        status: 'error',
+        message: 'Failed to sync anchors to GitHub',
+        details: err.message
+      });
+    } finally {
+      updateHeaderSyncStatus();
+    }
+  } else {
+    addSyncLog({
+      target: 'anchors.json',
+      action: 'commit',
+      status: 'warning',
+      message: 'Daily anchors saved locally; no GitHub token configured'
+    });
+  }
+}
+
+async function commitAnchorsToGithub(anchorsData, token, maxRetries = 3) {
+  const repo = 'soulless613-stack/active-desks';
+  const filePath = 'anchors.json';
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let currentSha = null;
+    try {
+      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        currentSha = fileInfo.sha;
+      }
+    } catch (e) {
+      console.warn('Could not fetch anchors.json SHA', e);
+    }
+
+    const jsonString = JSON.stringify(anchorsData, null, 2);
+    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const count = [anchorsData.home, anchorsData.body, anchorsData.spark].filter(Boolean).length;
+    const putBody = {
+      message: `Update daily anchors: ${anchorsData.date} (${count}/3)`,
+      content: base64Content
+    };
+    if (currentSha) {
+      putBody.sha = currentSha;
+    }
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(putBody)
+    });
+
+    if (putRes.ok) return true;
+
+    if (putRes.status === 409 && attempt < maxRetries) {
+      console.warn(`GitHub SHA collision on anchors.json (attempt ${attempt + 1}), retrying...`);
+      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
+      continue;
+    }
+
+    const errText = await putRes.text();
+    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
+  }
+}
+
+async function fetchAnchorsFromRepo() {
+  try {
+    const res = await fetch('./anchors.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      const today = new Date().toISOString().split('T')[0];
+      if (data && data.date === today) {
+        state.buckets.home.checked = !!data.home;
+        state.buckets.body.checked = !!data.body;
+        state.buckets.spark.checked = !!data.spark;
+        saveState();
+        renderBuckets();
+      }
+    }
+  } catch (e) {
+    console.log('Using local anchors state (offline or local server)');
+  }
 }
 
 // --------------------------------------------------------------------------
-// Fiber Arts Desk
+// Fiber Arts Desk (5-min Debounce + Instant Flush on App Switch/Phone Lock)
 // --------------------------------------------------------------------------
+let fiberSyncTimer = null;
+let fiberPendingSync = false;
+const FIBER_DEBOUNCE_MS = 5 * 60 * 1000; // 5 minutes inactivity debounce
+
 function renderFiberDesk() {
   const f = state.desks.fiber;
-  document.getElementById('fiber-title').textContent = f.name;
-  document.getElementById('fiber-type').textContent = f.type;
-  document.getElementById('fiber-specs').textContent = f.specs;
-  document.getElementById('fiber-rows').textContent = f.rows;
+  const titleEl = document.getElementById('fiber-title');
+  const typeEl = document.getElementById('fiber-type');
+  const specsEl = document.getElementById('fiber-specs');
+  const rowsEl = document.getElementById('fiber-rows');
+  const linkEl = document.getElementById('fiber-link');
+  const syncStatusEl = document.getElementById('fiber-sync-status');
+
+  if (titleEl) titleEl.textContent = f.name;
+  if (typeEl) typeEl.textContent = f.type;
+  if (specsEl) specsEl.textContent = f.specs;
+  if (rowsEl) rowsEl.textContent = f.rows;
   
-  const link = document.getElementById('fiber-link');
-  if (link) {
-    link.textContent = f.linkText || 'Open Pattern';
-    link.href = f.linkUrl || '#';
+  if (linkEl) {
+    linkEl.textContent = f.linkText || 'Open Ravelry';
+    linkEl.href = f.linkUrl || '#';
+  }
+
+  if (syncStatusEl) {
+    if (fiberPendingSync) {
+      syncStatusEl.textContent = '⏳ Sync pending...';
+      syncStatusEl.style.color = 'var(--accent-spark)';
+    } else if (f.lastUpdated) {
+      const timeStr = new Date(f.lastUpdated).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      syncStatusEl.textContent = `Updated ${timeStr}`;
+      syncStatusEl.style.color = 'var(--text-muted)';
+    } else {
+      syncStatusEl.textContent = 'Synced';
+      syncStatusEl.style.color = 'var(--text-muted)';
+    }
   }
 }
 
 function changeRows(delta) {
   state.desks.fiber.rows = Math.max(0, state.desks.fiber.rows + delta);
   saveState();
+  scheduleFiberRowSync();
+}
+
+function scheduleFiberRowSync() {
+  fiberPendingSync = true;
+  const syncStatusEl = document.getElementById('fiber-sync-status');
+  if (syncStatusEl) {
+    syncStatusEl.textContent = '⏳ Sync pending (5m or app switch)';
+    syncStatusEl.style.color = 'var(--accent-spark)';
+  }
+
+  if (fiberSyncTimer) {
+    clearTimeout(fiberSyncTimer);
+  }
+  fiberSyncTimer = setTimeout(() => {
+    flushFiberSync();
+  }, FIBER_DEBOUNCE_MS);
+}
+
+async function flushFiberSync() {
+  if (!fiberPendingSync) return;
+  if (fiberSyncTimer) {
+    clearTimeout(fiberSyncTimer);
+    fiberSyncTimer = null;
+  }
+  fiberPendingSync = false;
+
+  const token = localStorage.getItem('active_desks_github_token');
+  const f = state.desks.fiber;
+  f.lastUpdated = new Date().toISOString();
+  saveState();
+
+  if (token) {
+    updateHeaderSyncStatus('syncing');
+    const syncStatusEl = document.getElementById('fiber-sync-status');
+    if (syncStatusEl) {
+      syncStatusEl.textContent = '⏳ Syncing...';
+      syncStatusEl.style.color = 'var(--accent-fiber)';
+    }
+    try {
+      await commitFiberToGithub(f, token);
+      addSyncLog({
+        target: 'fiber.json',
+        action: 'commit',
+        status: 'success',
+        message: `Synced fiber arts (${f.name}: Row ${f.rows})`
+      });
+      showToast('Fiber craft synced to GitHub!', '🧶');
+      commitSyncLogToGithub(token).catch(() => {});
+    } catch (err) {
+      console.warn('Could not sync fiber craft to GitHub:', err);
+      addSyncLog({
+        target: 'fiber.json',
+        action: 'commit',
+        status: 'error',
+        message: 'Failed to sync fiber craft to GitHub',
+        details: err.message
+      });
+      showToast('Fiber saved locally; GitHub sync error', '⚠️');
+    } finally {
+      updateHeaderSyncStatus();
+      renderFiberDesk();
+    }
+  } else {
+    addSyncLog({
+      target: 'fiber.json',
+      action: 'commit',
+      status: 'warning',
+      message: 'Fiber saved locally; no GitHub token configured'
+    });
+    renderFiberDesk();
+  }
+}
+
+async function commitFiberToGithub(fiberData, token, maxRetries = 3) {
+  const repo = 'soulless613-stack/active-desks';
+  const filePath = 'fiber.json';
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let currentSha = null;
+    try {
+      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        currentSha = fileInfo.sha;
+      }
+    } catch (e) {
+      console.warn('Could not fetch fiber.json SHA', e);
+    }
+
+    const jsonString = JSON.stringify(fiberData, null, 2);
+    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const putBody = {
+      message: `Update fiber progress: ${fiberData.name} (Row ${fiberData.rows})`,
+      content: base64Content
+    };
+    if (currentSha) {
+      putBody.sha = currentSha;
+    }
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(putBody)
+    });
+
+    if (putRes.ok) return true;
+
+    if (putRes.status === 409 && attempt < maxRetries) {
+      console.warn(`GitHub SHA collision on fiber.json (attempt ${attempt + 1}), retrying...`);
+      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
+      continue;
+    }
+
+    const errText = await putRes.text();
+    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
+  }
+}
+
+async function fetchFiberFromRepo() {
+  try {
+    const res = await fetch('./fiber.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.name) {
+        state.desks.fiber.name = data.name;
+        if (data.type) state.desks.fiber.type = data.type;
+        if (data.specs) state.desks.fiber.specs = data.specs;
+        if (data.rows !== undefined) state.desks.fiber.rows = data.rows;
+        if (data.targetRows !== undefined) state.desks.fiber.targetRows = data.targetRows;
+        if (data.linkText) state.desks.fiber.linkText = data.linkText;
+        if (data.linkUrl) state.desks.fiber.linkUrl = data.linkUrl;
+        if (data.lastUpdated) state.desks.fiber.lastUpdated = data.lastUpdated;
+        saveState();
+        renderFiberDesk();
+      }
+    }
+  } catch (e) {
+    console.log('Using local fiber state (offline or local server)');
+  }
+}
+
+function openFiberModal() {
+  const f = state.desks.fiber;
+  document.getElementById('edit-fiber-title').value = f.name || '';
+  document.getElementById('edit-fiber-type').value = f.type || '';
+  document.getElementById('edit-fiber-specs').value = f.specs || '';
+  document.getElementById('edit-fiber-rows').value = f.rows !== undefined ? f.rows : 0;
+  document.getElementById('edit-fiber-target').value = f.targetRows || '';
+  document.getElementById('edit-fiber-link').value = f.linkUrl || '';
+  document.getElementById('fiber-modal').classList.add('active');
+}
+
+async function handleFiberSave(e) {
+  if (e) e.preventDefault();
+  const title = document.getElementById('edit-fiber-title').value.trim();
+  const type = document.getElementById('edit-fiber-type').value.trim();
+  const specs = document.getElementById('edit-fiber-specs').value.trim();
+  const rows = parseInt(document.getElementById('edit-fiber-rows').value, 10) || 0;
+  const targetVal = document.getElementById('edit-fiber-target').value.trim();
+  const targetRows = targetVal ? (parseInt(targetVal, 10) || null) : null;
+  const linkUrl = document.getElementById('edit-fiber-link').value.trim();
+
+  state.desks.fiber.name = title;
+  state.desks.fiber.type = type;
+  state.desks.fiber.specs = specs;
+  state.desks.fiber.rows = rows;
+  state.desks.fiber.targetRows = targetRows;
+  if (linkUrl) state.desks.fiber.linkUrl = linkUrl;
+  state.desks.fiber.lastUpdated = new Date().toISOString();
+
+  saveState();
+  closeModal('fiber-modal');
+
+  // Modal save triggers immediate flush/sync
+  fiberPendingSync = true;
+  await flushFiberSync();
 }
 
 // --------------------------------------------------------------------------
@@ -884,6 +1246,23 @@ function saveApiKeys() {
   }
 }
 
+async function testGitHubConnection() {
+  const token = localStorage.getItem('active_desks_github_token');
+  if (!token) return;
+  try {
+    const res = await fetch('https://api.github.com/user', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json'
+      }
+    });
+    if (res.ok) {
+      const u = await res.json();
+      showToast(`GitHub connected as @${u.login}`, '☁️');
+    }
+  } catch (e) {}
+}
+
 // --------------------------------------------------------------------------
 // On-Screen QR Code Device Pairing
 // --------------------------------------------------------------------------
@@ -1229,18 +1608,170 @@ async function commitReadingToGithub(readingData, token) {
 }
 
 // --------------------------------------------------------------------------
-// Gaming Rig Desk
+// Gaming Rig Desk (Cross-Device Cloud Sync)
 // --------------------------------------------------------------------------
 function renderGamingDesk() {
   const g = state.desks.gaming;
-  document.getElementById('gaming-title').textContent = g.title;
-  document.getElementById('gaming-platform').textContent = g.platform;
-  document.getElementById('gaming-quest').textContent = g.quest;
+  const titleEl = document.getElementById('gaming-title');
+  const platformEl = document.getElementById('gaming-platform');
+  const questEl = document.getElementById('gaming-quest');
+  const linkEl = document.getElementById('gaming-link');
+  const updatedTag = document.getElementById('gaming-updated-tag');
+
+  if (titleEl) titleEl.textContent = g.title;
+  if (platformEl) platformEl.textContent = g.platform;
+  if (questEl) questEl.textContent = g.quest;
   
-  const link = document.getElementById('gaming-link');
-  if (link) {
-    link.textContent = g.linkText || 'Game Wiki';
-    link.href = g.linkUrl || '#';
+  if (linkEl) {
+    linkEl.textContent = g.linkText || 'Game Wiki';
+    linkEl.href = g.linkUrl || '#';
+  }
+
+  if (updatedTag && g.lastUpdated) {
+    const timeStr = new Date(g.lastUpdated).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    updatedTag.textContent = `Updated ${timeStr}`;
+  }
+}
+
+function openGamingModal() {
+  const g = state.desks.gaming;
+  document.getElementById('edit-gaming-title').value = g.title || '';
+  document.getElementById('edit-gaming-platform').value = g.platform || '';
+  document.getElementById('edit-gaming-quest').value = g.quest || '';
+  document.getElementById('edit-gaming-link').value = g.linkUrl || '';
+  document.getElementById('gaming-modal').classList.add('active');
+}
+
+async function handleGamingSave(e) {
+  if (e) e.preventDefault();
+  const title = document.getElementById('edit-gaming-title').value.trim();
+  const platform = document.getElementById('edit-gaming-platform').value.trim();
+  const quest = document.getElementById('edit-gaming-quest').value.trim();
+  const linkUrl = document.getElementById('edit-gaming-link').value.trim();
+  const now = new Date().toISOString();
+
+  state.desks.gaming.title = title;
+  state.desks.gaming.platform = platform;
+  state.desks.gaming.quest = quest;
+  if (linkUrl) state.desks.gaming.linkUrl = linkUrl;
+  state.desks.gaming.lastUpdated = now;
+
+  saveState();
+  closeModal('gaming-modal');
+  showToast('Game quest updated!', '🎮');
+
+  const token = localStorage.getItem('active_desks_github_token');
+  if (token) {
+    updateHeaderSyncStatus('syncing');
+    try {
+      await commitGamingToGithub(state.desks.gaming, token);
+      addSyncLog({
+        target: 'gaming.json',
+        action: 'commit',
+        status: 'success',
+        message: `Synced gaming quest: ${title} (${platform})`
+      });
+      showToast('Gaming synced to GitHub!', '☁️');
+      commitSyncLogToGithub(token).catch(() => {});
+    } catch (err) {
+      console.warn('Could not sync gaming to GitHub:', err);
+      addSyncLog({
+        target: 'gaming.json',
+        action: 'commit',
+        status: 'error',
+        message: 'Failed to sync gaming to GitHub',
+        details: err.message
+      });
+      showToast('Game saved locally; GitHub sync error', '⚠️');
+    } finally {
+      updateHeaderSyncStatus();
+      renderGamingDesk();
+    }
+  } else {
+    addSyncLog({
+      target: 'gaming.json',
+      action: 'commit',
+      status: 'warning',
+      message: 'Game saved locally; no GitHub token configured'
+    });
+  }
+}
+
+async function commitGamingToGithub(gamingData, token, maxRetries = 3) {
+  const repo = 'soulless613-stack/active-desks';
+  const filePath = 'gaming.json';
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let currentSha = null;
+    try {
+      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        currentSha = fileInfo.sha;
+      }
+    } catch (e) {
+      console.warn('Could not fetch gaming.json SHA', e);
+    }
+
+    const jsonString = JSON.stringify(gamingData, null, 2);
+    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const putBody = {
+      message: `Update game quest: ${gamingData.title} (${gamingData.platform})`,
+      content: base64Content
+    };
+    if (currentSha) {
+      putBody.sha = currentSha;
+    }
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(putBody)
+    });
+
+    if (putRes.ok) return true;
+
+    if (putRes.status === 409 && attempt < maxRetries) {
+      console.warn(`GitHub SHA collision on gaming.json (attempt ${attempt + 1}), retrying...`);
+      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
+      continue;
+    }
+
+    const errText = await putRes.text();
+    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
+  }
+}
+
+async function fetchGamingFromRepo() {
+  try {
+    const res = await fetch('./gaming.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.title) {
+        state.desks.gaming.title = data.title;
+        if (data.platform) state.desks.gaming.platform = data.platform;
+        if (data.quest) state.desks.gaming.quest = data.quest;
+        if (data.linkText) state.desks.gaming.linkText = data.linkText;
+        if (data.linkUrl) state.desks.gaming.linkUrl = data.linkUrl;
+        if (data.lastUpdated) state.desks.gaming.lastUpdated = data.lastUpdated;
+        saveState();
+        renderGamingDesk();
+      }
+    }
+  } catch (e) {
+    console.log('Using local gaming state (offline or local server)');
   }
 }
 
@@ -1893,12 +2424,27 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Flush pending syncs on screen lock / app switch / tab hidden / close
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    if (fiberPendingSync) flushFiberSync();
+    if (anchorsSyncTimer) flushAnchorsSync();
+  }
+});
+window.addEventListener('pagehide', () => {
+  if (fiberPendingSync) flushFiberSync();
+  if (anchorsSyncTimer) flushAnchorsSync();
+});
+
 // Initial render
 document.addEventListener('DOMContentLoaded', () => {
   render();
   fetchReadingFromRepo();
   fetchRecipeInboxFromRepo();
   fetchCapturesFromRepo();
+  fetchFiberFromRepo();
+  fetchGamingFromRepo();
+  fetchAnchorsFromRepo();
   fetchSyncLogFromRepo();
   checkDevicePairingHash();
   updateHeaderSyncStatus();
