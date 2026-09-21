@@ -68,10 +68,8 @@
 
 ### 3. Fiber Arts Desk (`fiber.json`)
 * Knitting & crochet WIP tracker with row counter, target row goals, needle/yarn specs, and pattern links.
-* **5-Minute Inactivity Debounce + Instant Flush**:
-  * Tapping `+`/`−` updates local count and starts/resets a 5-minute inactivity debounce timer.
-  * **Instant Flush on Mobile Sleep / App Switch**: When phone screen locks or user switches apps / changes tabs (`document.visibilityState === 'hidden'` or `pagehide`), the app instantly flushes the latest count to `fiber.json` before the OS can freeze background timers.
-* **✏️ Update Modal**: Modal allows editing project title, WIP type, yarn/needle specs, target rows, and pattern link, committing immediately to GitHub.
+* **Instant Local Row Changes**: Tapping `+`/`−` immediately persists to `localStorage`, re-renders the UI with zero delay, and marks `fiber.json` dirty for background batch sync.
+* **✏️ Update Modal**: Modal allows editing project title, WIP type, yarn/needle specs, target rows, and pattern link. Features instant local save (`💾 Save Changes`) and on-demand cloud sync (`🔄 Sync to GitHub`).
 
 ### 4. Reading Nook Desk & Cross-Device Sync (`reading.json`)
 * **Current State**: Tracking *Oathbringer* by Brandon Sanderson (pages 1119/1243, 90%).
@@ -80,8 +78,8 @@
   * *Model Note*: Google AI Studio retired `gemini-2.5-flash` (returns 404). Always use `gemini-3.6-flash`.
   * Prompts the model to return structured JSON: `{ title, author, current_progress, total_progress, unit, percentage }`.
 * **Cross-Device Repository Sync (`reading.json`)**:
-  * Reads and commits reading progress directly to `reading.json` on `main` via GitHub REST API (`GET`/`PUT /repos/soulless613-stack/active-desks/contents/reading.json`).
-  * Both desktop and mobile remain synchronized in real time.
+  * Reads and commits reading progress directly via unified `githubGet`/`githubPut` engine.
+  * Manual edits and screenshot parses save locally instantly and mark `reading.json` dirty.
 * **On-Screen QR Code Device Pairing**:
   * Embedded local library [`qrious.min.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/qrious.min.js) (~17KB, zero CDN reliance).
   * Clicking "Show Mobile Pairing QR Code" generates a QR code encoding `#setup=<base64-json>` containing the Gemini Key and GitHub PAT.
@@ -91,17 +89,24 @@
 
 ### 5. Game Rig Desk (`gaming.json`)
 * Tracks active playthrough (*Baldur's Gate 3*), gaming platform (PC / Steam, Switch, PS5), active quest/secrets goal, and wiki link.
-* **✏️ Update Modal**: Modal allows updating game title, platform, active quest note, and wiki link, syncing directly to `gaming.json` on GitHub.
+* **✏️ Update Modal**: Modal allows updating game title, platform, active quest note, and wiki link with instant local save and optional immediate sync button.
 
 ### 6. Quick Capture Bar & Cross-Device Sync (`captures.json`)
-* Always-available quick note capture dock storing stray thoughts directly into `localStorage` and syncing across devices via GitHub REST API.
+* Always-available quick note capture dock storing stray thoughts directly into `localStorage` and syncing across devices.
 * Stored in [`active-desks/captures.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/captures.json) on `main`.
-* Features deduplicating merge on page/modal load (`fetchCapturesFromRepo()`), automatic background push on capture or delete (`commitCapturesToGithub()`) with 409-conflict retry handling, and a manual "🔄 Sync to GitHub" button in the modal header.
+* Adding or deleting captures saves instantly to local state, updates the badge to Unsynced, and flushes on app exit or manual sync.
 
-### 7. Dual-Layer Sync & Error Activity Log (`sync-log.json`)
-* **Live Status Badge**: Header `.sync-badge` reflects real-time status: Green (`Synced`), Pulsing Blue (`Syncing...`), Red (`Sync Error`), Amber (`No Token` / `Warning`).
-* **On-Device Logging**: All commit/fetch operations across `reading.json`, `recipe-inbox.json`, `captures.json`, `fiber.json`, `gaming.json`, and `anchors.json` log detailed timestamps, target files, status codes, and error bodies into `localStorage['active_desks_sync_log']` (ring buffer of 50 entries).
-* **Repository Sync (`sync-log.json`)**: Whenever connected and authorized, background sync flushes recent events to [`active-desks/sync-log.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/sync-log.json) via GitHub REST API so error logs can be inspected directly in the Antigravity IDE.
+### 7. Unified Cloud Sync Engine, Exit Flush & Diagnostics (`sync-log.json`)
+* **Generic GitHub Engine**: Centralized `githubPut(filePath, data, commitMsg)` and `githubGet(filePath)` with automatic Base64 encoding/decoding, SHA tracking, 409-conflict re-fetch/retry, and uniform error diagnostics.
+* **Dirty-Set Batching (`pendingDirtyFiles`)**: Modals, row steppers, anchor toggles, and quick captures save locally instantly with zero network wait time, queueing modified files in a dirty set.
+* **Exit Flush on Inactive**:
+  * Listens to `visibilitychange: hidden`, `window.blur`, and `pagehide` (locking phone screen, switching apps, or changing browser tabs).
+  * Automatically flushes all pending dirty files sequentially, followed by committing `sync-log.json` once per session to prevent log spam.
+* **Active Tab Auto-Refresh**:
+  * Listens to `visibilitychange: visible` and `window.focus`.
+  * If no local unsynced edits are pending, quietly fetches updated remote JSON files (`reading.json`, `captures.json`, `fiber.json`, `gaming.json`, `anchors.json`) to keep desktop and mobile tabs aligned without page reloads.
+* **Live Status Badge**: Header `.sync-badge` reflects real-time status: Green (`Synced`), Pulsing Blue (`Syncing...`), Amber (`Unsynced`), Red (`Sync Error`), Gray (`Offline` / `No Token`).
+* **On-Device Logging & Cloud Observability**: All sync operations log to `localStorage['active_desks_sync_log']` (ring buffer of 50 entries) and sync to [`active-desks/sync-log.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/sync-log.json) so runtime activity and errors can be monitored directly in the Antigravity IDE.
 * **Diagnostics UI**: The `#sync-modal` provides an on-screen log viewer, a "🔌 Test Connection" button to probe GitHub PAT permissions and rate limits, a "☁️ Push Log to GitHub" button, and "📋 Copy Log" / "🗑️ Clear Log" tools.
 
 ---

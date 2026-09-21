@@ -347,9 +347,265 @@ function triggerSyncIndicator() {
     dot.className = 'sync-dot syncing';
     text.textContent = 'Saving...';
     setTimeout(() => {
-      dot.className = 'sync-dot';
-      text.textContent = 'Synced';
+      updateHeaderSyncStatus();
     }, 400);
+  }
+}
+
+// ==========================================================================
+// UNIFIED GITHUB CLOUD SYNC & DIRTY TRACKING ENGINE
+// ==========================================================================
+const pendingDirtyFiles = new Set();
+let isFlushingSync = false;
+let lastTabRefreshTime = 0;
+const MIN_REFRESH_INTERVAL_MS = 15000; // Throttle to max once every 15s
+
+function markDirty(filename) {
+  pendingDirtyFiles.add(filename);
+  updateHeaderSyncStatus('pending');
+}
+
+async function githubPut(filePath, data, commitMsg, maxRetries = 3) {
+  const token = localStorage.getItem('active_desks_github_token');
+  if (!token) throw new Error('No GitHub token configured');
+
+  const repo = 'soulless613-stack/active-desks';
+  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    let currentSha = null;
+    try {
+      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        currentSha = fileInfo.sha;
+      }
+    } catch (e) {
+      // File may not exist yet on repo
+    }
+
+    const jsonString = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+    const putBody = {
+      message: commitMsg || `Update ${filePath}`,
+      content: base64Content
+    };
+    if (currentSha) {
+      putBody.sha = currentSha;
+    }
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(putBody)
+    });
+
+    if (putRes.ok) return true;
+
+    if (putRes.status === 409 && attempt < maxRetries) {
+      console.warn(`GitHub SHA collision on ${filePath} (attempt ${attempt + 1}), retrying...`);
+      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
+      continue;
+    }
+
+    const errText = await putRes.text();
+    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
+  }
+}
+
+async function githubGet(filePath) {
+  const res = await fetch(`./${filePath}?t=${Date.now()}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+}
+
+async function flushDirtySync(isManual = false) {
+  if (isFlushingSync) return;
+  const token = localStorage.getItem('active_desks_github_token');
+
+  if (pendingDirtyFiles.size === 0) {
+    if (isManual) {
+      showToast('All changes are already in sync!', '✨');
+    }
+    return;
+  }
+
+  if (!token) {
+    if (isManual) {
+      showToast('GitHub token not set. Open Sync menu to configure.', '⚠️');
+    }
+    updateHeaderSyncStatus('warning');
+    return;
+  }
+
+  isFlushingSync = true;
+  updateHeaderSyncStatus('syncing');
+
+  const filesToSync = Array.from(pendingDirtyFiles);
+  let successCount = 0;
+  let hasError = false;
+
+  for (const file of filesToSync) {
+    try {
+      let dataToCommit = null;
+      let commitMessage = `Update ${file}`;
+
+      if (file === 'fiber.json') {
+        dataToCommit = state.desks.fiber;
+        commitMessage = `Update fiber progress: ${dataToCommit.name} (Row ${dataToCommit.rows})`;
+      } else if (file === 'gaming.json') {
+        dataToCommit = state.desks.gaming;
+        commitMessage = `Update game quest: ${dataToCommit.title} (${dataToCommit.platform})`;
+      } else if (file === 'anchors.json') {
+        const count = [state.buckets.home.checked, state.buckets.body.checked, state.buckets.spark.checked].filter(Boolean).length;
+        dataToCommit = {
+          date: new Date().toISOString().split('T')[0],
+          home: !!state.buckets.home.checked,
+          body: !!state.buckets.body.checked,
+          spark: !!state.buckets.spark.checked,
+          lastUpdated: new Date().toISOString()
+        };
+        commitMessage = `Update daily anchors: ${dataToCommit.date} (${count}/3)`;
+      } else if (file === 'reading.json') {
+        dataToCommit = state.desks.reading;
+        commitMessage = `Update reading progress: ${dataToCommit.title} (${dataToCommit.unit} ${dataToCommit.currentPage}/${dataToCommit.totalPages})`;
+      } else if (file === 'captures.json') {
+        dataToCommit = state.captures;
+        commitMessage = `Update captured thoughts (${dataToCommit.length} notes)`;
+      } else if (file === 'recipe-inbox.json') {
+        dataToCommit = state.recipeInbox;
+        commitMessage = `Update recipe inbox (${dataToCommit.length} pending)`;
+      }
+
+      if (dataToCommit) {
+        await githubPut(file, dataToCommit, commitMessage);
+        pendingDirtyFiles.delete(file);
+        successCount++;
+        addSyncLog({
+          target: file,
+          action: 'commit',
+          status: 'success',
+          message: commitMessage
+        });
+      }
+    } catch (err) {
+      console.warn(`Failed to flush ${file} to GitHub:`, err);
+      hasError = true;
+      addSyncLog({
+        target: file,
+        action: 'commit',
+        status: 'error',
+        message: `Failed to commit ${file}`,
+        details: err.message
+      });
+    }
+  }
+
+  // Once all dirty files have flushed, commit updated sync-log.json once
+  if (successCount > 0 || hasError) {
+    try {
+      await githubPut('sync-log.json', getSyncLogs(), `Update sync & error log (${getSyncLogs().length} events)`);
+    } catch (logErr) {
+      console.warn('Could not push sync-log.json:', logErr);
+    }
+  }
+
+  isFlushingSync = false;
+  updateHeaderSyncStatus(hasError ? 'error' : (pendingDirtyFiles.size > 0 ? 'pending' : 'synced'));
+
+  if (isManual) {
+    if (!hasError) {
+      showToast('All changes synced to GitHub!', '☁️');
+    } else {
+      showToast('Sync completed with errors (see log)', '⚠️');
+    }
+  }
+}
+
+async function refreshActiveTab() {
+  const now = Date.now();
+  if (now - lastTabRefreshTime < MIN_REFRESH_INTERVAL_MS) return;
+  lastTabRefreshTime = now;
+
+  let changed = false;
+
+  if (!pendingDirtyFiles.has('reading.json')) {
+    try {
+      const data = await githubGet('reading.json');
+      if (data && data.title && data.lastUpdated !== state.desks.reading.lastUpdated) {
+        Object.assign(state.desks.reading, data);
+        changed = true;
+      }
+    } catch (e) {}
+  }
+
+  if (!pendingDirtyFiles.has('fiber.json')) {
+    try {
+      const data = await githubGet('fiber.json');
+      if (data && data.name && data.lastUpdated !== state.desks.fiber.lastUpdated) {
+        Object.assign(state.desks.fiber, data);
+        changed = true;
+      }
+    } catch (e) {}
+  }
+
+  if (!pendingDirtyFiles.has('gaming.json')) {
+    try {
+      const data = await githubGet('gaming.json');
+      if (data && data.title && data.lastUpdated !== state.desks.gaming.lastUpdated) {
+        Object.assign(state.desks.gaming, data);
+        changed = true;
+      }
+    } catch (e) {}
+  }
+
+  if (!pendingDirtyFiles.has('anchors.json')) {
+    try {
+      const data = await githubGet('anchors.json');
+      const today = new Date().toISOString().split('T')[0];
+      if (data && data.date === today && data.lastUpdated !== state.buckets.home.lastUpdated) {
+        state.buckets.home.checked = !!data.home;
+        state.buckets.body.checked = !!data.body;
+        state.buckets.spark.checked = !!data.spark;
+        changed = true;
+      }
+    } catch (e) {}
+  }
+
+  if (!pendingDirtyFiles.has('captures.json')) {
+    try {
+      const data = await githubGet('captures.json');
+      if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(state.captures)) {
+        state.captures = data;
+        changed = true;
+      }
+    } catch (e) {}
+  }
+
+  if (!pendingDirtyFiles.has('recipe-inbox.json')) {
+    try {
+      const data = await githubGet('recipe-inbox.json');
+      if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(state.recipeInbox)) {
+        state.recipeInbox = data;
+        changed = true;
+      }
+    } catch (e) {}
+  }
+
+  if (changed) {
+    saveState();
+    render();
   }
 }
 
@@ -407,138 +663,19 @@ function renderBuckets() {
 function toggleBucket(key) {
   state.buckets[key].checked = !state.buckets[key].checked;
   saveState();
-  scheduleAnchorsSync();
-}
-
-let anchorsSyncTimer = null;
-
-function scheduleAnchorsSync() {
-  if (anchorsSyncTimer) clearTimeout(anchorsSyncTimer);
-  anchorsSyncTimer = setTimeout(() => {
-    flushAnchorsSync();
-  }, 1500);
-}
-
-async function flushAnchorsSync() {
-  if (anchorsSyncTimer) {
-    clearTimeout(anchorsSyncTimer);
-    anchorsSyncTimer = null;
-  }
-  const token = localStorage.getItem('active_desks_github_token');
-  const today = new Date().toISOString().split('T')[0];
-  const payload = {
-    date: today,
-    home: !!state.buckets.home.checked,
-    body: !!state.buckets.body.checked,
-    spark: !!state.buckets.spark.checked,
-    lastUpdated: new Date().toISOString()
-  };
-
-  if (token) {
-    updateHeaderSyncStatus('syncing');
-    try {
-      await commitAnchorsToGithub(payload, token);
-      const count = [payload.home, payload.body, payload.spark].filter(Boolean).length;
-      addSyncLog({
-        target: 'anchors.json',
-        action: 'commit',
-        status: 'success',
-        message: `Synced daily anchors (${count}/3 complete)`
-      });
-      commitSyncLogToGithub(token).catch(() => {});
-    } catch (err) {
-      console.warn('Could not sync anchors to GitHub:', err);
-      addSyncLog({
-        target: 'anchors.json',
-        action: 'commit',
-        status: 'error',
-        message: 'Failed to sync anchors to GitHub',
-        details: err.message
-      });
-    } finally {
-      updateHeaderSyncStatus();
-    }
-  } else {
-    addSyncLog({
-      target: 'anchors.json',
-      action: 'commit',
-      status: 'warning',
-      message: 'Daily anchors saved locally; no GitHub token configured'
-    });
-  }
-}
-
-async function commitAnchorsToGithub(anchorsData, token, maxRetries = 3) {
-  const repo = 'soulless613-stack/active-desks';
-  const filePath = 'anchors.json';
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    let currentSha = null;
-    try {
-      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json'
-        }
-      });
-      if (getRes.ok) {
-        const fileInfo = await getRes.json();
-        currentSha = fileInfo.sha;
-      }
-    } catch (e) {
-      console.warn('Could not fetch anchors.json SHA', e);
-    }
-
-    const jsonString = JSON.stringify(anchorsData, null, 2);
-    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-    const count = [anchorsData.home, anchorsData.body, anchorsData.spark].filter(Boolean).length;
-    const putBody = {
-      message: `Update daily anchors: ${anchorsData.date} (${count}/3)`,
-      content: base64Content
-    };
-    if (currentSha) {
-      putBody.sha = currentSha;
-    }
-
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(putBody)
-    });
-
-    if (putRes.ok) return true;
-
-    if (putRes.status === 409 && attempt < maxRetries) {
-      console.warn(`GitHub SHA collision on anchors.json (attempt ${attempt + 1}), retrying...`);
-      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
-      continue;
-    }
-
-    const errText = await putRes.text();
-    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
-  }
+  markDirty('anchors.json');
 }
 
 async function fetchAnchorsFromRepo() {
   try {
-    const res = await fetch('./anchors.json?t=' + Date.now(), { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      const today = new Date().toISOString().split('T')[0];
-      if (data && data.date === today) {
-        state.buckets.home.checked = !!data.home;
-        state.buckets.body.checked = !!data.body;
-        state.buckets.spark.checked = !!data.spark;
-        saveState();
-        renderBuckets();
-      }
+    const data = await githubGet('anchors.json');
+    const today = new Date().toISOString().split('T')[0];
+    if (data && data.date === today) {
+      state.buckets.home.checked = !!data.home;
+      state.buckets.body.checked = !!data.body;
+      state.buckets.spark.checked = !!data.spark;
+      saveState();
+      renderBuckets();
     }
   } catch (e) {
     console.log('Using local anchors state (offline or local server)');
@@ -546,12 +683,8 @@ async function fetchAnchorsFromRepo() {
 }
 
 // --------------------------------------------------------------------------
-// Fiber Arts Desk (5-min Debounce + Instant Flush on App Switch/Phone Lock)
+// Fiber Arts Desk (Zero Timers — Exit Flush on Inactive)
 // --------------------------------------------------------------------------
-let fiberSyncTimer = null;
-let fiberPendingSync = false;
-const FIBER_DEBOUNCE_MS = 5 * 60 * 1000; // 5 minutes inactivity debounce
-
 function renderFiberDesk() {
   const f = state.desks.fiber;
   const titleEl = document.getElementById('fiber-title');
@@ -572,8 +705,8 @@ function renderFiberDesk() {
   }
 
   if (syncStatusEl) {
-    if (fiberPendingSync) {
-      syncStatusEl.textContent = '⏳ Sync pending...';
+    if (pendingDirtyFiles.has('fiber.json')) {
+      syncStatusEl.textContent = 'Unsynced (exits to sync)';
       syncStatusEl.style.color = 'var(--accent-spark)';
     } else if (f.lastUpdated) {
       const timeStr = new Date(f.lastUpdated).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -588,155 +721,19 @@ function renderFiberDesk() {
 
 function changeRows(delta) {
   state.desks.fiber.rows = Math.max(0, state.desks.fiber.rows + delta);
+  state.desks.fiber.lastUpdated = new Date().toISOString();
   saveState();
-  scheduleFiberRowSync();
-}
-
-function scheduleFiberRowSync() {
-  fiberPendingSync = true;
-  const syncStatusEl = document.getElementById('fiber-sync-status');
-  if (syncStatusEl) {
-    syncStatusEl.textContent = '⏳ Sync pending (5m or app switch)';
-    syncStatusEl.style.color = 'var(--accent-spark)';
-  }
-
-  if (fiberSyncTimer) {
-    clearTimeout(fiberSyncTimer);
-  }
-  fiberSyncTimer = setTimeout(() => {
-    flushFiberSync();
-  }, FIBER_DEBOUNCE_MS);
-}
-
-async function flushFiberSync() {
-  if (!fiberPendingSync) return;
-  if (fiberSyncTimer) {
-    clearTimeout(fiberSyncTimer);
-    fiberSyncTimer = null;
-  }
-  fiberPendingSync = false;
-
-  const token = localStorage.getItem('active_desks_github_token');
-  const f = state.desks.fiber;
-  f.lastUpdated = new Date().toISOString();
-  saveState();
-
-  if (token) {
-    updateHeaderSyncStatus('syncing');
-    const syncStatusEl = document.getElementById('fiber-sync-status');
-    if (syncStatusEl) {
-      syncStatusEl.textContent = '⏳ Syncing...';
-      syncStatusEl.style.color = 'var(--accent-fiber)';
-    }
-    try {
-      await commitFiberToGithub(f, token);
-      addSyncLog({
-        target: 'fiber.json',
-        action: 'commit',
-        status: 'success',
-        message: `Synced fiber arts (${f.name}: Row ${f.rows})`
-      });
-      showToast('Fiber craft synced to GitHub!', '🧶');
-      commitSyncLogToGithub(token).catch(() => {});
-    } catch (err) {
-      console.warn('Could not sync fiber craft to GitHub:', err);
-      addSyncLog({
-        target: 'fiber.json',
-        action: 'commit',
-        status: 'error',
-        message: 'Failed to sync fiber craft to GitHub',
-        details: err.message
-      });
-      showToast('Fiber saved locally; GitHub sync error', '⚠️');
-    } finally {
-      updateHeaderSyncStatus();
-      renderFiberDesk();
-    }
-  } else {
-    addSyncLog({
-      target: 'fiber.json',
-      action: 'commit',
-      status: 'warning',
-      message: 'Fiber saved locally; no GitHub token configured'
-    });
-    renderFiberDesk();
-  }
-}
-
-async function commitFiberToGithub(fiberData, token, maxRetries = 3) {
-  const repo = 'soulless613-stack/active-desks';
-  const filePath = 'fiber.json';
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    let currentSha = null;
-    try {
-      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json'
-        }
-      });
-      if (getRes.ok) {
-        const fileInfo = await getRes.json();
-        currentSha = fileInfo.sha;
-      }
-    } catch (e) {
-      console.warn('Could not fetch fiber.json SHA', e);
-    }
-
-    const jsonString = JSON.stringify(fiberData, null, 2);
-    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-    const putBody = {
-      message: `Update fiber progress: ${fiberData.name} (Row ${fiberData.rows})`,
-      content: base64Content
-    };
-    if (currentSha) {
-      putBody.sha = currentSha;
-    }
-
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(putBody)
-    });
-
-    if (putRes.ok) return true;
-
-    if (putRes.status === 409 && attempt < maxRetries) {
-      console.warn(`GitHub SHA collision on fiber.json (attempt ${attempt + 1}), retrying...`);
-      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
-      continue;
-    }
-
-    const errText = await putRes.text();
-    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
-  }
+  markDirty('fiber.json');
+  renderFiberDesk();
 }
 
 async function fetchFiberFromRepo() {
   try {
-    const res = await fetch('./fiber.json?t=' + Date.now(), { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.name) {
-        state.desks.fiber.name = data.name;
-        if (data.type) state.desks.fiber.type = data.type;
-        if (data.specs) state.desks.fiber.specs = data.specs;
-        if (data.rows !== undefined) state.desks.fiber.rows = data.rows;
-        if (data.targetRows !== undefined) state.desks.fiber.targetRows = data.targetRows;
-        if (data.linkText) state.desks.fiber.linkText = data.linkText;
-        if (data.linkUrl) state.desks.fiber.linkUrl = data.linkUrl;
-        if (data.lastUpdated) state.desks.fiber.lastUpdated = data.lastUpdated;
-        saveState();
-        renderFiberDesk();
-      }
+    const data = await githubGet('fiber.json');
+    if (data && data.name) {
+      Object.assign(state.desks.fiber, data);
+      saveState();
+      renderFiberDesk();
     }
   } catch (e) {
     console.log('Using local fiber state (offline or local server)');
@@ -754,7 +751,7 @@ function openFiberModal() {
   document.getElementById('fiber-modal').classList.add('active');
 }
 
-async function handleFiberSave(e) {
+function handleFiberSave(e) {
   if (e) e.preventDefault();
   const title = document.getElementById('edit-fiber-title').value.trim();
   const type = document.getElementById('edit-fiber-type').value.trim();
@@ -773,11 +770,10 @@ async function handleFiberSave(e) {
   state.desks.fiber.lastUpdated = new Date().toISOString();
 
   saveState();
+  markDirty('fiber.json');
   closeModal('fiber-modal');
-
-  // Modal save triggers immediate flush/sync
-  fiberPendingSync = true;
-  await flushFiberSync();
+  showToast('Fiber project updated!', '🧶');
+  renderFiberDesk();
 }
 
 // --------------------------------------------------------------------------
@@ -915,229 +911,54 @@ function renderRecipeInbox() {
   `).join('');
 }
 
-async function handleQueueRecipe(e) {
+function handleQueueRecipe(e) {
   if (e) e.preventDefault();
   const urlInput = document.getElementById('inbox-url-input');
   const noteInput = document.getElementById('inbox-note-input');
-  const submitBtn = document.getElementById('inbox-submit-btn');
-
   const url = urlInput ? urlInput.value.trim() : '';
   const note = noteInput ? noteInput.value.trim() : '';
   if (!url) return;
 
   if (!state.recipeInbox) state.recipeInbox = [];
-
-  const newItem = {
+  state.recipeInbox.unshift({
     id: Date.now(),
     url: url,
     note: note,
     addedAt: new Date().toISOString()
-  };
-
-  state.recipeInbox.unshift(newItem);
+  });
   saveState();
   renderRecipeInbox();
+  markDirty('recipe-inbox.json');
 
   if (urlInput) urlInput.value = '';
   if (noteInput) noteInput.value = '';
-
   showToast('Recipe queued in inbox!', '📥');
-
-  // Sync to GitHub repo if token configured
-  const token = localStorage.getItem('active_desks_github_token');
-  if (token) {
-    const originalText = submitBtn ? submitBtn.innerHTML : '';
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>⏳ Syncing Queue...</span>';
-    }
-    updateHeaderSyncStatus('syncing');
-    try {
-      await commitRecipeInboxToGithub(state.recipeInbox, token);
-      addSyncLog({
-        target: 'recipe-inbox.json',
-        action: 'commit',
-        status: 'success',
-        message: `Synced recipe inbox (${state.recipeInbox.length} queued)`
-      });
-      showToast('Queue synced to GitHub!', '☁️');
-      commitSyncLogToGithub(token).catch(() => {});
-    } catch (err) {
-      console.warn('Could not sync recipe inbox to GitHub:', err);
-      addSyncLog({
-        target: 'recipe-inbox.json',
-        action: 'commit',
-        status: 'error',
-        message: 'Failed to sync recipe inbox to GitHub',
-        details: err.message
-      });
-      showToast('Recipe queued locally; GitHub sync error', '⚠️');
-    } finally {
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-      }
-      updateHeaderSyncStatus();
-    }
-  } else {
-    addSyncLog({
-      target: 'recipe-inbox.json',
-      action: 'commit',
-      status: 'warning',
-      message: 'Recipe queued locally; no GitHub token configured'
-    });
-  }
 }
 
-async function removeQueuedRecipe(id) {
+function removeQueuedRecipe(id) {
   if (!state.recipeInbox) return;
   state.recipeInbox = state.recipeInbox.filter(item => item.id !== id);
   saveState();
   renderRecipeInbox();
+  markDirty('recipe-inbox.json');
   showToast('Removed from queue', '🗑️');
-
-  const token = localStorage.getItem('active_desks_github_token');
-  if (token) {
-    updateHeaderSyncStatus('syncing');
-    try {
-      await commitRecipeInboxToGithub(state.recipeInbox, token);
-      addSyncLog({
-        target: 'recipe-inbox.json',
-        action: 'commit',
-        status: 'success',
-        message: `Updated recipe queue deletion on GitHub (${state.recipeInbox.length} remaining)`
-      });
-      commitSyncLogToGithub(token).catch(() => {});
-    } catch (err) {
-      console.warn('Could not sync queue deletion to GitHub:', err);
-      addSyncLog({
-        target: 'recipe-inbox.json',
-        action: 'commit',
-        status: 'error',
-        message: 'Failed to sync recipe queue deletion to GitHub',
-        details: err.message
-      });
-    } finally {
-      updateHeaderSyncStatus();
-    }
-  }
 }
 
 async function fetchRecipeInboxFromRepo() {
   try {
-    const res = await fetch('./recipe-inbox.json?t=' + Date.now(), { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        state.recipeInbox = data;
-        saveState();
-        renderRecipeInbox();
-      }
+    const data = await githubGet('recipe-inbox.json');
+    if (Array.isArray(data)) {
+      state.recipeInbox = data;
+      saveState();
+      renderRecipeInbox();
     }
   } catch (e) {
     console.log('Using local recipe inbox (offline or local server)');
   }
 }
 
-async function commitRecipeInboxToGithub(inboxData, token, maxRetries = 3) {
-  const repo = 'soulless613-stack/active-desks';
-  const filePath = 'recipe-inbox.json';
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    let currentSha = null;
-    try {
-      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json'
-        }
-      });
-      if (getRes.ok) {
-        const fileInfo = await getRes.json();
-        currentSha = fileInfo.sha;
-      }
-    } catch (e) {
-      console.warn('Could not fetch recipe-inbox.json SHA', e);
-    }
-
-    const jsonString = JSON.stringify(inboxData, null, 2);
-    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-    const putBody = {
-      message: `Update recipe inbox (${inboxData.length} pending)`,
-      content: base64Content
-    };
-    if (currentSha) {
-      putBody.sha = currentSha;
-    }
-
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(putBody)
-    });
-
-    if (putRes.ok) {
-      return true;
-    }
-
-    // If 409 Conflict (SHA collision on rapid updates), wait and retry with fresh SHA
-    if (putRes.status === 409 && attempt < maxRetries) {
-      console.warn(`GitHub SHA collision (attempt ${attempt + 1}), retrying in ${(attempt + 1) * 800}ms...`);
-      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
-      continue;
-    }
-
-    const errText = await putRes.text();
-    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
-  }
-}
-
-async function syncRecipeInboxManually() {
-  const token = localStorage.getItem('active_desks_github_token');
-  if (!token) {
-    addSyncLog({
-      target: 'recipe-inbox.json',
-      action: 'commit',
-      status: 'warning',
-      message: 'Manual recipe sync skipped: no GitHub token configured'
-    });
-    showToast('GitHub token not set. Open Sync menu to configure.', '⚠️');
-    return;
-  }
-  const syncBtn = document.getElementById('inbox-manual-sync-btn');
-  if (syncBtn) syncBtn.textContent = '⏳ Syncing...';
-  updateHeaderSyncStatus('syncing');
-  try {
-    await commitRecipeInboxToGithub(state.recipeInbox || [], token);
-    addSyncLog({
-      target: 'recipe-inbox.json',
-      action: 'commit',
-      status: 'success',
-      message: `Manually synced recipe inbox (${(state.recipeInbox || []).length} queued) to GitHub`
-    });
-    showToast('Queue synced to GitHub!', '☁️');
-    commitSyncLogToGithub(token).catch(() => {});
-  } catch (err) {
-    console.error('Manual queue sync failed:', err);
-    addSyncLog({
-      target: 'recipe-inbox.json',
-      action: 'commit',
-      status: 'error',
-      message: 'Manual recipe queue sync failed',
-      details: err.message
-    });
-    showToast('Sync failed: check connection', '⚠️');
-  } finally {
-    if (syncBtn) syncBtn.textContent = '🔄 Sync to GitHub';
-    updateHeaderSyncStatus();
-  }
+function syncRecipeInboxManually() {
+  flushDirtySync(true);
 }
 
 
@@ -1486,125 +1307,26 @@ function fileToBase64(file) {
 }
 
 // Save locally and commit to GitHub reading.json
-async function handleReadingSave(e) {
+function handleReadingSave(e) {
   if (e) e.preventDefault();
-
   const title = document.getElementById('edit-reading-title').value.trim();
   const author = document.getElementById('edit-reading-author').value.trim();
   const currentPage = parseInt(document.getElementById('edit-reading-current').value, 10) || 0;
   const totalPages = parseInt(document.getElementById('edit-reading-total').value, 10) || 100;
   const now = new Date().toISOString();
 
-  // 1. Immediate local UI & state update
   state.desks.reading.title = title;
   state.desks.reading.author = author;
   state.desks.reading.currentPage = currentPage;
   state.desks.reading.totalPages = totalPages;
   state.desks.reading.unit = totalPages <= 50 ? 'chapters' : 'pages';
   state.desks.reading.lastUpdated = now;
+
   saveState();
-
-  const saveBtn = document.getElementById('reading-save-btn');
-  const originalText = saveBtn ? saveBtn.innerHTML : '';
-  if (saveBtn) saveBtn.innerHTML = '<span>⏳ Syncing to GitHub...</span>';
-
-  // 2. Commit to GitHub repo if token is configured
-  const githubToken = localStorage.getItem('active_desks_github_token');
-  if (githubToken) {
-    updateHeaderSyncStatus('syncing');
-    try {
-      await commitReadingToGithub({
-        title,
-        author,
-        currentPage,
-        totalPages,
-        unit: state.desks.reading.unit,
-        storygraphUrl: state.desks.reading.storygraphUrl || 'https://app.thestorygraph.com/profile/soulless613',
-        lastUpdated: now
-      }, githubToken);
-      addSyncLog({
-        target: 'reading.json',
-        action: 'commit',
-        status: 'success',
-        message: `Synced reading progress: ${title} (${currentPage}/${totalPages} ${state.desks.reading.unit})`
-      });
-      showToast('Reading synced to GitHub!', '☁️');
-      commitSyncLogToGithub(githubToken).catch(() => {});
-    } catch (err) {
-      console.error('GitHub commit error:', err);
-      addSyncLog({
-        target: 'reading.json',
-        action: 'commit',
-        status: 'error',
-        message: 'Failed to sync reading progress to GitHub',
-        details: err.message
-      });
-      showToast('Reading saved locally; GitHub sync error', '⚠️');
-    } finally {
-      updateHeaderSyncStatus();
-    }
-  } else {
-    addSyncLog({
-      target: 'reading.json',
-      action: 'commit',
-      status: 'warning',
-      message: 'Reading saved locally; no GitHub token configured'
-    });
-  }
-
-  if (saveBtn) saveBtn.innerHTML = originalText;
+  markDirty('reading.json');
   closeModal('reading-modal');
-}
-
-async function commitReadingToGithub(readingData, token) {
-  const repo = 'soulless613-stack/active-desks';
-  const filePath = 'reading.json';
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-
-  // Step 1: Get current file SHA
-  let currentSha = null;
-  try {
-    const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
-      cache: 'no-store',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json'
-      }
-    });
-    if (getRes.ok) {
-      const fileInfo = await getRes.json();
-      currentSha = fileInfo.sha;
-    }
-  } catch (e) {
-    console.warn('Could not fetch existing SHA', e);
-  }
-
-  // Step 2: PUT updated file
-  const jsonString = JSON.stringify(readingData, null, 2);
-  const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-  const putBody = {
-    message: `Update reading progress: ${readingData.title} (${readingData.unit} ${readingData.currentPage}/${readingData.totalPages})`,
-    content: base64Content
-  };
-  if (currentSha) {
-    putBody.sha = currentSha;
-  }
-
-  const putRes = await fetch(apiUrl, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(putBody)
-  });
-
-  if (!putRes.ok) {
-    const errText = await putRes.text();
-    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
-  }
+  showToast('Reading progress updated!', '📖');
+  renderReadingDesk();
 }
 
 // --------------------------------------------------------------------------
@@ -1642,7 +1364,7 @@ function openGamingModal() {
   document.getElementById('gaming-modal').classList.add('active');
 }
 
-async function handleGamingSave(e) {
+function handleGamingSave(e) {
   if (e) e.preventDefault();
   const title = document.getElementById('edit-gaming-title').value.trim();
   const platform = document.getElementById('edit-gaming-platform').value.trim();
@@ -1657,118 +1379,19 @@ async function handleGamingSave(e) {
   state.desks.gaming.lastUpdated = now;
 
   saveState();
+  markDirty('gaming.json');
   closeModal('gaming-modal');
   showToast('Game quest updated!', '🎮');
-
-  const token = localStorage.getItem('active_desks_github_token');
-  if (token) {
-    updateHeaderSyncStatus('syncing');
-    try {
-      await commitGamingToGithub(state.desks.gaming, token);
-      addSyncLog({
-        target: 'gaming.json',
-        action: 'commit',
-        status: 'success',
-        message: `Synced gaming quest: ${title} (${platform})`
-      });
-      showToast('Gaming synced to GitHub!', '☁️');
-      commitSyncLogToGithub(token).catch(() => {});
-    } catch (err) {
-      console.warn('Could not sync gaming to GitHub:', err);
-      addSyncLog({
-        target: 'gaming.json',
-        action: 'commit',
-        status: 'error',
-        message: 'Failed to sync gaming to GitHub',
-        details: err.message
-      });
-      showToast('Game saved locally; GitHub sync error', '⚠️');
-    } finally {
-      updateHeaderSyncStatus();
-      renderGamingDesk();
-    }
-  } else {
-    addSyncLog({
-      target: 'gaming.json',
-      action: 'commit',
-      status: 'warning',
-      message: 'Game saved locally; no GitHub token configured'
-    });
-  }
-}
-
-async function commitGamingToGithub(gamingData, token, maxRetries = 3) {
-  const repo = 'soulless613-stack/active-desks';
-  const filePath = 'gaming.json';
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    let currentSha = null;
-    try {
-      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json'
-        }
-      });
-      if (getRes.ok) {
-        const fileInfo = await getRes.json();
-        currentSha = fileInfo.sha;
-      }
-    } catch (e) {
-      console.warn('Could not fetch gaming.json SHA', e);
-    }
-
-    const jsonString = JSON.stringify(gamingData, null, 2);
-    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-    const putBody = {
-      message: `Update game quest: ${gamingData.title} (${gamingData.platform})`,
-      content: base64Content
-    };
-    if (currentSha) {
-      putBody.sha = currentSha;
-    }
-
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(putBody)
-    });
-
-    if (putRes.ok) return true;
-
-    if (putRes.status === 409 && attempt < maxRetries) {
-      console.warn(`GitHub SHA collision on gaming.json (attempt ${attempt + 1}), retrying...`);
-      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
-      continue;
-    }
-
-    const errText = await putRes.text();
-    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
-  }
+  renderGamingDesk();
 }
 
 async function fetchGamingFromRepo() {
   try {
-    const res = await fetch('./gaming.json?t=' + Date.now(), { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.title) {
-        state.desks.gaming.title = data.title;
-        if (data.platform) state.desks.gaming.platform = data.platform;
-        if (data.quest) state.desks.gaming.quest = data.quest;
-        if (data.linkText) state.desks.gaming.linkText = data.linkText;
-        if (data.linkUrl) state.desks.gaming.linkUrl = data.linkUrl;
-        if (data.lastUpdated) state.desks.gaming.lastUpdated = data.lastUpdated;
-        saveState();
-        renderGamingDesk();
-      }
+    const data = await githubGet('gaming.json');
+    if (data && data.title) {
+      Object.assign(state.desks.gaming, data);
+      saveState();
+      renderGamingDesk();
     }
   } catch (e) {
     console.log('Using local gaming state (offline or local server)');
@@ -1778,58 +1401,23 @@ async function fetchGamingFromRepo() {
 // --------------------------------------------------------------------------
 // Quick-Capture Brain Dump (Cross-Device GitHub Sync)
 // --------------------------------------------------------------------------
-async function handleQuickCapture(e) {
+function handleQuickCapture(e) {
   if (e) e.preventDefault();
   const input = document.getElementById('quick-capture-input');
   const text = input.value.trim();
   if (!text) return;
-  
-  const newCapture = {
+
+  state.captures.unshift({
     id: Date.now(),
     text: text,
     time: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-  };
-
-  state.captures.unshift(newCapture);
+  });
   input.value = '';
   saveState();
+  renderCaptures();
+  markDirty('captures.json');
   openBrainDumpModal();
   showToast('Thought captured!', '💡');
-
-  const token = localStorage.getItem('active_desks_github_token');
-  if (token) {
-    updateHeaderSyncStatus('syncing');
-    try {
-      await commitCapturesToGithub(state.captures, token);
-      addSyncLog({
-        target: 'captures.json',
-        action: 'commit',
-        status: 'success',
-        message: `Synced ${state.captures.length} captured thoughts to GitHub`
-      });
-      showToast('Thoughts synced to GitHub!', '☁️');
-      commitSyncLogToGithub(token).catch(() => {});
-    } catch (err) {
-      console.warn('Could not sync captures to GitHub:', err);
-      addSyncLog({
-        target: 'captures.json',
-        action: 'commit',
-        status: 'error',
-        message: 'Failed to sync captured thoughts to GitHub',
-        details: err.message
-      });
-      showToast('Thought saved locally; GitHub sync error', '⚠️');
-    } finally {
-      updateHeaderSyncStatus();
-    }
-  } else {
-    addSyncLog({
-      target: 'captures.json',
-      action: 'commit',
-      status: 'warning',
-      message: 'Thought saved locally; no GitHub token configured'
-    });
-  }
 }
 
 function renderCaptures() {
@@ -1843,43 +1431,18 @@ function renderCaptures() {
 
   list.innerHTML = state.captures.map(c => `
     <div class="capture-item">
-      <span>${c.text}</span>
+      <span>${escapeHtml(c.text)}</span>
       <button class="capture-del-btn" onclick="deleteCapture(${c.id})" title="Delete">✕</button>
     </div>
   `).join('');
 }
 
-async function deleteCapture(id) {
+function deleteCapture(id) {
   state.captures = state.captures.filter(c => c.id !== id);
   saveState();
   renderCaptures();
+  markDirty('captures.json');
   showToast('Thought removed', '🗑️');
-
-  const token = localStorage.getItem('active_desks_github_token');
-  if (token) {
-    updateHeaderSyncStatus('syncing');
-    try {
-      await commitCapturesToGithub(state.captures, token);
-      addSyncLog({
-        target: 'captures.json',
-        action: 'commit',
-        status: 'success',
-        message: `Updated captured thoughts on GitHub (${state.captures.length} remaining)`
-      });
-      commitSyncLogToGithub(token).catch(() => {});
-    } catch (err) {
-      console.warn('Could not sync capture deletion to GitHub:', err);
-      addSyncLog({
-        target: 'captures.json',
-        action: 'commit',
-        status: 'error',
-        message: 'Failed to sync capture deletion to GitHub',
-        details: err.message
-      });
-    } finally {
-      updateHeaderSyncStatus();
-    }
-  }
 }
 
 function openBrainDumpModal() {
@@ -1889,118 +1452,19 @@ function openBrainDumpModal() {
 
 async function fetchCapturesFromRepo() {
   try {
-    const res = await fetch('./captures.json?t=' + Date.now(), { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        state.captures = data;
-        saveState();
-        renderCaptures();
-      }
+    const data = await githubGet('captures.json');
+    if (Array.isArray(data)) {
+      state.captures = data;
+      saveState();
+      renderCaptures();
     }
   } catch (e) {
     console.log('Using local captures (offline or local server)');
   }
 }
 
-async function commitCapturesToGithub(capturesData, token, maxRetries = 3) {
-  const repo = 'soulless613-stack/active-desks';
-  const filePath = 'captures.json';
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    let currentSha = null;
-    try {
-      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json'
-        }
-      });
-      if (getRes.ok) {
-        const fileInfo = await getRes.json();
-        currentSha = fileInfo.sha;
-      }
-    } catch (e) {
-      console.warn('Could not fetch captures.json SHA', e);
-    }
-
-    const jsonString = JSON.stringify(capturesData, null, 2);
-    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-    const putBody = {
-      message: `Update captured thoughts (${capturesData.length} items)`,
-      content: base64Content
-    };
-    if (currentSha) {
-      putBody.sha = currentSha;
-    }
-
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(putBody)
-    });
-
-    if (putRes.ok) {
-      return true;
-    }
-
-    if (putRes.status === 409 && attempt < maxRetries) {
-      console.warn(`GitHub SHA collision for captures (attempt ${attempt + 1}), retrying in ${(attempt + 1) * 800}ms...`);
-      await new Promise(r => setTimeout(r, (attempt + 1) * 800));
-      continue;
-    }
-
-    const errText = await putRes.text();
-    throw new Error(`GitHub API ${putRes.status}: ${errText}`);
-  }
-}
-
-async function syncCapturesManually() {
-  const token = localStorage.getItem('active_desks_github_token');
-  if (!token) {
-    addSyncLog({
-      target: 'captures.json',
-      action: 'commit',
-      status: 'warning',
-      message: 'Manual captures sync skipped: no GitHub token configured'
-    });
-    showToast('GitHub token not set. Open Sync menu to configure.', '⚠️');
-    return;
-  }
-  const syncBtn = document.getElementById('captures-manual-sync-btn');
-  if (syncBtn) syncBtn.textContent = '⏳ Syncing...';
-  updateHeaderSyncStatus('syncing');
-  try {
-    await commitCapturesToGithub(state.captures || [], token);
-    addSyncLog({
-      target: 'captures.json',
-      action: 'commit',
-      status: 'success',
-      message: `Manually synced ${(state.captures || []).length} captured thoughts to GitHub`
-    });
-    showToast('Thoughts synced to GitHub!', '☁️');
-    commitSyncLogToGithub(token).catch(() => {});
-  } catch (err) {
-    console.error('Manual captures sync failed:', err);
-    addSyncLog({
-      target: 'captures.json',
-      action: 'commit',
-      status: 'error',
-      message: 'Manual captures sync failed',
-      details: err.message
-    });
-    showToast('Sync failed: check connection', '⚠️');
-  } finally {
-    if (syncBtn) syncBtn.textContent = '🔄 Sync to GitHub';
-    updateHeaderSyncStatus();
-  }
+function syncCapturesManually() {
+  flushDirtySync(true);
 }
 
 // --------------------------------------------------------------------------
@@ -2095,6 +1559,13 @@ function updateHeaderSyncStatus(overrideState) {
     badge.classList.add('error');
     dot.classList.add('error');
     text.textContent = 'Sync Error';
+    return;
+  }
+
+  if (overrideState === 'pending' || pendingDirtyFiles.size > 0) {
+    badge.classList.add('warning');
+    dot.classList.add('warning');
+    text.textContent = 'Unsynced';
     return;
   }
 
@@ -2258,70 +1729,6 @@ async function testGitHubConnection() {
   }
 }
 
-async function commitSyncLogToGithub(token, maxRetries = 2) {
-  if (!token) token = localStorage.getItem('active_desks_github_token');
-  if (!token) return false;
-
-  const repo = 'soulless613-stack/active-desks';
-  const filePath = 'sync-log.json';
-  const apiUrl = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-  const logs = getSyncLogs();
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    let currentSha = null;
-    try {
-      const getRes = await fetch(`${apiUrl}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json'
-        }
-      });
-      if (getRes.ok) {
-        const fileInfo = await getRes.json();
-        currentSha = fileInfo.sha;
-      }
-    } catch (e) {
-      // Continue without SHA if file doesn't exist yet
-    }
-
-    const jsonString = JSON.stringify(logs, null, 2);
-    const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-    const putBody = {
-      message: `Update sync & error log (${logs.length} events)`,
-      content: base64Content
-    };
-    if (currentSha) {
-      putBody.sha = currentSha;
-    }
-
-    try {
-      const putRes = await fetch(apiUrl, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(putBody)
-      });
-
-      if (putRes.ok) {
-        return true;
-      }
-
-      if (putRes.status === 409 && attempt < maxRetries) {
-        await new Promise(r => setTimeout(r, (attempt + 1) * 800));
-        continue;
-      }
-    } catch (netErr) {
-      return false;
-    }
-  }
-  return false;
-}
-
 async function flushSyncLogToGithubManual() {
   const token = localStorage.getItem('active_desks_github_token');
   if (!token) {
@@ -2329,18 +1736,15 @@ async function flushSyncLogToGithubManual() {
     return;
   }
   const btn = document.getElementById('push-log-btn');
+  const originalText = btn ? btn.textContent : '';
   if (btn) btn.textContent = '⏳ Pushing...';
   try {
-    const ok = await commitSyncLogToGithub(token);
-    if (ok) {
-      showToast('Sync log pushed to GitHub!', '☁️');
-    } else {
-      showToast('Could not push log to GitHub', '⚠️');
-    }
+    await githubPut('sync-log.json', getSyncLogs(), `Update sync & error log (${getSyncLogs().length} events)`);
+    showToast('Sync log pushed to GitHub!', '☁️');
   } catch (err) {
-    showToast('Push log failed', '⚠️');
+    showToast('Push log failed: ' + err.message, '⚠️');
   } finally {
-    if (btn) btn.textContent = '☁️ Push Log to GitHub';
+    if (btn) btn.textContent = originalText;
   }
 }
 
@@ -2424,17 +1828,17 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Flush pending syncs on screen lock / app switch / tab hidden / close
+// Inactive Exit Flush & Active Tab Auto-Refresh
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    if (fiberPendingSync) flushFiberSync();
-    if (anchorsSyncTimer) flushAnchorsSync();
+    flushDirtySync();
+  } else if (document.visibilityState === 'visible') {
+    refreshActiveTab();
   }
 });
-window.addEventListener('pagehide', () => {
-  if (fiberPendingSync) flushFiberSync();
-  if (anchorsSyncTimer) flushAnchorsSync();
-});
+window.addEventListener('pagehide', () => flushDirtySync());
+window.addEventListener('blur', () => flushDirtySync());
+window.addEventListener('focus', () => refreshActiveTab());
 
 // Initial render
 document.addEventListener('DOMContentLoaded', () => {

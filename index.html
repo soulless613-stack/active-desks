@@ -405,6 +405,9 @@
 
           <!-- Action Buttons -->
           <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+            <button type="button" class="quick-capture-btn" style="flex: 1; min-width: 120px; justify-content: center; font-size: 0.75rem; padding: 6px 10px; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); color: #34d399;" onclick="flushDirtySync(true)">
+              🔄 Sync to GitHub Now
+            </button>
             <button type="button" id="test-connection-btn" class="quick-capture-btn" style="flex: 1; min-width: 120px; justify-content: center; font-size: 0.75rem; padding: 6px 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: var(--accent-home);" onclick="testGitHubConnection()">
               🔌 Test Connection
             </button>
@@ -436,7 +439,12 @@
           <span style="font-size: 1.2rem;">📚</span>
           <h3 class="modal-title">Update Reading</h3>
         </div>
-        <button class="modal-close-btn" onclick="closeModal('reading-modal')" aria-label="Close">✕</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" onclick="flushDirtySync(true)" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); color: var(--accent-spark); border: 1px solid rgba(56, 189, 248, 0.3); cursor: pointer; font-weight: 600;">
+            🔄 Sync to GitHub
+          </button>
+          <button class="modal-close-btn" onclick="closeModal('reading-modal')" aria-label="Close">✕</button>
+        </div>
       </div>
       <div class="modal-body">
         
@@ -486,7 +494,7 @@
 
           <div style="display: flex; gap: 8px; margin-top: 4px;">
             <button type="submit" class="quick-capture-btn" id="reading-save-btn" style="flex: 1; justify-content: center;">
-              <span>💾 Save & Sync to GitHub</span>
+              <span>💾 Save Changes</span>
             </button>
           </div>
         </form>
@@ -567,7 +575,12 @@
           <span style="font-size: 1.2rem;">🧶</span>
           <h3 class="modal-title">Edit Fiber Arts Project</h3>
         </div>
-        <button class="modal-close-btn" onclick="closeModal('fiber-modal')" aria-label="Close">✕</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" onclick="flushDirtySync(true)" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); color: var(--accent-spark); border: 1px solid rgba(56, 189, 248, 0.3); cursor: pointer; font-weight: 600;">
+            🔄 Sync to GitHub
+          </button>
+          <button class="modal-close-btn" onclick="closeModal('fiber-modal')" aria-label="Close">✕</button>
+        </div>
       </div>
       <div class="modal-body">
         <form onsubmit="handleFiberSave(event)" style="display: flex; flex-direction: column; gap: 12px;">
@@ -598,7 +611,7 @@
             <input type="url" id="edit-fiber-link" class="form-input" placeholder="https://www.ravelry.com/patterns/library/...">
           </div>
           <button type="submit" class="quick-capture-btn" id="fiber-save-btn" style="justify-content: center; margin-top: 4px;">
-            <span>💾 Save & Sync to GitHub</span>
+            <span>💾 Save Changes</span>
           </button>
         </form>
       </div>
@@ -613,7 +626,12 @@
           <span style="font-size: 1.2rem;">🎮</span>
           <h3 class="modal-title">Edit Gaming Rig Quest</h3>
         </div>
-        <button class="modal-close-btn" onclick="closeModal('gaming-modal')" aria-label="Close">✕</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" onclick="flushDirtySync(true)" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); color: var(--accent-spark); border: 1px solid rgba(56, 189, 248, 0.3); cursor: pointer; font-weight: 600;">
+            🔄 Sync to GitHub
+          </button>
+          <button class="modal-close-btn" onclick="closeModal('gaming-modal')" aria-label="Close">✕</button>
+        </div>
       </div>
       <div class="modal-body">
         <form onsubmit="handleGamingSave(event)" style="display: flex; flex-direction: column; gap: 12px;">
@@ -634,7 +652,7 @@
             <input type="url" id="edit-gaming-link" class="form-input" placeholder="https://bg3.wiki">
           </div>
           <button type="submit" class="quick-capture-btn" id="gaming-save-btn" style="justify-content: center; margin-top: 4px;">
-            <span>💾 Save & Sync to GitHub</span>
+            <span>💾 Save Changes</span>
           </button>
         </form>
       </div>
