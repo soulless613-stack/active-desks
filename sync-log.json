@@ -1,5 +1,27 @@
 [
   {
+    "id": "17906869976311q9e",
+    "time": "2026-09-29T13:03:17.631Z",
+    "displayTime": "09:03:17 AM",
+    "device": "mobile",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (0 notes)",
+    "details": null
+  },
+  {
+    "id": "1790686996394v3or",
+    "time": "2026-09-29T13:03:16.394Z",
+    "displayTime": "09:03:16 AM",
+    "device": "mobile",
+    "target": "reading.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update reading progress: Rhythm of War (pages 222/1230)",
+    "details": null
+  },
+  {
     "id": "1790653775000ext1",
     "time": "2026-09-29T03:49:35.000Z",
     "displayTime": "11:49:35 PM",
