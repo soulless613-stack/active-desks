@@ -1,5 +1,16 @@
 [
   {
+    "id": "1790653775000ext1",
+    "time": "2026-09-29T03:49:35.000Z",
+    "displayTime": "11:49:35 PM",
+    "device": "desktop-ide",
+    "target": "recipe-inbox.json",
+    "action": "batch-extract",
+    "status": "success",
+    "message": "Extracted 15-Minute Creamy One-Pot Garlic Herb Pasta from recipe inbox and cleared queue",
+    "details": null
+  },
+  {
     "id": "1790271985060gxtt",
     "time": "2026-09-24T17:46:25.060Z",
     "displayTime": "01:46:25 PM",

@@ -241,6 +241,38 @@ const DEFAULT_STATE = {
             "Distribute cubed butter pats evenly over the cake mix layer.",
             "Bake at 350°F (175°C) for 35–45 minutes until golden brown and bubbly. Rest 10 minutes and serve warm!"
           ]
+        },
+        {
+          id: 'creamy-one-pot-garlic-herb-pasta',
+          title: "15-Minute Creamy One-Pot Garlic Herb Pasta",
+          source: "Mariam (@baiti_ana)",
+          url: "https://www.instagram.com/reel/DdWrPaJA6Bb/",
+          yield: "4 Servings (Quick Weeknight Meal)",
+          calories: "670 kcal",
+          protein: "15g",
+          carbs: "50g",
+          fat: "47g",
+          highlight: "Velvety, rich one-pot pasta where dry noodles cook directly in broth and cream with herbs and mozzarella for zero strainer cleanup.",
+          ingredients: [
+            "250g (about 3 cups) dry pasta (penne, rotini, or rigatoni)",
+            "360ml (1 1/2 cups) whipping cream (or heavy cream)",
+            "360ml (1 1/2 cups) chicken broth (or water + 1 chicken bouillon cube)",
+            "16g (1 tbsp) tomato paste",
+            "60g (1/4 cup) garlic & herbs cream cheese (or grated Parmesan)",
+            "28g (2 tbsp) butter (or olive oil)",
+            "1/2 tsp fine sea salt",
+            "1/4 tsp black pepper",
+            "1/4 tsp chili flakes (to taste)",
+            "1 tsp dried oregano",
+            "1 tsp garlic powder",
+            "60g (1/2 cup) shredded mozzarella cheese",
+            "2 tbsp fresh parsley, chopped"
+          ],
+          steps: [
+            "Add dry pasta, butter, tomato paste, garlic & herb cream cheese, salt, pepper, chili flakes, oregano, garlic powder, broth, and cream into a single pot. Ensure pasta is submerged.",
+            "Cover with lid and bring to a bubble over medium-high heat. Reduce to low and simmer covered for ~15 mins until pasta is tender and sauce is rich.",
+            "Stir thoroughly, top evenly with mozzarella and parsley, cover for 2–3 mins until cheese melts, and serve warm!"
+          ]
         }
       ]
     },
