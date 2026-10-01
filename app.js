@@ -464,6 +464,28 @@ async function githubPut(filePath, data, commitMsg, maxRetries = 3) {
 }
 
 async function githubGet(filePath) {
+  const token = localStorage.getItem('active_desks_github_token');
+  const repo = 'soulless613-stack/active-desks';
+  if (token) {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+      if (res.ok) {
+        const fileInfo = await res.json();
+        if (fileInfo && fileInfo.content) {
+          const rawContent = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
+          return JSON.parse(rawContent);
+        }
+      }
+    } catch (apiErr) {
+      console.warn(`Direct GitHub API read for ${filePath} failed, falling back to local static:`, apiErr);
+    }
+  }
   const res = await fetch(`./${filePath}?t=${Date.now()}`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.json();
@@ -625,9 +647,10 @@ async function refreshActiveTab() {
   if (!pendingDirtyFiles.has('captures.json')) {
     try {
       const data = await githubGet('captures.json');
-      if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(state.captures)) {
-        state.captures = data;
-        changed = true;
+      if (Array.isArray(data)) {
+        if (mergeCaptures(data)) {
+          changed = true;
+        }
       }
     } catch (e) {}
   }
@@ -1477,7 +1500,61 @@ function renderCaptures() {
   `).join('');
 }
 
+const DELETED_CAPTURES_KEY = 'active_desks_deleted_captures';
+
+function getDeletedCaptureIds() {
+  try {
+    const raw = localStorage.getItem(DELETED_CAPTURES_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function recordDeletedCaptureId(id) {
+  try {
+    const ids = Array.from(getDeletedCaptureIds());
+    if (!ids.includes(id)) {
+      ids.push(id);
+      if (ids.length > 100) ids.splice(0, ids.length - 100);
+      localStorage.setItem(DELETED_CAPTURES_KEY, JSON.stringify(ids));
+    }
+  } catch (e) {}
+}
+
+function mergeCaptures(remoteCaptures) {
+  if (!Array.isArray(remoteCaptures)) return false;
+  if (!Array.isArray(state.captures)) state.captures = [];
+
+  const deletedIds = getDeletedCaptureIds();
+  let changed = false;
+
+  // Add remote items that we don't have and haven't deleted locally
+  remoteCaptures.forEach(remoteItem => {
+    if (!remoteItem || !remoteItem.id) return;
+    if (deletedIds.has(remoteItem.id)) return;
+    const exists = state.captures.some(local => local.id === remoteItem.id);
+    if (!exists) {
+      state.captures.push(remoteItem);
+      changed = true;
+    }
+  });
+
+  // Sort newest first
+  state.captures.sort((a, b) => (b.id || 0) - (a.id || 0));
+
+  // If local has items that remote doesn't have, mark dirty so they get pushed to GitHub!
+  const remoteIdSet = new Set(remoteCaptures.map(r => r.id));
+  const hasLocalOnly = state.captures.some(local => !remoteIdSet.has(local.id));
+  if (hasLocalOnly) {
+    markDirty('captures.json');
+  }
+
+  return changed;
+}
+
 function deleteCapture(id) {
+  recordDeletedCaptureId(id);
   state.captures = state.captures.filter(c => c.id !== id);
   saveState();
   renderCaptures();
@@ -1492,15 +1569,13 @@ function openBrainDumpModal() {
 }
 
 async function fetchCapturesFromRepo() {
-  // If we have unsaved local captures, do NOT overwrite with remote!
-  if (pendingDirtyFiles.has('captures.json')) {
-    return;
-  }
   try {
     const data = await githubGet('captures.json');
-    if (Array.isArray(data) && !pendingDirtyFiles.has('captures.json')) {
-      state.captures = data;
-      saveState();
+    if (Array.isArray(data)) {
+      const changed = mergeCaptures(data);
+      if (changed) {
+        saveState();
+      }
       renderCaptures();
     }
   } catch (e) {
@@ -1867,7 +1942,19 @@ window.addEventListener('click', (e) => {
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(err => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('Active Desks updated! Reloading...');
+              window.location.reload();
+            }
+          });
+        }
+      });
+    }).catch(err => {
       console.log('SW registration note: PWA active in standalone mode', err);
     });
   });
