@@ -228,6 +228,9 @@
   <!-- Sticky Bottom Quick-Capture Bar -->
   <div class="quick-capture-wrapper">
     <form class="quick-capture-box" onsubmit="handleQuickCapture(event)">
+      <button type="button" class="quick-capture-view-btn" onclick="openBrainDumpModal()" title="View captured thoughts" aria-label="View captured thoughts">
+        <span>🧠</span>
+      </button>
       <input type="text" id="quick-capture-input" class="quick-capture-input" placeholder="Capture a stray thought, link, or grocery item..." autocomplete="off">
       <button type="submit" class="quick-capture-btn">
         <span>Save</span>

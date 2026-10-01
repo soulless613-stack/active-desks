@@ -294,10 +294,7 @@ const DEFAULT_STATE = {
       lastUpdated: null
     }
   },
-  captures: [
-    { id: 1, text: "Check yarn stash for 4.5mm circular needles with 32-inch cord", time: "Sep 12" },
-    { id: 2, text: "Buy extra FAGE Greek yogurt and sharp cheddar for meal prep", time: "Sep 12" }
-  ],
+  captures: [],
   recipeInbox: []
 };
 
@@ -356,6 +353,16 @@ function loadState() {
       // Ensure gaming defaults
       if (parsed.desks && !parsed.desks.gaming) {
         parsed.desks.gaming = JSON.parse(JSON.stringify(DEFAULT_STATE.desks.gaming));
+      }
+
+      // Ensure captures array exists and prune obsolete hardcoded sample items
+      if (!Array.isArray(parsed.captures)) {
+        parsed.captures = [];
+      } else {
+        parsed.captures = parsed.captures.filter(c => 
+          c && !(c.id === 1 && String(c.text).includes("yarn stash")) &&
+               !(c.id === 2 && String(c.text).includes("FAGE Greek yogurt"))
+        );
       }
 
       return parsed;
@@ -1450,6 +1457,7 @@ function handleQuickCapture(e) {
   markDirty('captures.json');
   openBrainDumpModal();
   showToast('Thought captured!', '💡');
+  flushDirtySync(); // Push to GitHub immediately in background if connected
 }
 
 function renderCaptures() {
@@ -1475,17 +1483,22 @@ function deleteCapture(id) {
   renderCaptures();
   markDirty('captures.json');
   showToast('Thought removed', '🗑️');
+  flushDirtySync(); // Push deletion to GitHub immediately in background if connected
 }
 
 function openBrainDumpModal() {
+  renderCaptures();
   document.getElementById('brain-dump-modal').classList.add('active');
-  fetchCapturesFromRepo();
 }
 
 async function fetchCapturesFromRepo() {
+  // If we have unsaved local captures, do NOT overwrite with remote!
+  if (pendingDirtyFiles.has('captures.json')) {
+    return;
+  }
   try {
     const data = await githubGet('captures.json');
-    if (Array.isArray(data)) {
+    if (Array.isArray(data) && !pendingDirtyFiles.has('captures.json')) {
       state.captures = data;
       saveState();
       renderCaptures();
