@@ -1,5 +1,16 @@
 [
   {
+    "id": "1791090833846g8mn",
+    "time": "2026-10-04T05:13:53.846Z",
+    "displayTime": "01:13:53 AM",
+    "device": "mobile",
+    "target": "reading.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update reading progress: Rhythm of War (pages 363/1230)",
+    "details": null
+  },
+  {
     "id": "1791015704968oc0x",
     "time": "2026-10-03T08:21:44.968Z",
     "displayTime": "04:21:44 AM",
