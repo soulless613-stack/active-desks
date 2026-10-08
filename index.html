@@ -84,40 +84,36 @@
     <!-- The 4 Active Desks Grid -->
     <main class="desks-grid">
 
-      <!-- 1. Fiber Arts Desk -->
-      <article class="desk-card" aria-label="Fiber Arts Workbench">
+      <!-- 1. Reading Nook Desk -->
+      <article class="desk-card" aria-label="Reading Nook">
         <div class="desk-top">
-          <span class="desk-badge fiber">🧶 Fiber Arts</span>
-          <div style="display: flex; gap: 6px; align-items: center;">
-            <span class="meta-pill" id="fiber-type">Knitting WIP</span>
-            <button class="desk-action-btn" onclick="openFiberModal()" title="Edit Fiber Project" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
-              ✏️ Update
-            </button>
-          </div>
+          <span class="desk-badge reading">📚 Reading Nook</span>
+          <button class="desk-action-btn" onclick="openReadingModal()" title="Update Reading Progress" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+            ✏️ Update
+          </button>
         </div>
 
         <div>
-          <h2 class="desk-title" id="fiber-title">Autumn Cardigan</h2>
-          <div class="desk-meta" id="fiber-specs" style="margin-top: 4px;">US 7 (4.5mm) • DK Weight</div>
+          <h2 class="desk-title" id="reading-title">Dune Messiah</h2>
+          <div class="desk-meta" id="reading-author" style="margin-top: 4px;">by Frank Herbert</div>
         </div>
 
-        <!-- Big Row Counter -->
-        <div class="counter-box">
-          <div class="counter-info">
-            <span class="counter-label">Current Row</span>
-            <span class="counter-number" id="fiber-rows">44</span>
+        <!-- Progress Tracker -->
+        <div class="progress-box">
+          <div class="progress-labels">
+            <span class="counter-label">StoryGraph Progress</span>
+            <span id="reading-progress-label" style="font-weight: 700; color: var(--text-primary);">Ch. 8 of 24 (33%)</span>
           </div>
-          <div class="counter-buttons">
-            <button class="btn-counter" onclick="changeRows(-1)" title="Decrease Row" aria-label="Decrease Row">−</button>
-            <button class="btn-counter" onclick="changeRows(1)" title="Increase Row" aria-label="Increase Row">+</button>
+          <div class="progress-bar-bg" style="margin-top: 6px;">
+            <div id="reading-progress-bar" class="progress-bar-fill" style="width: 33%;"></div>
           </div>
         </div>
 
         <div class="desk-footer">
-          <a id="fiber-link" href="https://www.ravelry.com" target="_blank" class="desk-link">
-            <span>Open Ravelry</span> ↗
+          <a id="reading-link" href="https://app.thestorygraph.com/profile/soulless613" target="_blank" class="desk-link" style="color: var(--accent-reading); font-weight: 600;">
+            <span>📊 The StoryGraph</span> ↗
           </a>
-          <span id="fiber-sync-status" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
+          <span id="reading-updated-tag" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
         </div>
       </article>
 
@@ -155,40 +151,7 @@
         </div>
       </article>
 
-      <!-- 3. Reading Nook Desk -->
-      <article class="desk-card" aria-label="Reading Nook">
-        <div class="desk-top">
-          <span class="desk-badge reading">📚 Reading Nook</span>
-          <button class="desk-action-btn" onclick="openReadingModal()" title="Update Reading Progress" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
-            ✏️ Update
-          </button>
-        </div>
-
-        <div>
-          <h2 class="desk-title" id="reading-title">Dune Messiah</h2>
-          <div class="desk-meta" id="reading-author" style="margin-top: 4px;">by Frank Herbert</div>
-        </div>
-
-        <!-- Progress Tracker -->
-        <div class="progress-box">
-          <div class="progress-labels">
-            <span class="counter-label">StoryGraph Progress</span>
-            <span id="reading-progress-label" style="font-weight: 700; color: var(--text-primary);">Ch. 8 of 24 (33%)</span>
-          </div>
-          <div class="progress-bar-bg" style="margin-top: 6px;">
-            <div id="reading-progress-bar" class="progress-bar-fill" style="width: 33%;"></div>
-          </div>
-        </div>
-
-        <div class="desk-footer">
-          <a id="reading-link" href="https://app.thestorygraph.com/profile/soulless613" target="_blank" class="desk-link" style="color: var(--accent-reading); font-weight: 600;">
-            <span>📊 The StoryGraph</span> ↗
-          </a>
-          <span id="reading-updated-tag" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
-        </div>
-      </article>
-
-      <!-- 4. Gaming Rig Desk -->
+      <!-- 3. Gaming Rig Desk -->
       <article class="desk-card" aria-label="Gaming Rig">
         <div class="desk-top">
           <span class="desk-badge gaming">🎮 Game Rig</span>
@@ -218,6 +181,43 @@
             <span>Game Wiki</span> ↗
           </a>
           <span id="gaming-updated-tag" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
+        </div>
+      </article>
+
+      <!-- 4. Fiber Arts Desk -->
+      <article class="desk-card" aria-label="Fiber Arts Workbench">
+        <div class="desk-top">
+          <span class="desk-badge fiber">🧶 Fiber Arts</span>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span class="meta-pill" id="fiber-type">Knitting WIP</span>
+            <button class="desk-action-btn" onclick="openFiberModal()" title="Edit Fiber Project" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+              ✏️ Update
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="desk-title" id="fiber-title">Autumn Cardigan</h2>
+          <div class="desk-meta" id="fiber-specs" style="margin-top: 4px;">US 7 (4.5mm) • DK Weight</div>
+        </div>
+
+        <!-- Big Row Counter -->
+        <div class="counter-box">
+          <div class="counter-info">
+            <span class="counter-label">Current Row</span>
+            <span class="counter-number" id="fiber-rows">44</span>
+          </div>
+          <div class="counter-buttons">
+            <button class="btn-counter" onclick="changeRows(-1)" title="Decrease Row" aria-label="Decrease Row">−</button>
+            <button class="btn-counter" onclick="changeRows(1)" title="Increase Row" aria-label="Increase Row">+</button>
+          </div>
+        </div>
+
+        <div class="desk-footer">
+          <a id="fiber-link" href="https://www.ravelry.com" target="_blank" class="desk-link">
+            <span>Open Ravelry</span> ↗
+          </a>
+          <span id="fiber-sync-status" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
         </div>
       </article>
 

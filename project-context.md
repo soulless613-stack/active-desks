@@ -47,7 +47,23 @@
   * Check/uncheck states sync to `anchors.json` on GitHub with 1.5s debounce.
   * Date-aware: on startup (`fetchAnchorsFromRepo()`), if the remote record is from a previous calendar day, the local midnight reset is preserved.
 
-### 2. Kitchen & Recipe Shelf Desk
+### 2. Reading Nook Desk & Cross-Device Sync (`reading.json`)
+* **Current State**: Tracking *Oathbringer* by Brandon Sanderson (pages 1119/1243, 90%).
+* **Gemini Vision Screenshot Parsing**:
+  * Uploading a screenshot of The StoryGraph or Kindle triggers client-side OCR via `gemini-3.6-flash:generateContent`.
+  * *Model Note*: Google AI Studio retired `gemini-2.5-flash` (returns 404). Always use `gemini-3.6-flash`.
+  * Prompts the model to return structured JSON: `{ title, author, current_progress, total_progress, unit, percentage }`.
+* **Cross-Device Repository Sync (`reading.json`)**:
+  * Reads and commits reading progress directly via unified `githubGet`/`githubPut` engine.
+  * Manual edits and screenshot parses save locally instantly and mark `reading.json` dirty.
+* **On-Screen QR Code Device Pairing**:
+  * Embedded local library [`qrious.min.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/qrious.min.js) (~17KB, zero CDN reliance).
+  * Clicking "Show Mobile Pairing QR Code" generates a QR code encoding `#setup=<base64-json>` containing the Gemini Key and GitHub PAT.
+  * Scanning the PC monitor with the Google Pixel camera opens the live PWA, imports the keys into `localStorage`, erases the hash from the browser URL via `history.replaceState` for privacy, and displays a success toast.
+* **Commit Verification Tag**:
+  * The `#sync-modal` header displays the running commit hash (`#ea2ab15` / `#...`) in grey monospace next to "Phone & Device Sync". This allows instant verification of whether mobile has reloaded the latest deployment or is still serving a cached Service Worker bundle.
+
+### 3. Kitchen & Recipe Shelf Desk
 * **Recipe Selector**: Compact `<select id="recipe-select">` dropdown list selector with custom chevron styling. Effortlessly scales from 3 to 30+ recipes without crowding mobile screens.
 * **Recipe Inbox & Link Queue (`recipe-inbox.json`)**:
   * Tap **"📥 Queue"** in the Kitchen Shelf header to quickly drop Instagram Reel or recipe links from mobile or desktop.
@@ -67,30 +83,14 @@
   * `commitRecipeInboxToGithub()` features automatic 409-conflict retries with exponential backoff and `no-store` cache-busting to prevent SHA collisions during rapid successive mobile queues.
   * Includes a **"🔄 Sync to GitHub"** button in the Recipe Inbox modal for on-demand manual pushes.
 
-### 3. Fiber Arts Desk (`fiber.json`)
+### 4. Game Rig Desk (`gaming.json`)
+* Tracks active playthrough (*Baldur's Gate 3*), gaming platform (PC / Steam, Switch, PS5), active quest/secrets goal, and wiki link.
+* **✏️ Update Modal**: Modal allows updating game title, platform, active quest note, and wiki link with instant local save and optional immediate sync button.
+
+### 5. Fiber Arts Desk (`fiber.json`)
 * Knitting & crochet WIP tracker with row counter, target row goals, needle/yarn specs, and pattern links.
 * **Instant Local Row Changes**: Tapping `+`/`−` immediately persists to `localStorage`, re-renders the UI with zero delay, and marks `fiber.json` dirty for background batch sync.
 * **✏️ Update Modal**: Modal allows editing project title, WIP type, yarn/needle specs, target rows, and pattern link. Features instant local save (`💾 Save Changes`) and on-demand cloud sync (`🔄 Sync to GitHub`).
-
-### 4. Reading Nook Desk & Cross-Device Sync (`reading.json`)
-* **Current State**: Tracking *Oathbringer* by Brandon Sanderson (pages 1119/1243, 90%).
-* **Gemini Vision Screenshot Parsing**:
-  * Uploading a screenshot of The StoryGraph or Kindle triggers client-side OCR via `gemini-3.6-flash:generateContent`.
-  * *Model Note*: Google AI Studio retired `gemini-2.5-flash` (returns 404). Always use `gemini-3.6-flash`.
-  * Prompts the model to return structured JSON: `{ title, author, current_progress, total_progress, unit, percentage }`.
-* **Cross-Device Repository Sync (`reading.json`)**:
-  * Reads and commits reading progress directly via unified `githubGet`/`githubPut` engine.
-  * Manual edits and screenshot parses save locally instantly and mark `reading.json` dirty.
-* **On-Screen QR Code Device Pairing**:
-  * Embedded local library [`qrious.min.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/qrious.min.js) (~17KB, zero CDN reliance).
-  * Clicking "Show Mobile Pairing QR Code" generates a QR code encoding `#setup=<base64-json>` containing the Gemini Key and GitHub PAT.
-  * Scanning the PC monitor with the Google Pixel camera opens the live PWA, imports the keys into `localStorage`, erases the hash from the browser URL via `history.replaceState` for privacy, and displays a success toast.
-* **Commit Verification Tag**:
-  * The `#sync-modal` header displays the running commit hash (`#ea2ab15` / `#...`) in grey monospace next to "Phone & Device Sync". This allows instant verification of whether mobile has reloaded the latest deployment or is still serving a cached Service Worker bundle.
-
-### 5. Game Rig Desk (`gaming.json`)
-* Tracks active playthrough (*Baldur's Gate 3*), gaming platform (PC / Steam, Switch, PS5), active quest/secrets goal, and wiki link.
-* **✏️ Update Modal**: Modal allows updating game title, platform, active quest note, and wiki link with instant local save and optional immediate sync button.
 
 ### 6. Quick Capture Bar & Cross-Device Sync (`captures.json`)
 * Always-available quick note capture dock storing stray thoughts directly into `localStorage` and syncing across devices.
