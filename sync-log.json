@@ -1,5 +1,16 @@
 [
   {
+    "id": "1791804144633ncc5",
+    "time": "2026-10-12T11:22:24.633Z",
+    "displayTime": "07:22:24 AM",
+    "device": "mobile",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (2 notes)",
+    "details": null
+  },
+  {
     "id": "1791804103164ter0",
     "time": "2026-10-12T11:21:43.164Z",
     "displayTime": "07:21:43 AM",
