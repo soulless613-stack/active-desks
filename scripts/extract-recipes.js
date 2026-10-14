@@ -72,6 +72,8 @@ async function main() {
 
   const extractedRecipes = [];
 
+  const errorLogList = [];
+
   for (let i = 0; i < inbox.length; i++) {
     const item = inbox[i];
     console.log(`\n[${i + 1}/${inbox.length}] Processing URL: ${item.url}`);
@@ -82,7 +84,7 @@ async function main() {
       const oembedData = await fetchOembedData(item.url);
 
       // 2. Call Gemini with Search Grounding
-      const recipeData = await extractWithGemini(item, oembedData, apiKey);
+      const recipeData = await extractWithGemini(item, oembedData, apiKey, errorLogList);
       if (!recipeData) {
         console.warn(`Could not extract recipe data for ${item.url}. Skipping.`);
         continue;
@@ -112,13 +114,14 @@ async function main() {
       extractedRecipes.push(recipeData);
     } catch (err) {
       console.error(`Failed processing ${item.url}:`, err);
+      errorLogList.push({ exception: err.message });
     }
   }
 
   if (extractedRecipes.length === 0) {
     const msg = `Could not extract recipe from queued item(s): ${inbox.map(i => i.url).join(', ')}`;
     console.error(`CRITICAL: ${msg}`);
-    recordFailureLog(msg, { inbox });
+    recordFailureLog(msg, { inbox, errorLogList });
     process.exit(1);
   }
 
@@ -170,7 +173,7 @@ async function fetchOembedData(url) {
 /**
  * Call Gemini Flash with Google Search Grounding
  */
-async function extractWithGemini(item, oembedData, apiKey) {
+async function extractWithGemini(item, oembedData, apiKey, errorLogList = []) {
   let shortcode = '';
   const reelMatch = (item.url || '').match(/reel\/([A-Za-z0-9_-]+)/);
   if (reelMatch) shortcode = reelMatch[1];
@@ -250,6 +253,7 @@ Return ONLY a valid JSON object wrapped in \`\`\`json ... \`\`\` matching this e
         if (!res.ok) {
           const errText = await res.text();
           console.warn(`Model ${model} (${toolCfg.name}) returned HTTP ${res.status}: ${errText.substring(0, 300)}`);
+          errorLogList.push({ model, toolMode: toolCfg.name, status: res.status, error: errText.substring(0, 300) });
           continue;
         }
 
@@ -266,6 +270,7 @@ Return ONLY a valid JSON object wrapped in \`\`\`json ... \`\`\` matching this e
 
         if (!rawText || !rawText.trim()) {
           console.warn(`No text candidate returned from ${model} (${toolCfg.name})`);
+          errorLogList.push({ model, toolMode: toolCfg.name, emptyCandidate: true });
           continue;
         }
 
@@ -277,9 +282,11 @@ Return ONLY a valid JSON object wrapped in \`\`\`json ... \`\`\` matching this e
           return parsed;
         } else {
           console.warn(`-> Failed to extract structured recipe from ${model} output:`, rawText.substring(0, 300));
+          errorLogList.push({ model, toolMode: toolCfg.name, parseFailed: true, sample: rawText.substring(0, 200) });
         }
       } catch (e) {
         console.warn(`Exception calling ${model} (${toolCfg.name}):`, e.message);
+        errorLogList.push({ model, toolMode: toolCfg.name, exception: e.message });
       }
     }
   }
