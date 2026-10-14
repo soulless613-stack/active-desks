@@ -187,22 +187,25 @@ ${shortcode ? `- Instagram Reel Shortcode: "${shortcode}"` : ''}
 ${oembedData ? `- Scraped oEmbed metadata: ${JSON.stringify(oembedData)}` : ''}
 
 Instructions:
-1. Search Google using your search tool for this exact URL, shortcode "${shortcode || ''}", creator handle, food blog, or recipe keywords.
-2. Find the true recipe. Creators frequently publish exact measurements, gram weights, and baking temperatures on their food blog, website, Linktree, or video caption.
+1. If the User Note or source URL contains the recipe name, dish, or creator, use that as the authoritative identity of the dish.
+2. Search Google using your search tool if available for this exact URL, shortcode "${shortcode || ''}", creator handle, food blog, or recipe keywords.
 3. INGREDIENTS FORMATTING RULE (CRITICAL):
    - STRICT 1 INGREDIENT PER ITEM. NEVER combine multiple items into one string (e.g. NEVER "1 tsp salt and pepper" -> separate into "1 tsp salt" and "1/4 tsp black pepper"; NEVER "baking powder & baking soda" -> separate into two items).
    - Include metric gram weights alongside US customary volumes wherever possible (e.g. "900g (32 oz) chicken breast", "208g (1 3/4 cups) all-purpose flour").
 4. Provide realistic nutritional macros per serving: Calories (kcal), Protein (g), Carbs (g), Fat (g).
 5. Provide clear, numbered, sequential steps.
 6. Provide a 1-2 sentence highlight summarizing the dish, technique, and flavor.
+7. ANTI-HALLUCINATION RULE (CRITICAL):
+   - NEVER fabricate or guess an external blog URL or domain (e.g. do NOT invent fictional URLs).
+   - If you do not have an authentic, verified external blog URL from creator sources, you MUST set "blogUrl" to the exact "${item.url}".
 
-Return ONLY a valid JSON object wrapped in \`\`\`json ... \`\`\` matching this exact schema:
+Return ONLY a valid JSON object wrapped in ```json ... ``` matching this exact schema:
 {
   "title": "Clean Descriptive Recipe Title",
   "slug": "kebab-case-title",
   "creator": "Creator Name (@handle)",
   "sourceUrl": "${item.url}",
-  "blogUrl": "https://creator-food-blog.com/recipe (or same as sourceUrl if none)",
+  "blogUrl": "${item.url}",
   "tags": ["tag1", "tag2", "tag3"],
   "yield": "10 Servings (Meal Prep)",
   "calories": "450 kcal",

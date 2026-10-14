@@ -275,43 +275,39 @@ const DEFAULT_STATE = {
           ]
         },
         {
-          id: 'creamy-garlic-chicken-and-rice',
-          title: "High Protein Creamy Garlic Chicken and Rice",
-          source: "Stealth Health (@stealth_health_life)",
+          id: 'viral-korean-salt-bread',
+          title: "Viral Korean Salt Bread (Sogeum-ppang)",
+          source: "Erin's Cozy Kitchen (@erins_cozykitchen)",
           url: "https://www.instagram.com/reel/DQRzg3MDnma/?vrfl=M25meXIxYjk2dzY4",
-          yield: "10 Servings",
-          calories: "460 kcal",
-          protein: "45g",
-          carbs: "45g",
+          yield: "12 Rolls",
+          calories: "245 kcal",
+          protein: "5g",
+          carbs: "32g",
           fat: "11g",
-          highlight: "A high-protein meal prep powerhouse featuring tender chicken and rice coated in a velvety, macro-friendly garlic parmesan sauce.",
+          highlight: "Crispy and buttery golden bottom, pillowy soft crumb, and a signature hollow buttery center rolled with cold salted butter.",
           ingredients: [
-            "1360g (48 oz) chicken breast, diced",
-            "15ml (1 tbsp) olive oil",
-            "600g (3 cups) jasmine rice, dry",
-            "1200ml (5 cups) chicken broth",
-            "6 cloves garlic, minced",
-            "15g (1 tbsp) garlic powder",
-            "10g (2 tsp) onion powder",
-            "5g (1 tsp) smoked paprika",
-            "6g (1 tsp) salt",
-            "2g (1/2 tsp) black pepper",
-            "224g (8 oz) light cream cheese",
-            "100g (1 cup) grated Parmesan cheese",
-            "240ml (1 cup) fat-free milk",
-            "10g (1/4 cup) fresh parsley, chopped"
+            "400g (3 1/3 cups) bread flour",
+            "120g (1 cup) cake flour",
+            "365ml (1 1/2 cups + 1 tbsp) cold water",
+            "25g (2 tbsp) granulated sugar",
+            "10g (1 3/4 tsp) fine sea salt",
+            "25g (1/4 cup) nonfat dry milk powder",
+            "40g (3 tbsp) cold unsalted butter",
+            "7g (2 1/4 tsp) instant yeast",
+            "12 pieces cold salted butter (about 14g / 1 tbsp each)",
+            "1 tbsp coarse flaky sea salt (Maldon), for sprinkling"
           ],
           steps: [
-            "Dice the chicken breast into small, even bite-sized pieces.",
-            "In a large bowl, season the chicken with garlic powder, onion powder, smoked paprika, salt, and black pepper. Toss until fully coated.",
-            "Heat olive oil in a large skillet or pot over medium-high heat. Add the chicken and sear until cooked through and slightly browned (about 6-8 minutes). Remove chicken and set aside.",
-            "In the same skillet, add the minced garlic and sauté for 1 minute until fragrant.",
-            "Add the dry jasmine rice to the skillet and toast for 2 minutes, stirring frequently to absorb the remaining flavors in the pan.",
-            "Pour in the chicken broth, bring to a boil, then reduce heat to low. Cover and simmer for 15-18 minutes or until the rice is tender and liquid is absorbed.",
-            "While the rice cooks, combine the light cream cheese, Parmesan cheese, and milk in a blender or whisk vigorously in a bowl until smooth.",
-            "Once the rice is done, stir in the cream sauce and the cooked chicken.",
-            "Mix well over low heat until the sauce is creamy and evenly distributed. Garnish with fresh parsley.",
-            "Divide into 10 equal portions for meal prep."
+            "Whisk bread flour, cake flour, sugar, salt, milk powder, and instant yeast in a bowl. Add cold water and mix into a dough.",
+            "Add cold unsalted butter and knead vigorously for 8–10 minutes until smooth, glossy, and elastic.",
+            "Cover and let rise in a warm spot until doubled in volume (approx. 60 minutes).",
+            "Divide dough into 12 equal portions (~78g each), shape into balls, and rest covered for 15 minutes.",
+            "Roll each portion into a tapered cone, then roll flat into a long 12-inch triangle.",
+            "Place a piece of cold salted butter at the wide base and roll up tightly toward the narrow tip into a crescent roll.",
+            "Place rolls seam-side down on a parchment-lined baking sheet and proof until puffy (45–60 minutes).",
+            "Preheat oven to 450°F (230°C). Mist rolls lightly with water and sprinkle flaky sea salt on top.",
+            "Reduce oven immediately to 400°F (200°C) and bake for 12–15 minutes until tops are golden and the butter pools sizzle to fry the bottom crust.",
+            "Rest 5 minutes on a wire rack and serve warm to experience the crispy bottom and buttery hollow center!"
           ]
         }
       ]
@@ -369,6 +365,9 @@ function loadState() {
 
       // Sync recipes to ensure newly added default recipes exist in state & updates reflect immediately
       if (parsed.desks && parsed.desks.recipe && Array.isArray(parsed.desks.recipe.recipes)) {
+        // Prune obsolete chicken recipe if present in existing storage
+        parsed.desks.recipe.recipes = parsed.desks.recipe.recipes.filter(r => r.id !== 'creamy-garlic-chicken-and-rice');
+
         DEFAULT_STATE.desks.recipe.recipes.forEach(defRecipe => {
           const idx = parsed.desks.recipe.recipes.findIndex(r => r.id === defRecipe.id);
           if (idx === -1) {
