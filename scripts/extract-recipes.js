@@ -31,10 +31,9 @@ const PROJECT_CONTEXT_PATH = path.join(ROOT_DIR, 'project-context.md');
 
 // Supported Gemini models with search grounding support in order of preference
 const CANDIDATE_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite'
+  'gemini-3.8-flash',
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash'
 ];
 
 async function main() {
