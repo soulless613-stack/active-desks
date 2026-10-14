@@ -1,5 +1,27 @@
 [
   {
+    "id": "1791950073543tjej",
+    "time": "2026-10-14T03:54:33.543Z",
+    "displayTime": "11:54:33 PM",
+    "device": "mobile",
+    "target": "recipe-inbox.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update recipe inbox (1 pending)",
+    "details": null
+  },
+  {
+    "id": "1791948511545agvd",
+    "time": "2026-10-14T03:28:31.545Z",
+    "displayTime": "11:28:31 PM",
+    "device": "mobile",
+    "target": "auth",
+    "action": "test",
+    "status": "success",
+    "message": "GitHub token verified! Connected to soulless613-stack/active-desks",
+    "details": "Write permission: YES. API calls remaining: 4882"
+  },
+  {
     "id": "17919478197803toh",
     "time": "2026-10-14T03:16:59.766Z",
     "displayTime": "03:16:59 AM",
@@ -622,48 +644,5 @@
     "status": "success",
     "message": "Updated captured thoughts on GitHub (0 remaining)",
     "details": null
-  },
-  {
-    "id": "17896158539532knf",
-    "time": "2026-09-17T03:30:53.953Z",
-    "displayTime": "11:30:53 PM",
-    "device": "mobile",
-    "target": "captures.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Manually synced 0 captured thoughts to GitHub",
-    "details": null
-  },
-  {
-    "id": "1789615851611gbj6",
-    "time": "2026-09-17T03:30:51.611Z",
-    "displayTime": "11:30:51 PM",
-    "device": "mobile",
-    "target": "captures.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Updated captured thoughts on GitHub (0 remaining)",
-    "details": null
-  },
-  {
-    "id": "1789615850121m9pu",
-    "time": "2026-09-17T03:30:50.121Z",
-    "displayTime": "11:30:50 PM",
-    "device": "mobile",
-    "target": "captures.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Updated captured thoughts on GitHub (2 remaining)",
-    "details": null
-  },
-  {
-    "id": 1,
-    "time": "2026-09-16T23:12:00.000Z",
-    "displayTime": "11:12 PM",
-    "device": "desktop",
-    "target": "system",
-    "action": "init",
-    "status": "success",
-    "message": "Sync & error log system initialized"
   }
 ]
