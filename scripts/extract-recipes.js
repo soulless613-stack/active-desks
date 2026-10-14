@@ -31,8 +31,8 @@ const PROJECT_CONTEXT_PATH = path.join(ROOT_DIR, 'project-context.md');
 
 // Supported Gemini models with search grounding support in order of preference
 const CANDIDATE_MODELS = [
-  'gemini-2.5-flash',
   'gemini-3.6-flash',
+  'gemini-2.5-flash',
   'gemini-2.0-flash'
 ];
 
@@ -113,8 +113,8 @@ async function main() {
   }
 
   if (extractedRecipes.length === 0) {
-    console.log('No new recipes were successfully extracted. Inbox remains unchanged.');
-    process.exit(0);
+    console.error('CRITICAL: No new recipes were successfully extracted from the queue.');
+    process.exit(1);
   }
 
   // 6. Bump Service Worker cache version
@@ -214,45 +214,63 @@ Return ONLY a valid JSON object wrapped in \`\`\`json ... \`\`\` matching this e
 }`;
 
   for (const model of CANDIDATE_MODELS) {
-    console.log(`-> Querying Gemini model: ${model} with search grounding...`);
-    try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      const payload = {
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
-        ],
-        tools: [
-          { googleSearch: {} }
-        ]
-      };
+    const toolModes = [
+      { name: 'googleSearch', tools: [{ googleSearch: {} }] },
+      { name: 'google_search', tools: [{ google_search: {} }] },
+      { name: 'no-tools', tools: [] }
+    ];
 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    for (const toolCfg of toolModes) {
+      console.log(`-> Querying model ${model} with tool mode: ${toolCfg.name}...`);
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const payload = {
+          contents: [{ parts: [{ text: prompt }] }]
+        };
+        if (toolCfg.tools.length > 0) {
+          payload.tools = toolCfg.tools;
+        }
 
-      if (!res.ok) {
-        const errText = await res.text();
-        console.warn(`Model ${model} returned HTTP ${res.status}: ${errText.substring(0, 200)}`);
-        continue;
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          console.warn(`Model ${model} (${toolCfg.name}) returned HTTP ${res.status}: ${errText.substring(0, 300)}`);
+          continue;
+        }
+
+        const resData = await res.json();
+        const candidate = resData.candidates?.[0];
+        const parts = candidate?.content?.parts || [];
+
+        // Critical: In Gemini 2.5/3.x models with thinking, parts contain { thought: true, text: "..." }
+        // We must extract only the non-thought response parts
+        const nonThoughtParts = parts.filter(p => !p.thought && p.text);
+        const rawText = nonThoughtParts.length > 0
+          ? nonThoughtParts.map(p => p.text).join('\n')
+          : parts.map(p => p.text || '').join('\n');
+
+        if (!rawText || !rawText.trim()) {
+          console.warn(`No text candidate returned from ${model} (${toolCfg.name})`);
+          continue;
+        }
+
+        console.log(`-> Received text from ${model} (${rawText.length} chars). Parsing JSON...`);
+        const parsed = parseJsonFromResponse(rawText);
+        if (parsed && parsed.title && (Array.isArray(parsed.steps) || Array.isArray(parsed.ingredients))) {
+          if (!Array.isArray(parsed.steps)) parsed.steps = [];
+          console.log(`-> Successfully parsed recipe: "${parsed.title}"`);
+          return parsed;
+        } else {
+          console.warn(`-> Failed to extract structured recipe from ${model} output:`, rawText.substring(0, 300));
+        }
+      } catch (e) {
+        console.warn(`Exception calling ${model} (${toolCfg.name}):`, e.message);
       }
-
-      const resData = await res.json();
-      const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) {
-        console.warn(`No text candidate returned from ${model}`);
-        continue;
-      }
-
-      const parsed = parseJsonFromResponse(rawText);
-      if (parsed && parsed.title && Array.isArray(parsed.steps)) {
-        return parsed;
-      }
-    } catch (e) {
-      console.warn(`Exception calling ${model}:`, e.message);
     }
   }
 

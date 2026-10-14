@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'recipe-inbox.json'
+      - 'scripts/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
