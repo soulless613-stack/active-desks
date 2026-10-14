@@ -399,6 +399,7 @@ function registerRecipeInAppJs(recipe) {
           title: ${JSON.stringify(recipe.title)},
           source: ${JSON.stringify(recipe.creator)},
           url: ${JSON.stringify(recipe.sourceUrl)},
+          blogUrl: ${recipe.blogUrl && recipe.blogUrl !== recipe.sourceUrl ? JSON.stringify(recipe.blogUrl) : 'null'},
           yield: ${JSON.stringify(recipe.yield || 'Standard Batch')},
           calories: ${JSON.stringify(recipe.calories || 'N/A')},
           protein: ${JSON.stringify(recipe.protein || 'N/A')},

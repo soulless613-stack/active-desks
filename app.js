@@ -132,6 +132,7 @@ const DEFAULT_STATE = {
           title: "Chocolate Chip Cookie Donut Loaf",
           source: "Angela Heckler (@obsessedwithcashews)",
           url: "https://www.instagram.com/reel/DcbhSQLNA4N/",
+          blogUrl: "https://obsessedcakes.com/recipes/chocolate-chip-cookie-donut-loaf",
           yield: "10 Slices (9x5\" Pan)",
           calories: "395 kcal",
           protein: "5g",
@@ -218,6 +219,7 @@ const DEFAULT_STATE = {
           title: "Glazed Donut Bread Pudding",
           source: "12 Tomatoes (@12_tomatoes)",
           url: "https://www.instagram.com/reel/DdRs-Ofj5uI/",
+          blogUrl: "https://12tomatoes.com/viral-donut-bread-pudding/",
           yield: "12 Servings (9x13\" Dish)",
           calories: "455 kcal",
           protein: "7g",
@@ -952,7 +954,19 @@ function openRecipeModal() {
   
   document.getElementById('modal-recipe-title').textContent = rec.title;
   document.getElementById('modal-recipe-source').textContent = rec.source;
-  document.getElementById('modal-recipe-link').href = rec.url;
+  
+  const reelLinkEl = document.getElementById('modal-recipe-link');
+  if (reelLinkEl) reelLinkEl.href = rec.url;
+
+  const blogLinkEl = document.getElementById('modal-recipe-blog-link');
+  if (blogLinkEl) {
+    if (rec.blogUrl && rec.blogUrl !== rec.url) {
+      blogLinkEl.href = rec.blogUrl;
+      blogLinkEl.style.display = 'inline-flex';
+    } else {
+      blogLinkEl.style.display = 'none';
+    }
+  }
   
   // Render nutrition / stats
   const statsContainer = document.getElementById('modal-recipe-stats');
