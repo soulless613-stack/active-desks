@@ -79,6 +79,7 @@
   6. [`glazed-donut-bread-pudding.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/glazed-donut-bread-pudding.md) — 455 kcal, 7g P, 65g C, 19g F (by 12 Tomatoes @12_tomatoes).
   7. [`creamy-one-pot-garlic-herb-pasta.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/creamy-one-pot-garlic-herb-pasta.md) — 670 kcal, 15g P, 50g C, 47g F (by Mariam @baiti_ana).
   8. [`viral-korean-salt-bread.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/viral-korean-salt-bread.md) — 245 kcal, 5g P, 32g C, 11g F (by Erin's Cozy Kitchen @erins_cozykitchen).
+  9. [`classic-syracuse-salt-potatoes.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/classic-syracuse-salt-potatoes.md) — 250 kcal, 3g P, 27g C, 15g F.
 * **Interactive Modal**: Tapping "View Ingredients & Steps" opens a glassmorphic sheet with macro badges, an interactive checklist of ingredients, step-by-step instructions, and original creator links.
 * **Auto-Sync Migration & Robust Queue Sync**:
   * `loadState()` in `app.js` merges default recipes into existing user `localStorage` if new recipes are added in code.
