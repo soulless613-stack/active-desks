@@ -6,9 +6,14 @@ description: >-
 
 # Active Desks Recipe Extractor & Processor Runbook
 
-This skill automates the complete end-to-end workflow for processing queued recipes in Active Desks without requiring user monitoring or manual intervention.
+This skill documents and automates the complete recipe extraction workflow for Active Desks.
 
-## Trigger Phrases
+> [!NOTE]
+> **Dual-Mode Operation**:
+> 1. **Autonomous Cloud Agent (Primary)**: When a reel link is queued from mobile into `recipe-inbox.json`, GitHub Actions automatically triggers `.github/workflows/recipe-extractor.yml` and runs [`scripts/extract-recipes.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/scripts/extract-recipes.js) in the cloud. It extracts, commits, and deploys without opening the computer.
+> 2. **Antigravity Desktop Agent (Manual Fallback)**: This runbook allows the Antigravity agent in the desktop IDE to manually perform or inspect the extraction on-demand.
+
+## Trigger Phrases (For Desktop Manual Execution)
 Activate this skill whenever the user requests:
 - *"Process my recipe inbox"*
 - *"Extract recipes from queue"*

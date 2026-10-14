@@ -65,10 +65,11 @@
 
 ### 3. Kitchen & Recipe Shelf Desk
 * **Recipe Selector**: Compact `<select id="recipe-select">` dropdown list selector with custom chevron styling. Effortlessly scales from 3 to 30+ recipes without crowding mobile screens.
-* **Recipe Inbox & Link Queue (`recipe-inbox.json`)**:
+* **Recipe Inbox & Autonomous Cloud Agent (`recipe-inbox.json` & `.github/workflows/recipe-extractor.yml`)**:
   * Tap **"📥 Queue"** in the Kitchen Shelf header to quickly drop Instagram Reel or recipe links from mobile or desktop.
   * Links are stored in `state.recipeInbox` and synced to `recipe-inbox.json` on GitHub via REST API.
-  * In the Antigravity IDE, saying *"Process my recipe inbox"* activates the [`active-desks-recipe-extractor`](file:///c:/Users/chris/Documents/antigravity/active-desks/.agents/skills/active-desks-recipe-extractor/SKILL.md) skill to autonomously extract queued links, locate creator blogs/grams, enforce 1-ingredient-per-checkbox formatting, generate `recipes/<slug>.md` markdown files, register them into `app.js`, clear the queue, bump the SW cache, and deploy to GitHub.
+  * **Autonomous Cloud Agent (GitHub Actions)**: Whenever `recipe-inbox.json` is updated on GitHub, `.github/workflows/recipe-extractor.yml` executes [`scripts/extract-recipes.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/scripts/extract-recipes.js) in a free cloud runner. The runner queries Gemini 2.5 Flash with Google Search Grounding to find creator blogs, exact gram weights, and nutritional macros, generates `recipes/<slug>.md`, registers the recipe in `app.js`, bumps the service worker cache, and deploys to GitHub Pages in ~45 seconds—completely hands-free without turning on the computer.
+  * **IDE Manual Fallback**: In the Antigravity IDE, saying *"Process my recipe inbox"* activates the [`active-desks-recipe-extractor`](file:///c:/Users/chris/Documents/antigravity/active-desks/.agents/skills/active-desks-recipe-extractor/SKILL.md) skill to run local extraction on-demand.
 * **Bundled Recipes** (Markdown source files stored in [`active-desks/recipes/`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/)):
   1. [`butter-chicken-mac-n-cheese.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/butter-chicken-mac-n-cheese.md) — 480 kcal, 45g P, 38g C, 16g F.
   2. [`crispy-potato-meatballs.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/crispy-potato-meatballs.md) — 410 kcal, 32g P, 28g C, 18g F.
