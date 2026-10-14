@@ -1,5 +1,20 @@
 [
   {
+    "id": "1791950435976y6j5",
+    "time": "2026-10-14T04:00:35.962Z",
+    "displayTime": "04:00:35 AM",
+    "device": "cloud-agent",
+    "target": "recipe-inbox.json",
+    "action": "auto-extract",
+    "status": "success",
+    "message": "Auto-extracted recipe: Classic Syracuse Salt Potatoes",
+    "details": {
+      "slug": "classic-syracuse-salt-potatoes",
+      "yield": "6 Servings",
+      "calories": "250 kcal"
+    }
+  },
+  {
     "id": "1791950073543tjej",
     "time": "2026-10-14T03:54:33.543Z",
     "displayTime": "11:54:33 PM",

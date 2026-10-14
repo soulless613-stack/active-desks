@@ -309,6 +309,35 @@ const DEFAULT_STATE = {
             "Reduce oven immediately to 400°F (200°C) and bake for 12–15 minutes until tops are golden and the butter pools sizzle to fry the bottom crust.",
             "Rest 5 minutes on a wire rack and serve warm to experience the crispy bottom and buttery hollow center!"
           ]
+        },
+        {
+          id: 'classic-syracuse-salt-potatoes',
+          title: "Classic Syracuse Salt Potatoes",
+          source: "Home Cook (@instagram)",
+          url: "https://www.instagram.com/reel/DJ5DABYxHug/?obrf=cWpmaHFscnB4aGhp",
+          yield: "6 Servings",
+          calories: "250 kcal",
+          protein: "3g",
+          carbs: "27g",
+          fat: "15g",
+          highlight: "Boiled in a concentrated brine, whole baby potatoes develop an extraordinarily creamy interior encased in a paper-thin, delicate salt crust. Dipped directly into warm melted butter, they deliver an irresistible contrast of rich butterfat and earthy sweetness.",
+          ingredients: [
+            "907g (2 lbs) bite-sized baby potatoes (such as baby Yukon Gold or small red potatoes), unpeeled and whole",
+            "290g (1 cup) fine sea salt",
+            "1890ml (8 cups) water",
+            "113g (1/2 cup) unsalted butter, melted",
+            "2g (1 tbsp) fresh chives, finely chopped"
+          ],
+          steps: [
+            "Rinse the baby potatoes thoroughly under cool running water, checking that their skins remain intact with no cuts or punctures so the interior stays creamy rather than overly salty.",
+            "In a large pot, combine the water and the fine sea salt. Stir briefly until the salt begins to dissolve.",
+            "Add the whole potatoes into the salted water, making sure they are fully submerged.",
+            "Place the pot over high heat and bring the liquid to a rolling boil.",
+            "Once boiling, reduce the heat slightly to medium-high to maintain a steady, active boil. Cook uncovered for 15 to 20 minutes, until a fork or skewer slides easily into the center of a potato without resistance.",
+            "Carefully pour the potatoes into a colander to drain away all the cooking brine. Do not rinse the potatoes.",
+            "Return the hot, drained potatoes to the empty pot or arrange them on a wire rack for 3 to 5 minutes; as steam and residual surface moisture evaporate, a characteristic light powdery salt crust will form over the skins.",
+            "Transfer the hot salt potatoes to a warm serving bowl, scatter with chopped chives if desired, and serve immediately alongside small bowls of warm melted butter for generous dipping."
+          ]
         }
       ]
     },
