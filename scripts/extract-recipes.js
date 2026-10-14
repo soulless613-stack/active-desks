@@ -199,7 +199,7 @@ Instructions:
    - NEVER fabricate or guess an external blog URL or domain (e.g. do NOT invent fictional URLs).
    - If you do not have an authentic, verified external blog URL from creator sources, you MUST set "blogUrl" to the exact "${item.url}".
 
-Return ONLY a valid JSON object wrapped in ```json ... ``` matching this exact schema:
+Return ONLY a valid JSON object wrapped in \`\`\`json ... \`\`\` matching this exact schema:
 {
   "title": "Clean Descriptive Recipe Title",
   "slug": "kebab-case-title",
