@@ -31,9 +31,10 @@ const PROJECT_CONTEXT_PATH = path.join(ROOT_DIR, 'project-context.md');
 
 // Supported Gemini models with search grounding support in order of preference
 const CANDIDATE_MODELS = [
-  'gemini-3.6-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
   'gemini-2.5-flash',
-  'gemini-2.0-flash'
+  'gemini-2.5-flash-lite'
 ];
 
 async function main() {
@@ -50,6 +51,7 @@ async function main() {
     inbox = raw ? JSON.parse(raw) : [];
   } catch (err) {
     console.error('Error parsing recipe-inbox.json:', err.message);
+    recordFailureLog('Error parsing recipe-inbox.json: ' + err.message);
     process.exit(1);
   }
 
@@ -58,10 +60,11 @@ async function main() {
     process.exit(0);
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = (process.env.GEMINI_API_KEY || '').trim();
   if (!apiKey) {
-    console.error('CRITICAL: GEMINI_API_KEY environment variable is missing.');
-    console.error('Please configure the GEMINI_API_KEY secret in repository settings.');
+    const msg = 'CRITICAL: GEMINI_API_KEY secret is missing or empty in GitHub repository settings.';
+    console.error(msg);
+    recordFailureLog(msg);
     process.exit(1);
   }
 
@@ -113,7 +116,9 @@ async function main() {
   }
 
   if (extractedRecipes.length === 0) {
-    console.error('CRITICAL: No new recipes were successfully extracted from the queue.');
+    const msg = `Could not extract recipe from queued item(s): ${inbox.map(i => i.url).join(', ')}`;
+    console.error(`CRITICAL: ${msg}`);
+    recordFailureLog(msg, { inbox });
     process.exit(1);
   }
 
@@ -166,16 +171,21 @@ async function fetchOembedData(url) {
  * Call Gemini Flash with Google Search Grounding
  */
 async function extractWithGemini(item, oembedData, apiKey) {
+  let shortcode = '';
+  const reelMatch = (item.url || '').match(/reel\/([A-Za-z0-9_-]+)/);
+  if (reelMatch) shortcode = reelMatch[1];
+
   const prompt = `You are an expert culinary assistant and recipe data extractor for a personal Progressive Web App.
 We need to extract a clean, complete recipe from this queued social media post or recipe link.
 
 Queued Item Details:
 - Source URL: ${item.url}
+${shortcode ? `- Instagram Reel Shortcode: "${shortcode}"` : ''}
 - User Note: ${item.note || 'None'}
 ${oembedData ? `- Scraped oEmbed metadata: ${JSON.stringify(oembedData)}` : ''}
 
 Instructions:
-1. Search Google using your search tool for this exact URL, reel shortcode/ID, creator handle, food blog, or recipe title.
+1. Search Google using your search tool for this exact URL, shortcode "${shortcode || ''}", creator handle, food blog, or recipe keywords.
 2. Find the true recipe. Creators frequently publish exact measurements, gram weights, and baking temperatures on their food blog, website, Linktree, or video caption.
 3. INGREDIENTS FORMATTING RULE (CRITICAL):
    - STRICT 1 INGREDIENT PER ITEM. NEVER combine multiple items into one string (e.g. NEVER "1 tsp salt and pepper" -> separate into "1 tsp salt" and "1/4 tsp black pepper"; NEVER "baking powder & baking soda" -> separate into two items).
@@ -469,6 +479,43 @@ function appendSyncLog(recipes) {
     console.log('-> Appended audit entry to sync-log.json');
   } catch (e) {
     console.warn('Could not update sync-log.json:', e.message);
+  }
+}
+
+/**
+ * Record failure diagnostic in sync-log.json
+ */
+function recordFailureLog(message, details = null) {
+  if (!fs.existsSync(SYNC_LOG_PATH)) return;
+  try {
+    let logs = [];
+    const raw = fs.readFileSync(SYNC_LOG_PATH, 'utf8').trim();
+    logs = raw ? JSON.parse(raw) : [];
+
+    const now = new Date();
+    const displayTime = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+
+    logs.unshift({
+      id: `${Date.now()}${Math.random().toString(36).substring(2, 6)}`,
+      time: now.toISOString(),
+      displayTime: displayTime,
+      device: 'cloud-agent',
+      target: 'recipe-inbox.json',
+      action: 'auto-extract',
+      status: 'error',
+      message: message,
+      details: details
+    });
+
+    if (logs.length > 60) logs = logs.slice(0, 60);
+    fs.writeFileSync(SYNC_LOG_PATH, JSON.stringify(logs, null, 2) + '\n', 'utf8');
+    console.log('-> Recorded failure diagnostic in sync-log.json');
+  } catch (e) {
+    console.warn('Could not write failure diagnostic to sync-log.json:', e.message);
   }
 }
 

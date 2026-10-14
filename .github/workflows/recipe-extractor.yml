@@ -42,3 +42,12 @@ jobs:
             git commit -m "feat(recipes): auto-extract queued recipes [skip ci]"
             git push origin main
           fi
+
+      - name: Commit Failure Diagnostic
+        if: failure()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sync-log.json
+          git diff --staged --quiet || (git commit -m "chore(sync): record extraction failure diagnostic in sync-log.json [skip ci]" && git push origin main) || true
+
