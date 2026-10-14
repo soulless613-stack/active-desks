@@ -1,5 +1,25 @@
 [
   {
+    "id": "1791947551910tus7",
+    "time": "2026-10-14T03:12:31.897Z",
+    "displayTime": "03:12:31 AM",
+    "device": "cloud-agent",
+    "target": "recipe-inbox.json",
+    "action": "auto-extract",
+    "status": "error",
+    "message": "Could not extract recipe from queued item(s): https://www.instagram.com/reel/DQRzg3MDnma/?vrfl=M25meXIxYjk2dzY4",
+    "details": {
+      "inbox": [
+        {
+          "id": 1791946859121,
+          "url": "https://www.instagram.com/reel/DQRzg3MDnma/?vrfl=M25meXIxYjk2dzY4",
+          "note": "",
+          "addedAt": "2026-10-14T03:00:59.121Z"
+        }
+      ]
+    }
+  },
+  {
     "id": "1791946868386fum3",
     "time": "2026-10-14T03:01:08.386Z",
     "displayTime": "11:01:08 PM",
