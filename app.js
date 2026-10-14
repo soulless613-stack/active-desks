@@ -273,6 +273,46 @@ const DEFAULT_STATE = {
             "Cover with lid and bring to a bubble over medium-high heat. Reduce to low and simmer covered for ~15 mins until pasta is tender and sauce is rich.",
             "Stir thoroughly, top evenly with mozzarella and parsley, cover for 2–3 mins until cheese melts, and serve warm!"
           ]
+        },
+        {
+          id: 'creamy-garlic-chicken-and-rice',
+          title: "High Protein Creamy Garlic Chicken and Rice",
+          source: "Stealth Health (@stealth_health_life)",
+          url: "https://www.instagram.com/reel/DQRzg3MDnma/?vrfl=M25meXIxYjk2dzY4",
+          yield: "10 Servings",
+          calories: "460 kcal",
+          protein: "45g",
+          carbs: "45g",
+          fat: "11g",
+          highlight: "A high-protein meal prep powerhouse featuring tender chicken and rice coated in a velvety, macro-friendly garlic parmesan sauce.",
+          ingredients: [
+            "1360g (48 oz) chicken breast, diced",
+            "15ml (1 tbsp) olive oil",
+            "600g (3 cups) jasmine rice, dry",
+            "1200ml (5 cups) chicken broth",
+            "6 cloves garlic, minced",
+            "15g (1 tbsp) garlic powder",
+            "10g (2 tsp) onion powder",
+            "5g (1 tsp) smoked paprika",
+            "6g (1 tsp) salt",
+            "2g (1/2 tsp) black pepper",
+            "224g (8 oz) light cream cheese",
+            "100g (1 cup) grated Parmesan cheese",
+            "240ml (1 cup) fat-free milk",
+            "10g (1/4 cup) fresh parsley, chopped"
+          ],
+          steps: [
+            "Dice the chicken breast into small, even bite-sized pieces.",
+            "In a large bowl, season the chicken with garlic powder, onion powder, smoked paprika, salt, and black pepper. Toss until fully coated.",
+            "Heat olive oil in a large skillet or pot over medium-high heat. Add the chicken and sear until cooked through and slightly browned (about 6-8 minutes). Remove chicken and set aside.",
+            "In the same skillet, add the minced garlic and sauté for 1 minute until fragrant.",
+            "Add the dry jasmine rice to the skillet and toast for 2 minutes, stirring frequently to absorb the remaining flavors in the pan.",
+            "Pour in the chicken broth, bring to a boil, then reduce heat to low. Cover and simmer for 15-18 minutes or until the rice is tender and liquid is absorbed.",
+            "While the rice cooks, combine the light cream cheese, Parmesan cheese, and milk in a blender or whisk vigorously in a bowl until smooth.",
+            "Once the rice is done, stir in the cream sauce and the cooked chicken.",
+            "Mix well over low heat until the sauce is creamy and evenly distributed. Garnish with fresh parsley.",
+            "Divide into 10 equal portions for meal prep."
+          ]
         }
       ]
     },

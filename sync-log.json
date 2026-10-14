@@ -1,5 +1,20 @@
 [
   {
+    "id": "17919478197803toh",
+    "time": "2026-10-14T03:16:59.766Z",
+    "displayTime": "03:16:59 AM",
+    "device": "cloud-agent",
+    "target": "recipe-inbox.json",
+    "action": "auto-extract",
+    "status": "success",
+    "message": "Auto-extracted recipe: High Protein Creamy Garlic Chicken and Rice",
+    "details": {
+      "slug": "creamy-garlic-chicken-and-rice",
+      "yield": "10 Servings",
+      "calories": "460 kcal"
+    }
+  },
+  {
     "id": "1791947713341a9v1",
     "time": "2026-10-14T03:15:13.332Z",
     "displayTime": "03:15:13 AM",
