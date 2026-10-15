@@ -1,5 +1,16 @@
 [
   {
+    "id": "1792107474026wjyn",
+    "time": "2026-10-15T23:37:54.026Z",
+    "displayTime": "07:37:54 PM",
+    "device": "mobile",
+    "target": "reading.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update reading progress: Rhythm of War (pages 690/1230)",
+    "details": null
+  },
+  {
     "id": "1792033913163uef0",
     "time": "2026-10-15T03:11:53.163Z",
     "displayTime": "11:11:53 PM",
@@ -636,17 +647,6 @@
     "action": "commit",
     "status": "success",
     "message": "Synced reading progress: Rhythm of War (95/1230 pages)",
-    "details": null
-  },
-  {
-    "id": "1789727889892wrl9",
-    "time": "2026-09-18T10:38:09.892Z",
-    "displayTime": "06:38:09 AM",
-    "device": "mobile",
-    "target": "reading.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Synced reading progress: Rhythm of War (78/1230 pages)",
     "details": null
   }
 ]
