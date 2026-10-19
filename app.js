@@ -340,6 +340,54 @@ const DEFAULT_STATE = {
             "Return the hot, drained potatoes to the empty pot or arrange them on a wire rack for 3 to 5 minutes; as steam and residual surface moisture evaporate, a characteristic light powdery salt crust will form over the skins.",
             "Transfer the hot salt potatoes to a warm serving bowl, scatter with chopped chives if desired, and serve immediately alongside small bowls of warm melted butter for generous dipping."
           ]
+        },
+        {
+          id: 'slow-cooker-butter-chicken-mac-n-cheese',
+          title: "Slow Cooker Butter Chicken Mac N' Cheese",
+          source: "Stealth Health Life (@stealth_health_life)",
+          url: "https://www.instagram.com/reel/DepW0lxIqW6/?vrfl=cXB3MGwwNDZtZnJx",
+          blogUrl: null,
+          yield: "10 Servings (Meal Prep)",
+          calories: "545 kcal",
+          protein: "42g",
+          carbs: "58g",
+          fat: "17g",
+          highlight: "A rich, indulgent crossover of aromatic Indian butter chicken and creamy macaroni and cheese, slow-cooked to tender perfection and finished with Greek yogurt and sharp cheddar for macro-friendly meal prep.",
+          ingredients: [
+            "900g (32 oz) chicken breast, diced",
+            "2 yellow onions, diced and sautéed until browned",
+            "30g (2 tbsp) butter",
+            "30g (2 tbsp) tomato paste",
+            "30g (2 tbsp) garlic paste",
+            "15g (1 tbsp) ginger paste",
+            "400g (14 oz) fire-roasted crushed tomatoes, blended smooth",
+            "15g (1 tbsp) zero-calorie sweetener (or granulated sugar)",
+            "14g (2 tbsp) paprika",
+            "8g (1 tbsp) chili powder",
+            "6g (1 tbsp) spicy curry powder",
+            "5g (2 tsp) ground cumin",
+            "17g (1 tbsp) coarse salt",
+            "1g (1/4 tsp) freshly ground black pepper",
+            "2g (1 tsp) garam masala",
+            "672g (24 oz) dry pasta shells, par-cooked to 50% box time",
+            "240ml (1 cup) reserved pasta cooking water",
+            "400g (14 oz) plain 0% Greek yogurt",
+            "120g (4.2 oz) 1/3-fat cream cheese",
+            "227g (8 oz) extra sharp cheddar cheese, shredded",
+            "80g (2.8 oz) reduced-fat mozzarella cheese, shredded",
+            "15g (1/4 cup) fresh cilantro, finely chopped",
+            "25g (1/4 cup) green onions, thinly sliced"
+          ],
+          steps: [
+            "Melt 30g butter in a skillet over medium heat and sauté the diced yellow onions until deep golden brown and caramelized.",
+            "Add the diced chicken breast, browned onions, tomato paste, garlic paste, ginger paste, blended fire-roasted tomatoes, and sweetener to the slow cooker insert.",
+            "Add the spice blend: paprika, chili powder, spicy curry powder, cumin, salt, and black pepper. Stir thoroughly until the chicken is evenly coated.",
+            "Cover and slow cook on High for 2 to 3 hours or on Low for 3 to 4 hours until the chicken is cooked through and tender.",
+            "While the chicken finishes, boil the pasta shells in salted water for exactly half the cook time indicated on the box. Drain well and reserve 1 cup of hot pasta water.",
+            "Stir the plain Greek yogurt and 1/3-fat cream cheese directly into the warm slow cooker base until completely melted and smooth.",
+            "Fold in the par-cooked pasta shells, reserved pasta water, shredded extra sharp cheddar, shredded mozzarella, and garam masala, stirring until fully incorporated and creamy.",
+            "Fold in the fresh chopped cilantro and sliced green onions, then divide into 10 equal portions for freezer-friendly meal prep."
+          ]
         }
       ]
     },

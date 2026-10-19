@@ -1,5 +1,20 @@
 [
   {
+    "id": "1792380677041clgg",
+    "time": "2026-10-19T03:31:17.033Z",
+    "displayTime": "03:31:17 AM",
+    "device": "cloud-agent",
+    "target": "recipe-inbox.json",
+    "action": "auto-extract",
+    "status": "success",
+    "message": "Auto-extracted recipe: Slow Cooker Butter Chicken Mac N' Cheese",
+    "details": {
+      "slug": "slow-cooker-butter-chicken-mac-n-cheese",
+      "yield": "10 Servings (Meal Prep)",
+      "calories": "545 kcal"
+    }
+  },
+  {
     "id": "17923720610155n9y",
     "time": "2026-10-19T01:07:41.015Z",
     "displayTime": "09:07:41 PM",
