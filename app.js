@@ -342,51 +342,44 @@ const DEFAULT_STATE = {
           ]
         },
         {
-          id: 'slow-cooker-butter-chicken-mac-n-cheese',
-          title: "Slow Cooker Butter Chicken Mac N' Cheese",
-          source: "Stealth Health Life (@stealth_health_life)",
+          id: 'homemade-cinnamon-gifflar',
+          title: "Homemade Cinnamon Gifflar",
+          source: "Dee | Food for everyone (@mumsfoodies)",
           url: "https://www.instagram.com/reel/DepW0lxIqW6/?vrfl=cXB3MGwwNDZtZnJx",
           blogUrl: null,
-          yield: "10 Servings (Meal Prep)",
-          calories: "545 kcal",
-          protein: "42g",
-          carbs: "58g",
-          fat: "17g",
-          highlight: "A rich, indulgent crossover of aromatic Indian butter chicken and creamy macaroni and cheese, slow-cooked to tender perfection and finished with Greek yogurt and sharp cheddar for macro-friendly meal prep.",
+          yield: "36 Mini Rolls",
+          calories: "135 kcal",
+          protein: "2.5g",
+          carbs: "20g",
+          fat: "5g",
+          highlight: "Soft, pillowy Swedish-style cinnamon mini-rolls layered with buttery spiced brown sugar, baked golden, and brushed with hot glossy sugar syrup.",
           ingredients: [
-            "900g (32 oz) chicken breast, diced",
-            "2 yellow onions, diced and sautéed until browned",
-            "30g (2 tbsp) butter",
-            "30g (2 tbsp) tomato paste",
-            "30g (2 tbsp) garlic paste",
-            "15g (1 tbsp) ginger paste",
-            "400g (14 oz) fire-roasted crushed tomatoes, blended smooth",
-            "15g (1 tbsp) zero-calorie sweetener (or granulated sugar)",
-            "14g (2 tbsp) paprika",
-            "8g (1 tbsp) chili powder",
-            "6g (1 tbsp) spicy curry powder",
-            "5g (2 tsp) ground cumin",
-            "17g (1 tbsp) coarse salt",
-            "1g (1/4 tsp) freshly ground black pepper",
-            "2g (1 tsp) garam masala",
-            "672g (24 oz) dry pasta shells, par-cooked to 50% box time",
-            "240ml (1 cup) reserved pasta cooking water",
-            "400g (14 oz) plain 0% Greek yogurt",
-            "120g (4.2 oz) 1/3-fat cream cheese",
-            "227g (8 oz) extra sharp cheddar cheese, shredded",
-            "80g (2.8 oz) reduced-fat mozzarella cheese, shredded",
-            "15g (1/4 cup) fresh cilantro, finely chopped",
-            "25g (1/4 cup) green onions, thinly sliced"
+            "260ml (1 cup + 1 tbsp) lukewarm milk (38–40°C / 100–104°F)",
+            "7g (2 1/4 tsp / 1 packet) instant yeast",
+            "20g (1 1/2 tbsp) granulated sugar",
+            "1 large egg (or substitute +50ml milk to skip egg)",
+            "500g (4 cups) bread flour or all-purpose flour (min 12% protein)",
+            "6g (1 tsp) fine salt",
+            "100g (7 tbsp) unsalted butter, softened",
+            "100g (1/2 cup packed) light brown sugar",
+            "100g (7 tbsp) unsalted butter, softened (for filling)",
+            "16g (2 tbsp) ground cinnamon",
+            "1 egg yolk + 5ml (1 tsp) milk (for egg wash)",
+            "60ml (1/4 cup) water (for sugar syrup)",
+            "60g (1/4 cup + 1 tbsp) brown sugar (for sugar syrup)",
+            "40g (3 tbsp) unsalted butter (for sugar syrup)"
           ],
           steps: [
-            "Melt 30g butter in a skillet over medium heat and sauté the diced yellow onions until deep golden brown and caramelized.",
-            "Add the diced chicken breast, browned onions, tomato paste, garlic paste, ginger paste, blended fire-roasted tomatoes, and sweetener to the slow cooker insert.",
-            "Add the spice blend: paprika, chili powder, spicy curry powder, cumin, salt, and black pepper. Stir thoroughly until the chicken is evenly coated.",
-            "Cover and slow cook on High for 2 to 3 hours or on Low for 3 to 4 hours until the chicken is cooked through and tender.",
-            "While the chicken finishes, boil the pasta shells in salted water for exactly half the cook time indicated on the box. Drain well and reserve 1 cup of hot pasta water.",
-            "Stir the plain Greek yogurt and 1/3-fat cream cheese directly into the warm slow cooker base until completely melted and smooth.",
-            "Fold in the par-cooked pasta shells, reserved pasta water, shredded extra sharp cheddar, shredded mozzarella, and garam masala, stirring until fully incorporated and creamy.",
-            "Fold in the fresh chopped cilantro and sliced green onions, then divide into 10 equal portions for freezer-friendly meal prep."
+            "Whisk lukewarm milk (38–40°C) and instant yeast in a bowl. Whisk in sugar and egg until frothy.",
+            "Add flour, salt, and softened butter. Mix thoroughly with a spatula or floured hands into a dough.",
+            "Fold the dough over itself in the bowl 10–20 times until smooth and elastic without lumps.",
+            "Cover and rest in a warm spot for 1 hour until doubled in volume.",
+            "Cream together softened butter, brown sugar, and ground cinnamon until smooth.",
+            "Roll risen dough on a floured surface into a large 12x18\" rectangle. Spread cinnamon filling evenly right to the edges.",
+            "Slice width-wise into 3 long strips. Roll each strip tightly into a cylinder seam-side down, flatten slightly, and cut into 2-inch mini bun pieces.",
+            "Arrange on 2 parchment-lined baking sheets, cover, and proof for 20 minutes.",
+            "Preheat oven to 350°F (175°C). Brush buns with egg wash and bake for 12–15 minutes until golden brown.",
+            "Boil water, brown sugar, and butter in a small pan into a glossy syrup. Brush generously over the hot buns straight out of the oven!"
           ]
         }
       ]
@@ -444,8 +437,8 @@ function loadState() {
 
       // Sync recipes to ensure newly added default recipes exist in state & updates reflect immediately
       if (parsed.desks && parsed.desks.recipe && Array.isArray(parsed.desks.recipe.recipes)) {
-        // Prune obsolete chicken recipe if present in existing storage
-        parsed.desks.recipe.recipes = parsed.desks.recipe.recipes.filter(r => r.id !== 'creamy-garlic-chicken-and-rice');
+        // Prune obsolete recipes if present in existing storage
+        parsed.desks.recipe.recipes = parsed.desks.recipe.recipes.filter(r => r.id !== 'creamy-garlic-chicken-and-rice' && r.id !== 'slow-cooker-butter-chicken-mac-n-cheese');
 
         DEFAULT_STATE.desks.recipe.recipes.forEach(defRecipe => {
           const idx = parsed.desks.recipe.recipes.findIndex(r => r.id === defRecipe.id);

@@ -79,11 +79,14 @@ async function main() {
     if (item.note) console.log(`Note: ${item.note}`);
 
     try {
-      // 1. Attempt optional oEmbed metadata retrieval
-      const oembedData = await fetchOembedData(item.url);
+      // 1. Scrape post caption & OpenGraph metadata directly using social crawler UA
+      const metadata = await fetchPostMetadata(item.url);
+      if (metadata?.caption) {
+        console.log(`-> Scraped creator caption (${metadata.caption.length} chars)`);
+      }
 
-      // 2. Call Gemini with Search Grounding
-      const recipeData = await extractWithGemini(item, oembedData, apiKey, errorLogList);
+      // 2. Call Gemini with Search Grounding & Caption
+      const recipeData = await extractWithGemini(item, metadata, apiKey, errorLogList);
       if (!recipeData) {
         console.warn(`Could not extract recipe data for ${item.url}. Skipping.`);
         continue;
@@ -138,6 +141,68 @@ async function main() {
 }
 
 /**
+ * Scrape Instagram / TikTok post caption and OpenGraph metadata directly using social crawler user agents
+ */
+async function fetchPostMetadata(url) {
+  let caption = null;
+  let title = null;
+  let author = null;
+
+  try {
+    if (url.includes('instagram.com')) {
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        },
+        signal: AbortSignal.timeout(8000)
+      });
+      if (res.ok) {
+        const html = await res.text();
+        const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([\s\S]*?)["']\s*\/>/i)
+          || html.match(/<meta\s+property=["']og:description["']\s+content=["']([\s\S]*?)["']\s*\/>/i);
+        const titleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([\s\S]*?)["']\s*\/>/i)
+          || html.match(/<meta\s+name=["']twitter:title["']\s+content=["']([\s\S]*?)["']\s*\/>/i);
+
+        if (descMatch) {
+          caption = decodeHtmlEntities(descMatch[1]);
+        }
+        if (titleMatch) {
+          title = decodeHtmlEntities(titleMatch[1]);
+          const authorMatch = title.match(/\(@([A-Za-z0-9_.]+)\)/);
+          if (authorMatch) author = `@${authorMatch[1]}`;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Direct metadata scrape warning:', err.message);
+  }
+
+  // Fallback to oEmbed if no caption found
+  if (!caption) {
+    const oembed = await fetchOembedData(url);
+    if (oembed) {
+      title = title || oembed.title;
+      author = author || oembed.author_name;
+    }
+  }
+
+  return { caption, title, author };
+}
+
+function decodeHtmlEntities(str) {
+  if (!str) return '';
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&#xb0;/g, '°');
+}
+
+/**
  * Fetch public oEmbed data for Instagram / TikTok if available
  */
 async function fetchOembedData(url) {
@@ -172,7 +237,7 @@ async function fetchOembedData(url) {
 /**
  * Call Gemini Flash with Google Search Grounding
  */
-async function extractWithGemini(item, oembedData, apiKey, errorLogList = []) {
+async function extractWithGemini(item, metadata, apiKey, errorLogList = []) {
   let shortcode = '';
   const reelMatch = (item.url || '').match(/reel\/([A-Za-z0-9_-]+)/);
   if (reelMatch) shortcode = reelMatch[1];
@@ -184,10 +249,12 @@ Queued Item Details:
 - Source URL: ${item.url}
 ${shortcode ? `- Instagram Reel Shortcode: "${shortcode}"` : ''}
 - User Note: ${item.note || 'None'}
-${oembedData ? `- Scraped oEmbed metadata: ${JSON.stringify(oembedData)}` : ''}
+${metadata?.title ? `- Post Title / Author: "${metadata.title}"` : ''}
+${metadata?.author ? `- Author Handle: "${metadata.author}"` : ''}
+${metadata?.caption ? `- Full Creator Post Caption:\n"""\n${metadata.caption}\n"""` : ''}
 
 Instructions:
-1. If the User Note or source URL contains the recipe name, dish, or creator, use that as the authoritative identity of the dish.
+1. If the Full Creator Post Caption or User Note contains the recipe, extract the exact ingredient measurements, gram weights, and baking times specified by the creator.
 2. Search Google using your search tool if available for this exact URL, shortcode "${shortcode || ''}", creator handle, food blog, or recipe keywords.
 3. INGREDIENTS FORMATTING RULE (CRITICAL):
    - STRICT 1 INGREDIENT PER ITEM. NEVER combine multiple items into one string (e.g. NEVER "1 tsp salt and pepper" -> separate into "1 tsp salt" and "1/4 tsp black pepper"; NEVER "baking powder & baking soda" -> separate into two items).
