@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Active Desks 2.0 — Architecture Diagrams</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --bg-card: #121826;
+      --bg-card-hover: #172033;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(56, 189, 248, 0.4);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-indigo: #818cf8;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      padding: 32px 24px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 9999px;
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 720px;
+    }
+
+    /* Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .tab-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+
+    /* Cards */
+    .diagram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.2s ease;
+    }
+
+    .diagram-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .card-title-group h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .card-title-group p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .pill-tag {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .pill-emerald {
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .pill-indigo {
+      background: rgba(129, 140, 248, 0.12);
+      color: var(--accent-indigo);
+      border: 1px solid rgba(129, 140, 248, 0.3);
+    }
+
+    .pill-amber {
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--accent-amber);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    /* Mermaid Container */
+    .mermaid-box {
+      background: #0d121c;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 10px;
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: auto;
+      min-height: 240px;
+    }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    .mermaid svg {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    /* Key Spec Grid */
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .spec-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .spec-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .spec-val {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">Architecture Preview</div>
+      <h1>Active Desks 2.0 System Architecture</h1>
+      <p class="subtitle">Rendered blueprints for clean redeployment: comparing current personal monolith vs. zero-cost edge PWA and turnkey multi-user SaaS.</p>
+    </header>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="filterView('all', this)">All Blueprints</button>
+      <button class="tab-btn" onclick="filterView('scenario-a', this)">Scenario A (Cloudflare $0 Stack)</button>
+      <button class="tab-btn" onclick="filterView('scenario-b', this)">Scenario B (Supabase SaaS)</button>
+      <button class="tab-btn" onclick="filterView('evolution', this)">Current vs Target Evolution</button>
+    </div>
+
+    <!-- DIAGRAM 1: SCENARIO A -->
+    <section class="diagram-card" id="card-scenario-a">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h2>Scenario A: The "Zero-Cost Personal Template" (Recommended)</h2>
+          <p>Local-First PWA + Cloudflare Workers Edge API + Serverless SQLite (D1)</p>
+        </div>
+        <span class="pill-tag pill-emerald">$0.00 / month forever</span>
+      </div>
+
+      <div class="mermaid-box">
+        <pre class="mermaid">
+flowchart TD
+    subgraph CLIENT["Client PWA (Mobile Pixel Fold / Desktop)"]
+        UI["Vite + Svelte 5 PWA (under 15KB bundle)"]
+        IDB[("IndexedDB / idb-keyval (Offline Store)")]
+        UI <--> IDB
+    end
+
+    subgraph CLOUDFLARE["Cloudflare Edge (Free Tier Forever)"]
+        CF["Cloudflare Worker (Serverless REST / Webhook API)"]
+        D1[("Cloudflare D1 (Serverless SQLite DB)")]
+        CF <--> D1
+    end
+
+    subgraph AI_PIPELINE["Background Extractor & Classifier"]
+        Q["Cloudflare Queue / Cron Worker"]
+        GEMINI["Gemini 3.8 Flash (Classifier & Extractor)"]
+        CF -->|"Enqueue URL"| Q
+        Q -->|"Caption & Metadata Prompt"| GEMINI
+        GEMINI -->|"Structured JSON Payload"| D1
+    end
+
+    IDB -.->|"Background Bi-directional Sync"| CF
+        </pre>
+      </div>
+
+      <div class="spec-grid">
+        <div class="spec-item">
+          <div class="spec-label">Storage Capacity</div>
+          <div class="spec-val">5GB SQLite (D1 Free Tier)</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Edge Latency</div>
+          <div class="spec-val">&lt; 20ms Global Response</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Offline Capability</div>
+          <div class="spec-val">100% Local-First IndexedDB</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Extraction Latency</div>
+          <div class="spec-val">&lt; 800ms Serverless Execution</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIAGRAM 2: SCENARIO B -->
+    <section class="diagram-card" id="card-scenario-b">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h2>Scenario B: Turnkey Multi-User SaaS</h2>
+          <p>SvelteKit + Supabase Managed PostgreSQL + Realtime Sync + Inngest Workers</p>
+        </div>
+        <span class="pill-tag pill-indigo">Zero User Setup</span>
+      </div>
+
+      <div class="mermaid-box">
+        <pre class="mermaid">
+flowchart TD
+    subgraph FRONTEND["Web & Mobile App"]
+        WEB["SvelteKit / Next.js App"]
+        CACHE[("Local SQLite / PowerSync Client")]
+        WEB <--> CACHE
+    end
+
+    subgraph SUPABASE["Supabase Managed Cloud ($0 Free Tier)"]
+        AUTH["Supabase Auth (Google OAuth & Passkeys)"]
+        DB[("PostgreSQL Database (Row Level Security)")]
+        STORAGE["Supabase Storage (Recipe Images / Backups)"]
+        WEB --> AUTH
+        CACHE -.->|"Local-First Bi-directional Sync"| DB
+    end
+
+    subgraph WORKER["Background Job Engine"]
+        INNGEST["Inngest / Upstash QStash"]
+        AI["Gemini 3.8 Flash Worker"]
+        DB -->|"Database Webhook"| INNGEST
+        INNGEST -->|"Extract & Classify"| AI
+        AI -->|"Write Structured Record"| DB
+    end
+        </pre>
+      </div>
+
+      <div class="spec-grid">
+        <div class="spec-item">
+          <div class="spec-label">Target Audience</div>
+          <div class="spec-val">Friends, Family, Non-technical</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Authentication</div>
+          <div class="spec-val">Google OAuth + Passkeys</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Database Model</div>
+          <div class="spec-val">PostgreSQL with Row Level Security</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Free Tier Limit</div>
+          <div class="spec-val">50,000 MAUs ($0/mo)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIAGRAM 3: EVOLUTION -->
+    <section class="diagram-card" id="card-evolution">
+      <div class="card-header">
+        <div class="card-title-group">
+          <h2>Evolution Architecture: Current Hack vs Modern Target</h2>
+          <p>Decoupling the 2,600-line monolith and GitHub REST commits into micro-modules</p>
+        </div>
+        <span class="pill-tag pill-amber">Decoupling Roadmap</span>
+      </div>
+
+      <div class="mermaid-box">
+        <pre class="mermaid">
+flowchart LR
+    subgraph CURRENT["Current Architecture (Personal Hack)"]
+        direction TB
+        M1["2,600-Line app.js Monolith"] --> M2["5MB localStorage (Synchronous)"]
+        M1 --> M3["Direct GitHub PUT (Fragile REST API)"]
+        M1 --> M4["GitHub Actions Extractor (~2 min spin-up)"]
+    end
+
+    subgraph TARGET["Redeployed Architecture (Modern Local-First)"]
+        direction TB
+        T1["Decoupled Svelte 5 / Preact (under 15KB)"] --> T2["IndexedDB / SQLite (Async, Unlimited)"]
+        T1 --> T3["Edge Webhooks (Cloudflare D1 / Supabase)"]
+        T1 --> T4["Serverless AI Extractor (Instant, under 800ms)"]
+    end
+
+    CURRENT ==>|"Modernize & Decouple"| TARGET
+        </pre>
+      </div>
+    </section>
+
+    <footer>
+      <p>Active Desks 2.0 Architectural Blueprint &middot; Created for Clean Zero-Debt Redeployment</p>
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0d121c',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f8fafc',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#64748b',
+        secondaryColor: '#1e1b4b',
+        tertiaryColor: '#064e3b'
+      },
+      flowchart: {
+        curve: 'basis',
+        htmlLabels: true
+      }
+    });
+
+    function filterView(target, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const cardA = document.getElementById('card-scenario-a');
+      const cardB = document.getElementById('card-scenario-b');
+      const cardEvo = document.getElementById('card-evolution');
+
+      if (target === 'all') {
+        cardA.style.display = 'block';
+        cardB.style.display = 'block';
+        cardEvo.style.display = 'block';
+      } else if (target === 'scenario-a') {
+        cardA.style.display = 'block';
+        cardB.style.display = 'none';
+        cardEvo.style.display = 'none';
+      } else if (target === 'scenario-b') {
+        cardA.style.display = 'none';
+        cardB.style.display = 'block';
+        cardEvo.style.display = 'none';
+      } else if (target === 'evolution') {
+        cardA.style.display = 'none';
+        cardB.style.display = 'none';
+        cardEvo.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -466,14 +466,20 @@ function loadState() {
         parsed.desks.gaming = JSON.parse(JSON.stringify(DEFAULT_STATE.desks.gaming));
       }
 
-      // Ensure captures array exists and prune obsolete hardcoded sample items
+      // Ensure captures array exists and prune obsolete sample and test-seeded items
       if (!Array.isArray(parsed.captures)) {
         parsed.captures = [];
       } else {
         parsed.captures = parsed.captures.filter(c => 
           c && !(c.id === 1 && String(c.text).includes("yarn stash")) &&
-               !(c.id === 2 && String(c.text).includes("FAGE Greek yogurt"))
+               !(c.id === 2 && String(c.text).includes("FAGE Greek yogurt")) &&
+               !(c.id >= 1792000000010 && c.id <= 1792000000035)
         );
+      }
+
+      // Reset stale test desk suggestions if present
+      if (Array.isArray(parsed.deskSuggestions)) {
+        parsed.deskSuggestions = parsed.deskSuggestions.filter(s => s && s.id !== 'sug-finance');
       }
 
       return parsed;

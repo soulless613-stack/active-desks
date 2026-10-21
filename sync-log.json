@@ -1,5 +1,22 @@
 [
   {
+    "id": "1792556000000cln",
+    "time": "2026-10-21T04:22:00.000Z",
+    "displayTime": "12:22:00 AM",
+    "device": "desktop-ide",
+    "target": "captures.json",
+    "action": "purge-test-captures-and-reset-suggestions",
+    "status": "success",
+    "message": "Purged 12 test-seeded captures (Finance, LitRPG, TBR books, Steam games) and reset desk suggestions",
+    "details": {
+      "version": "active-desks-v30",
+      "removedCount": 12,
+      "retainedCount": 12,
+      "retainedDomains": ["recipe", "tech"],
+      "deskSuggestionsReset": true
+    }
+  },
+  {
     "id": "1792554000000top",
     "time": "2026-10-21T03:30:00.000Z",
     "displayTime": "11:30:00 PM",
