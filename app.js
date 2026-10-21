@@ -1193,6 +1193,39 @@ function renderReadingDesk() {
     const timeStr = new Date(b.lastUpdated).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     updatedTag.textContent = `Updated ${timeStr}`;
   }
+
+  // Projected TBR / Up Next Tray (from captures.json where domain === 'book')
+  const tbrCountEl = document.getElementById('reading-tbr-count');
+  const tbrListEl = document.getElementById('reading-tbr-list');
+  if (tbrListEl) {
+    const bookCaptures = (Array.isArray(state.captures) ? state.captures : [])
+      .filter(c => (c.domain || '').toLowerCase() === 'book');
+
+    if (tbrCountEl) tbrCountEl.textContent = bookCaptures.length;
+
+    if (bookCaptures.length === 0) {
+      tbrListEl.innerHTML = `
+        <div style="text-align: center; padding: 12px 8px; color: var(--text-muted); font-size: 0.78rem;">
+          No books queued yet. Drop a book title or StoryGraph link in Universal Capture below!
+        </div>
+      `;
+    } else {
+      tbrListEl.innerHTML = bookCaptures.map(c => `
+        <div class="projection-item">
+          <div class="projection-item-main">
+            <div class="projection-item-title" title="${escapeHtml(c.title)}">${escapeHtml(c.title)}</div>
+            <div class="projection-item-meta">
+              <span class="projection-item-tag">${escapeHtml(c.topic || 'Book')}</span>
+              ${c.creator ? `<span>by ${escapeHtml(c.creator)}</span>` : ''}
+            </div>
+          </div>
+          <button type="button" class="projection-action-btn" onclick="setActiveReadFromCapture(${c.id})" title="Set as currently reading">
+            📖 Set Active
+          </button>
+        </div>
+      `).join('');
+    }
+  }
 }
 
 // Fetch shared reading data from repository on startup
@@ -1551,6 +1584,39 @@ function renderGamingDesk() {
     const timeStr = new Date(g.lastUpdated).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     updatedTag.textContent = `Updated ${timeStr}`;
   }
+
+  // Projected Gaming Backlog / Watchlist Tray (from captures.json where domain === 'game')
+  const backlogCountEl = document.getElementById('gaming-backlog-count');
+  const backlogListEl = document.getElementById('gaming-backlog-list');
+  if (backlogListEl) {
+    const gameCaptures = (Array.isArray(state.captures) ? state.captures : [])
+      .filter(c => (c.domain || '').toLowerCase() === 'game');
+
+    if (backlogCountEl) backlogCountEl.textContent = gameCaptures.length;
+
+    if (gameCaptures.length === 0) {
+      backlogListEl.innerHTML = `
+        <div style="text-align: center; padding: 12px 8px; color: var(--text-muted); font-size: 0.78rem;">
+          No games in backlog yet. Drop game titles or Steam links in Universal Capture below!
+        </div>
+      `;
+    } else {
+      backlogListEl.innerHTML = gameCaptures.map(c => `
+        <div class="projection-item">
+          <div class="projection-item-main">
+            <div class="projection-item-title" title="${escapeHtml(c.title)}">${escapeHtml(c.title)}</div>
+            <div class="projection-item-meta">
+              <span class="projection-item-tag">${escapeHtml(c.topic || 'Game')}</span>
+              ${c.summary ? `<span>${escapeHtml(c.summary).slice(0, 36)}...</span>` : ''}
+            </div>
+          </div>
+          <button type="button" class="projection-action-btn" onclick="setActiveGameFromCapture(${c.id})" title="Set as active playthrough">
+            🎮 Set Active
+          </button>
+        </div>
+      `).join('');
+    }
+  }
 }
 
 function openGamingModal() {
@@ -1778,12 +1844,107 @@ function renderCaptures() {
               </a>
             ` : ''}
             ${recipeCookBtn}
+            <button type="button" class="capture-pin-btn" onclick="openPinToDeskModal(${c.id})" title="Assign to a desk or domain">
+              📌 Desk
+            </button>
           </div>
           ${c.creator ? `<span style="font-size: 0.74rem; color: var(--text-muted);">${escapeHtml(c.creator)}</span>` : ''}
         </div>
       </div>
     `;
   }).join('');
+}
+
+// --------------------------------------------------------------------------
+// Desk Quick-Attach & Projection Activation Handlers
+// --------------------------------------------------------------------------
+let activePinCaptureId = null;
+
+function openPinToDeskModal(captureId) {
+  activePinCaptureId = captureId;
+  const c = (state.captures || []).find(item => item.id === captureId);
+  if (!c) return;
+
+  const titleEl = document.getElementById('pin-modal-capture-title');
+  const topicInput = document.getElementById('pin-modal-topic-input');
+
+  if (titleEl) {
+    titleEl.textContent = (c.title || c.text || c.rawText || 'Capture Item').slice(0, 60);
+  }
+  if (topicInput) {
+    topicInput.value = c.topic || '';
+  }
+
+  // Highlight active domain button
+  const currentDomain = (c.domain || '').toLowerCase();
+  document.querySelectorAll('.desk-attach-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('onclick')?.includes(`'${currentDomain}'`));
+  });
+
+  document.getElementById('pin-to-desk-modal').classList.add('active');
+}
+
+function applyDeskAssignment(newDomain) {
+  if (!activePinCaptureId) return;
+  const c = (state.captures || []).find(item => item.id === activePinCaptureId);
+  if (!c) {
+    closeModal('pin-to-desk-modal');
+    return;
+  }
+
+  const topicInput = document.getElementById('pin-modal-topic-input');
+  const customTopic = topicInput ? topicInput.value.trim() : '';
+
+  c.domain = newDomain;
+  if (customTopic) {
+    c.topic = customTopic;
+  } else if (!c.topic) {
+    c.topic = newDomain.charAt(0).toUpperCase() + newDomain.slice(1);
+  }
+  c.status = 'processed';
+
+  saveState();
+  markDirty('captures.json');
+  flushDirtySync();
+  closeModal('pin-to-desk-modal');
+
+  const domainName = newDomain.charAt(0).toUpperCase() + newDomain.slice(1);
+  showToast(`Assigned to ${domainName} desk!`, getDomainEmoji(newDomain));
+}
+
+function setActiveReadFromCapture(captureId) {
+  const c = (state.captures || []).find(item => item.id === captureId);
+  if (!c) return;
+
+  state.desks.reading.title = c.title || 'Untitled Book';
+  if (c.creator) state.desks.reading.author = c.creator;
+  state.desks.reading.currentPage = 0;
+  state.desks.reading.totalPages = 100;
+  state.desks.reading.unit = 'chapters';
+  state.desks.reading.lastUpdated = new Date().toISOString();
+
+  saveState();
+  markDirty('reading.json');
+  flushDirtySync();
+  renderReadingDesk();
+  showToast(`Active Read set to: "${c.title}"!`, '📖');
+}
+
+function setActiveGameFromCapture(captureId) {
+  const c = (state.captures || []).find(item => item.id === captureId);
+  if (!c) return;
+
+  state.desks.gaming.title = c.title || 'Untitled Game';
+  if (c.summary) {
+    state.desks.gaming.quest = c.summary;
+  }
+  state.desks.gaming.lastUpdated = new Date().toISOString();
+
+  saveState();
+  markDirty('gaming.json');
+  flushDirtySync();
+  renderGamingDesk();
+  showToast(`Active Game set to: "${c.title}"!`, '🎮');
 }
 
 const DELETED_CAPTURES_KEY = 'active_desks_deleted_captures';

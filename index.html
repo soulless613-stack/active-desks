@@ -109,6 +109,20 @@
           </div>
         </div>
 
+        <!-- Projected TBR / Up Next Tray (from captures.json where domain === 'book') -->
+        <details class="desk-projection-tray" id="reading-tbr-tray">
+          <summary class="projection-summary">
+            <span class="projection-summary-left">
+              <span>📚 Up Next / TBR</span>
+              <span class="projection-badge" id="reading-tbr-count">0</span>
+            </span>
+            <span class="projection-summary-arrow">▾</span>
+          </summary>
+          <div class="projection-items-list" id="reading-tbr-list">
+            <!-- Populated dynamically from captures.json -->
+          </div>
+        </details>
+
         <div class="desk-footer">
           <a id="reading-link" href="https://app.thestorygraph.com/profile/soulless613" target="_blank" class="desk-link" style="color: var(--accent-reading); font-weight: 600;">
             <span>📊 The StoryGraph</span> ↗
@@ -175,6 +189,20 @@
             Underdark: Forge the Adamantine armor & find Grymforge secrets.
           </div>
         </div>
+
+        <!-- Projected Gaming Backlog / Watchlist Tray (from captures.json where domain === 'game') -->
+        <details class="desk-projection-tray" id="gaming-backlog-tray">
+          <summary class="projection-summary">
+            <span class="projection-summary-left">
+              <span>🎮 Backlog / Watchlist</span>
+              <span class="projection-badge" id="gaming-backlog-count">0</span>
+            </span>
+            <span class="projection-summary-arrow">▾</span>
+          </summary>
+          <div class="projection-items-list" id="gaming-backlog-list">
+            <!-- Populated dynamically from captures.json -->
+          </div>
+        </details>
 
         <div class="desk-footer">
           <a id="gaming-link" href="https://bg3.wiki" target="_blank" class="desk-link">
@@ -666,6 +694,74 @@
             <span>💾 Save Changes</span>
           </button>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Assign Capture to Desk / Workbench -->
+  <div id="pin-to-desk-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="pin-modal-title">
+    <div class="modal-content" style="max-width: 460px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">📌</span>
+          <h3 class="modal-title" id="pin-modal-title">Assign to Desk / Workbench</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('pin-to-desk-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
+          Target item: <strong id="pin-modal-capture-title" style="color: var(--text-primary); font-weight: 600;"></strong>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label class="input-label" for="pin-modal-topic-input">Specific Topic / Tag</label>
+          <input type="text" id="pin-modal-topic-input" class="form-input" placeholder="e.g. LitRPG, Slow Cooker, Cardigan, Roguelike...">
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">
+            Tier 2 topic for adaptive clustering and grouping.
+          </div>
+        </div>
+
+        <div>
+          <label class="input-label">Select Destination Desk / Domain</label>
+          <div class="desk-attach-grid">
+            <button type="button" class="desk-attach-btn" onclick="applyDeskAssignment('book')">
+              <span class="desk-attach-icon">📚</span>
+              <span>Reading Nook</span>
+            </button>
+            <button type="button" class="desk-attach-btn" onclick="applyDeskAssignment('game')">
+              <span class="desk-attach-icon">🎮</span>
+              <span>Gaming Rig</span>
+            </button>
+            <button type="button" class="desk-attach-btn" onclick="applyDeskAssignment('recipe')">
+              <span class="desk-attach-icon">🍳</span>
+              <span>Kitchen Shelf</span>
+            </button>
+            <button type="button" class="desk-attach-btn" onclick="applyDeskAssignment('fiber')">
+              <span class="desk-attach-icon">🧶</span>
+              <span>Fiber Arts</span>
+            </button>
+            <button type="button" class="desk-attach-btn" onclick="applyDeskAssignment('home')">
+              <span class="desk-attach-icon">🏡</span>
+              <span>Home Projects</span>
+            </button>
+            <button type="button" class="desk-attach-btn" onclick="applyDeskAssignment('finance')">
+              <span class="desk-attach-icon">💰</span>
+              <span>Finance Desk</span>
+            </button>
+            <button type="button" class="desk-attach-btn" onclick="applyDeskAssignment('writing')">
+              <span class="desk-attach-icon">✍️</span>
+              <span>Writing Desk</span>
+            </button>
+            <button type="button" class="desk-attach-btn" onclick="applyDeskAssignment('tech')">
+              <span class="desk-attach-icon">💻</span>
+              <span>Tech Projects</span>
+            </button>
+            <button type="button" class="desk-attach-btn" onclick="applyDeskAssignment('thought')">
+              <span class="desk-attach-icon">💡</span>
+              <span>Free Thought</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
