@@ -1102,52 +1102,79 @@ body {
 /* Universal Capture Stream & Filter Pills */
 .capture-filter-pills {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 4px 0 10px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.capture-filter-pills::-webkit-scrollbar {
-  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 12px;
+  position: sticky;
+  top: 0;
+  background: var(--bg-secondary);
+  z-index: 10;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 8px;
 }
 
 .capture-filter-pill {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
   border-radius: var(--radius-full);
-  padding: 4px 12px;
-  font-size: 0.78rem;
+  padding: 6px 14px;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   white-space: nowrap;
-  transition: all 0.2s ease;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .capture-filter-pill:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
+  background: rgba(51, 65, 85, 0.95);
+  border-color: rgba(148, 163, 184, 0.5);
+  transform: translateY(-1px);
 }
 
 .capture-filter-pill.active {
-  background: rgba(56, 189, 248, 0.2);
-  color: var(--accent-home);
-  border-color: var(--accent-home);
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+  background: rgba(56, 189, 248, 0.22);
+  color: #38bdf8;
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+  font-weight: 700;
+}
+
+.capture-pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.capture-filter-pill.active .capture-pill-count {
+  background: rgba(56, 189, 248, 0.35);
+  color: #ffffff;
 }
 
 .capture-items-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .capture-card {
-  padding: 12px 14px;
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid var(--border-subtle);
+  padding: 14px 16px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
@@ -1158,102 +1185,108 @@ body {
 .capture-card:hover {
   border-color: var(--border-glow);
   transform: translateY(-1px);
-  background: rgba(22, 30, 46, 0.75);
+  background: rgba(22, 30, 46, 0.85);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .capture-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .capture-badge-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .tag-two-tier {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.72rem;
+  gap: 5px;
+  font-size: 0.78rem;
   font-weight: 700;
   border-radius: var(--radius-full);
-  padding: 2px 8px;
+  padding: 3px 10px;
   text-transform: capitalize;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
-/* Domain Colors */
+/* Domain Colors with Enhanced Contrast & Pop */
 .tag-domain-recipe {
-  background: rgba(249, 115, 22, 0.15);
-  color: #fb923c;
-  border: 1px solid rgba(249, 115, 22, 0.35);
+  background: rgba(249, 115, 22, 0.25);
+  color: #fed7aa;
+  border: 1px solid rgba(249, 115, 22, 0.6);
 }
 
 .tag-domain-book {
-  background: rgba(168, 85, 247, 0.15);
-  color: #c084fc;
-  border: 1px solid rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.25);
+  color: #e9d5ff;
+  border: 1px solid rgba(168, 85, 247, 0.6);
 }
 
 .tag-domain-game {
-  background: rgba(6, 182, 212, 0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(6, 182, 212, 0.35);
+  background: rgba(6, 182, 212, 0.25);
+  color: #a5f3fc;
+  border: 1px solid rgba(6, 182, 212, 0.6);
 }
 
 .tag-domain-fiber {
-  background: rgba(236, 72, 153, 0.15);
-  color: #f472b6;
-  border: 1px solid rgba(236, 72, 153, 0.35);
+  background: rgba(236, 72, 153, 0.25);
+  color: #fbcfe8;
+  border: 1px solid rgba(236, 72, 153, 0.6);
 }
 
 .tag-domain-travel {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.25);
+  color: #a7f3d0;
+  border: 1px solid rgba(16, 185, 129, 0.6);
 }
 
 .tag-domain-home {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.25);
+  color: #fde68a;
+  border: 1px solid rgba(245, 158, 11, 0.6);
 }
 
 .tag-domain-finance {
-  background: rgba(52, 211, 153, 0.15);
-  color: #6ee7b7;
-  border: 1px solid rgba(52, 211, 153, 0.35);
+  background: rgba(52, 211, 153, 0.25);
+  color: #a7f3d0;
+  border: 1px solid rgba(52, 211, 153, 0.6);
 }
 
 .tag-domain-writing {
-  background: rgba(129, 140, 248, 0.15);
-  color: #a5b4fc;
-  border: 1px solid rgba(129, 140, 248, 0.35);
+  background: rgba(129, 140, 248, 0.25);
+  color: #c7d2fe;
+  border: 1px solid rgba(129, 140, 248, 0.6);
 }
 
 .tag-domain-tech {
-  background: rgba(56, 189, 248, 0.15);
-  color: #7dd3fc;
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.25);
+  color: #bae6fd;
+  border: 1px solid rgba(56, 189, 248, 0.6);
 }
 
 .tag-domain-pending {
-  background: rgba(234, 179, 8, 0.15);
-  color: #fde047;
-  border: 1px solid rgba(234, 179, 8, 0.4);
+  background: rgba(234, 179, 8, 0.28);
+  color: #fef08a;
+  border: 1px solid rgba(234, 179, 8, 0.65);
   animation: pulse-shimmer 2s infinite ease-in-out;
 }
 
 .tag-domain-misc,
 .tag-domain-thought {
-  background: rgba(148, 163, 184, 0.15);
-  color: #cbd5e1;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.45);
 }
 
 @keyframes pulse-shimmer {

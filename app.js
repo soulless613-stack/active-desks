@@ -1694,7 +1694,8 @@ function renderCaptures() {
     
     let pillsHtml = `
       <button type="button" class="capture-filter-pill ${activeCaptureDomainFilter === 'all' ? 'active' : ''}" onclick="setCaptureDomainFilter('all')">
-        All (${captures.length})
+        <span>All</span>
+        <span class="capture-pill-count">${captures.length}</span>
       </button>
     `;
 
@@ -1702,7 +1703,8 @@ function renderCaptures() {
       const label = d === 'pending' ? '⏳ Pending' : `${getDomainEmoji(d)} ${d.charAt(0).toUpperCase() + d.slice(1)}`;
       pillsHtml += `
         <button type="button" class="capture-filter-pill ${activeCaptureDomainFilter === d ? 'active' : ''}" onclick="setCaptureDomainFilter('${escapeHtml(d)}')">
-          ${label} (${domainCounts[d]})
+          <span>${label}</span>
+          <span class="capture-pill-count">${domainCounts[d]}</span>
         </button>
       `;
     });
