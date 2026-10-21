@@ -13,15 +13,24 @@
   },
   {
     "id": 1792557954978,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/Dej_PxGlCfE/?srtk=cmg0dmJ2aHEycXNo",
-    "summary": null,
+    "domain": "game",
+    "topic": "Board Games",
+    "title": "Board Game Arena",
+    "summary": "An online gaming platform featuring hundreds of popular board games playable directly in your browser with instant matchmaking and zero setup.",
+    "creator": "Kyle Whitney (@techcommons)",
     "sourceUrl": "https://www.instagram.com/reel/Dej_PxGlCfE/?srtk=cmg0dmJ2aHEycXNo",
+    "blogUrl": "https://boardgamearena.com",
     "time": "Oct 21",
-    "status": "pending",
+    "status": "processed",
     "rawText": "https://www.instagram.com/reel/Dej_PxGlCfE/?srtk=cmg0dmJ2aHEycXNo",
-    "payload": null
+    "payload": {
+      "title": "Board Game Arena",
+      "platform": "Web Browser",
+      "genre": "Digital Board Games / Tabletop",
+      "developer": "Board Game Arena",
+      "summary": "Play hundreds of licensed board games online with friends or matched opponents in real-time or turn-based formats with zero manual setup.",
+      "questOrGoal": "Create an account and start a match of a favorite tabletop game or organize an online game night."
+    }
   },
   {
     "id": 1792000009000,
