@@ -13,15 +13,25 @@
   },
   {
     "id": 1792558176000,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
-    "summary": null,
+    "domain": "tech",
+    "topic": "3D Printing",
+    "title": "PressPrintLab Custom Hinged Box Generator",
+    "summary": "PressPrintLab enables makers to create custom 3D-printable hinged boxes without CAD or 3D modeling experience, accessible via a Thangs 3D membership.",
+    "creator": "Press Print (@pressprint__)",
     "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
+    "blogUrl": null,
     "time": "Oct 21",
-    "status": "pending",
+    "status": "processed",
     "rawText": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
-    "payload": null
+    "payload": {
+      "title": "PressPrintLab Custom Hinged Box Generator",
+      "summary": "PressPrintLab enables makers to create custom 3D-printable hinged boxes without CAD or 3D modeling experience, accessible via a Thangs 3D membership.",
+      "keyTakeaways": [
+        "Generates customized hinged box STL/3D models without requiring manual CAD modeling skills.",
+        "Available as a tool through Press Print's Thangs 3D membership.",
+        "Geared toward 3D printing hobbyists, gift makers, and Etsy sellers looking to produce custom products."
+      ]
+    }
   },
   {
     "id": 1792558099016,
@@ -239,7 +249,7 @@
   {
     "id": 1792000007000,
     "domain": "recipe",
-    "topic": "Sourdough",
+    "topic": "Bread",
     "title": "Cheesy Garlic Sourdough Focaccia",
     "summary": "Crispy, bubbly sourdough focaccia loaded with herb-tossed cheddar, mozzarella, jack, parmesan, and bubbling garlic butter.",
     "creator": "Amy Coyne (@amybakesbread)",
@@ -473,7 +483,7 @@
   {
     "id": 1792000002000,
     "domain": "recipe",
-    "topic": "Baking",
+    "topic": "Bread",
     "title": "Viral Korean Salt Bread (Sogeum-ppang)",
     "summary": "Crispy and buttery golden bottom, pillowy soft crumb, and a signature hollow buttery center rolled with cold salted butter.",
     "creator": "Erin's Cozy Kitchen (@erins_cozykitchen)",
