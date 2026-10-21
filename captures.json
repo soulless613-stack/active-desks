@@ -1,13 +1,23 @@
 [
   {
+    "id": 1792558176000,
+    "domain": null,
+    "topic": null,
+    "title": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
+    "summary": null,
+    "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
+    "time": "Oct 21",
+    "status": "pending",
+    "rawText": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
+    "payload": null
+  },
+  {
     "id": 1792558099016,
     "domain": "recipe",
     "topic": "Bread",
     "title": "Crispy Overnight No-Knead Focaccia",
     "summary": "A foolproof, high-hydration focaccia cold-fermented overnight in the fridge to develop deep flavor and a light, bubbly crumb beneath a golden, olive-oil-crisped crust.",
-    "creator": "Cowboy (@cowboy_cooks)",
     "sourceUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/?rpxt=MW1vNGhwMG03djBpbg==",
-    "blogUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/",
     "time": "Oct 21",
     "status": "processed",
     "rawText": "https://www.instagram.com/reel/DGq7FwPSGIV/?rpxt=MW1vNGhwMG03djBpbg==",
@@ -62,7 +72,9 @@
         "Bake at 450°F (232°C) for 20 to 25 minutes, or until the top and bottom are deep golden brown and crisp.",
         "Let cool in the pan on a wire rack for 10 to 20 minutes before slicing and serving."
       ]
-    }
+    },
+    "creator": "Cowboy (@cowboy_cooks)",
+    "blogUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/"
   },
   {
     "id": 1792558029337,
@@ -70,9 +82,7 @@
     "topic": "LitRPG",
     "title": "Books to Read While Waiting for Dungeon Crawler Carl Book 8",
     "summary": "A curated roundup of LitRPG and progression fantasy book recommendations to bridge the wait until the eighth installment of Dungeon Crawler Carl releases.",
-    "creator": "Adam Michael (@weread4xp)",
     "sourceUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
-    "blogUrl": null,
     "time": "Oct 21",
     "status": "processed",
     "rawText": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
@@ -84,7 +94,9 @@
       "summary": "For readers enduring the wait for Dungeon Crawler Carl Book 8, creator Adam Michael highlights top progression fantasy and LitRPG novels that capture comparable high-stakes action, irreverent humor, and intricate leveling mechanics.",
       "highlight": "Essential progression fantasy recommendations tailored specifically to scratch the itch for fans of Matt Dinniman's chaotic, fast-paced dungeon crawl.",
       "linkUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0"
-    }
+    },
+    "creator": "Adam Michael (@weread4xp)",
+    "blogUrl": null
   },
   {
     "id": 1792557991993,
@@ -93,7 +105,6 @@
     "title": "Board Game Arena",
     "summary": "An online tabletop platform letting you play hundreds of popular board games like Catan, Azul, and Wingspan directly in your browser without any setup or clean-up.",
     "sourceUrl": "https://www.instagram.com/reel/DdJd_qSzwtB/?rpxt=MWZkN2theHA2bHd3aQ==",
-    "blogUrl": "https://boardgamearena.com",
     "time": "Oct 21",
     "status": "processed",
     "rawText": "https://www.instagram.com/reel/DdJd_qSzwtB/?rpxt=MWZkN2theHA2bHd3aQ==",
@@ -126,7 +137,8 @@
       "summary": "Play hundreds of licensed board games online with friends or matched opponents in real-time or turn-based formats with zero manual setup.",
       "questOrGoal": "Create an account and start a match of a favorite tabletop game or organize an online game night."
     },
-    "creator": "Kyle Whitney (@techcommons)"
+    "creator": "Kyle Whitney (@techcommons)",
+    "blogUrl": "https://boardgamearena.com"
   },
   {
     "id": 1792000009000,
@@ -215,7 +227,7 @@
   {
     "id": 1792000007000,
     "domain": "recipe",
-    "topic": "Bread",
+    "topic": "Sourdough",
     "title": "Cheesy Garlic Sourdough Focaccia",
     "summary": "Crispy, bubbly sourdough focaccia loaded with herb-tossed cheddar, mozzarella, jack, parmesan, and bubbling garlic butter.",
     "creator": "Amy Coyne (@amybakesbread)",
@@ -449,7 +461,7 @@
   {
     "id": 1792000002000,
     "domain": "recipe",
-    "topic": "Bread",
+    "topic": "Baking",
     "title": "Viral Korean Salt Bread (Sogeum-ppang)",
     "summary": "Crispy and buttery golden bottom, pillowy soft crumb, and a signature hollow buttery center rolled with cold salted butter.",
     "creator": "Erin's Cozy Kitchen (@erins_cozykitchen)",
