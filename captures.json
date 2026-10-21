@@ -1,15 +1,23 @@
 [
   {
     "id": 1792558243177,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
-    "summary": null,
+    "domain": "tech",
+    "topic": "3D Printing",
+    "title": "Wing Folding Fan 3D Print Design",
+    "summary": "A creative 3D-printed articulated folding fan inspired by bird wings that smoothly expands and collapses. It highlights functional print design and mechanical joint movement for everyday handheld use.",
+    "creator": "By Asli 3D (@byasli3d)",
     "sourceUrl": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
+    "blogUrl": "https://www.instagram.com/reel/DZufqGutK9E/",
     "time": "Oct 21",
-    "status": "pending",
+    "status": "processed",
     "rawText": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
-    "payload": null
+    "payload": {
+      "keyTakeaways": [
+        "Showcases an articulated, multi-segment wing mechanism that opens and closes smoothly like a traditional folding fan.",
+        "Demonstrates practical mechanical design and print-in-place tolerances in desktop 3D printing.",
+        "Serves as a lightweight, portable aesthetic print that doubles as a functional cooling fan."
+      ]
+    }
   },
   {
     "id": 1792558176000,
