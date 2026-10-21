@@ -1,5 +1,16 @@
 [
   {
+    "id": "1792560225099fhyf",
+    "time": "2026-10-21T05:23:45.099Z",
+    "displayTime": "01:23:45 AM",
+    "device": "desktop",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (17 notes)",
+    "details": null
+  },
+  {
     "id": "1792561000000mod",
     "time": "2026-10-21T05:20:00.000Z",
     "displayTime": "1:20:00 AM",
@@ -17,6 +28,17 @@
         "Removed automatic markDirty in mergeCaptures to prevent zombie capture resurrections"
       ]
     }
+  },
+  {
+    "id": "1792558449952zpta",
+    "time": "2026-10-21T04:54:09.952Z",
+    "displayTime": "12:54:09 AM",
+    "device": "desktop",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "error",
+    "message": "Failed to commit captures.json",
+    "details": "Failed to fetch"
   },
   {
     "id": "1792558246518wyrt",
@@ -689,39 +711,6 @@
     "action": "commit",
     "status": "success",
     "message": "Update reading progress: Rhythm of War (pages 371/1230)",
-    "details": null
-  },
-  {
-    "id": "1791244512524fl9e",
-    "time": "2026-10-05T23:55:12.524Z",
-    "displayTime": "07:55:12 PM",
-    "device": "desktop",
-    "target": "gaming.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update game quest: Stardew Valley (PC / Steam)",
-    "details": null
-  },
-  {
-    "id": "1791090833846g8mn",
-    "time": "2026-10-04T05:13:53.846Z",
-    "displayTime": "01:13:53 AM",
-    "device": "mobile",
-    "target": "reading.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update reading progress: Rhythm of War (pages 363/1230)",
-    "details": null
-  },
-  {
-    "id": "1791015704968oc0x",
-    "time": "2026-10-03T08:21:44.968Z",
-    "displayTime": "04:21:44 AM",
-    "device": "mobile",
-    "target": "anchors.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update daily anchors: 2026-10-03 (1/3)",
     "details": null
   }
 ]
