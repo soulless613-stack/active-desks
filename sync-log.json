@@ -1,5 +1,24 @@
 [
   {
+    "id": "1792554000000top",
+    "time": "2026-10-21T03:30:00.000Z",
+    "displayTime": "11:30:00 PM",
+    "device": "desktop-ide",
+    "target": "ui-topic-filter-pills",
+    "action": "scoped-topic-pills-and-dismissible-evolution-notice",
+    "status": "success",
+    "message": "Implemented domain-scoped dynamic topic filter pills (>=2 topics threshold) and actionable dismissible evolution notice",
+    "details": {
+      "version": "active-desks-v29",
+      "features": [
+        "Topic filter bar hidden when All is active to prevent tag soup",
+        "Topic pills revealed conditionally on domain selection (only when >= 2 distinct topics exist)",
+        "Replaced static overhead statement with actionable, dismissible Adaptive Evolution notice",
+        "1-tap review button jumps directly to clustered topic"
+      ]
+    }
+  },
+  {
     "id": "1792552000000p3",
     "time": "2026-10-21T02:50:00.000Z",
     "displayTime": "10:50:00 PM",

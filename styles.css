@@ -1683,22 +1683,123 @@ body {
   color: var(--text-secondary);
 }
 
-/* Drawer Evolution Insights */
+/* Drawer Evolution Change Notice (Transient & Actionable) */
 .drawer-evolution-insights {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
   padding: 8px 12px;
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
   border-radius: var(--radius-sm);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   font-size: 0.78rem;
   color: var(--text-secondary);
+  animation: slide-in 0.25s ease;
 }
 
-.drawer-evolution-insights strong {
+.drawer-evolution-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer-evolution-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-evolution-chip {
+  background: rgba(56, 189, 248, 0.2);
+  border: 1px solid rgba(56, 189, 248, 0.45);
   color: var(--accent-spark);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-evolution-chip:hover {
+  background: var(--accent-spark);
+  color: #0f172a;
+}
+
+.btn-evolution-chip.dismiss {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 2px 5px;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.btn-evolution-chip.dismiss:hover {
+  color: #ef4444;
+}
+
+/* Tier 2: Dynamic Scoped Topic Filter Pills */
+.capture-topic-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 4px 0 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  animation: fade-in 0.2s ease;
+}
+
+.capture-topic-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.capture-topic-pill:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(148, 163, 184, 0.5);
+  color: var(--text-primary);
+}
+
+.capture-topic-pill.active {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: #38bdf8;
+  font-weight: 700;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+.capture-topic-count {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+}
+
+.capture-topic-pill.active .capture-topic-count {
+  background: rgba(56, 189, 248, 0.4);
+  color: #ffffff;
 }
 
 /* QR Code Device Pairing Modal & Toast */

@@ -1667,9 +1667,16 @@ async function fetchGamingFromRepo() {
 // Universal Capture & Adaptive Stream Engine
 // --------------------------------------------------------------------------
 let activeCaptureDomainFilter = 'all';
+let activeCaptureTopicFilter = 'all';
 
 function setCaptureDomainFilter(domain) {
   activeCaptureDomainFilter = domain;
+  activeCaptureTopicFilter = 'all';
+  renderCaptures();
+}
+
+function setCaptureTopicFilter(topic) {
+  activeCaptureTopicFilter = topic;
   renderCaptures();
 }
 
@@ -1779,48 +1786,58 @@ function renderCaptures() {
     filterBar.innerHTML = pillsHtml;
   }
 
-  // 1b. Render Drawer Evolution Insights (Rule of 3 & Rule of 5)
-  const insightsEl = document.getElementById('drawer-evolution-insights');
-  if (insightsEl) {
-    const ACTIVE_DESK_DOMAINS = ['book', 'recipe', 'game', 'fiber'];
-    const nonDesk = [];
-    const topicClusters = {};
-
-    captures.forEach(c => {
-      if (!c.domain) return;
-      const d = c.domain.toLowerCase();
-      if (!ACTIVE_DESK_DOMAINS.includes(d) && d !== 'misc') {
-        const existing = nonDesk.find(x => x.domain === d);
-        if (existing) existing.count++;
-        else nonDesk.push({ domain: d, count: 1 });
-      }
-      if (c.topic && c.topic !== 'General') {
-        topicClusters[c.topic] = (topicClusters[c.topic] || 0) + 1;
-      }
-    });
-
-    const activeEmergent = nonDesk.filter(x => x.count >= 5);
-    const prominentTopics = Object.entries(topicClusters).filter(([t, count]) => count >= 3);
-
-    if (activeEmergent.length > 0 || prominentTopics.length > 0) {
-      const parts = [];
-      activeEmergent.forEach(e => {
-        parts.push(`🌱 <strong>${e.domain.charAt(0).toUpperCase() + e.domain.slice(1)}</strong>: ${e.count} items outside active desks`);
-      });
-      prominentTopics.forEach(([topic, count]) => {
-        parts.push(`🏷️ <strong>${topic}</strong>: ${count} items clustered`);
-      });
-      insightsEl.innerHTML = `<span>${parts.join(' &nbsp;•&nbsp; ')}</span>`;
-      insightsEl.style.display = 'flex';
+  // 1b. Render Scoped Topic Filter Pills (only when a domain is selected AND has >= 2 topics)
+  const topicFilterBar = document.getElementById('captures-topic-filter-bar');
+  if (topicFilterBar) {
+    if (activeCaptureDomainFilter === 'all') {
+      topicFilterBar.style.display = 'none';
+      topicFilterBar.innerHTML = '';
     } else {
-      insightsEl.style.display = 'none';
+      const domainCaptures = captures.filter(c => ((c.domain || 'pending').toLowerCase()) === activeCaptureDomainFilter);
+      const topicCounts = {};
+      domainCaptures.forEach(c => {
+        const t = c.topic || 'General';
+        topicCounts[t] = (topicCounts[t] || 0) + 1;
+      });
+
+      const topics = Object.keys(topicCounts).sort();
+
+      // Only display the secondary topic bar if the domain has >= 2 distinct topics
+      if (topics.length < 2) {
+        topicFilterBar.style.display = 'none';
+        topicFilterBar.innerHTML = '';
+      } else {
+        topicFilterBar.style.display = 'flex';
+        let topicHtml = `
+          <button type="button" class="capture-topic-pill ${activeCaptureTopicFilter === 'all' ? 'active' : ''}" onclick="setCaptureTopicFilter('all')">
+            <span>All Topics</span>
+            <span class="capture-topic-count">${domainCaptures.length}</span>
+          </button>
+        `;
+
+        topics.forEach(t => {
+          topicHtml += `
+            <button type="button" class="capture-topic-pill ${activeCaptureTopicFilter === t ? 'active' : ''}" onclick="setCaptureTopicFilter('${escapeHtml(t)}')">
+              <span>${escapeHtml(t)}</span>
+              <span class="capture-topic-count">${topicCounts[t]}</span>
+            </button>
+          `;
+        });
+
+        topicFilterBar.innerHTML = topicHtml;
+      }
     }
   }
 
-  // 2. Filter Items
-  const filtered = activeCaptureDomainFilter === 'all'
-    ? captures
-    : captures.filter(c => ((c.domain || 'pending').toLowerCase()) === activeCaptureDomainFilter);
+  // 1c. Render Drawer Evolution Notice (Actionable & Dismissible)
+  renderDrawerEvolutionNotice(captures);
+
+  // 2. Filter Items by Domain AND Topic
+  const filtered = captures.filter(c => {
+    const matchDomain = activeCaptureDomainFilter === 'all' || ((c.domain || 'pending').toLowerCase()) === activeCaptureDomainFilter;
+    const matchTopic = activeCaptureTopicFilter === 'all' || ((c.topic || 'General').toLowerCase()) === activeCaptureTopicFilter.toLowerCase();
+    return matchDomain && matchTopic;
+  });
 
   if (filtered.length === 0) {
     list.innerHTML = `
@@ -2103,6 +2120,68 @@ async function fetchDeskSuggestionsFromRepo() {
       }
     }
   } catch (e) {}
+}
+
+// --------------------------------------------------------------------------
+// Drawer Evolution Change Notices (Actionable & Dismissible)
+// --------------------------------------------------------------------------
+const DISMISSED_EVOLUTION_NOTICES_KEY = 'active_desks_dismissed_evolution_notices';
+
+function getDismissedEvolutionNotices() {
+  try {
+    const raw = localStorage.getItem(DISMISSED_EVOLUTION_NOTICES_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function renderDrawerEvolutionNotice(captures) {
+  const insightsEl = document.getElementById('drawer-evolution-insights');
+  if (!insightsEl) return;
+
+  const dismissed = getDismissedEvolutionNotices();
+
+  // Check for active sub-genre re-clustering events (e.g. 3+ books clustered into LitRPG)
+  const litRpgBooks = (captures || []).filter(c => 
+    (c.domain || '').toLowerCase() === 'book' && 
+    (c.topic || '').toLowerCase() === 'litrpg'
+  );
+
+  if (litRpgBooks.length >= 3 && !dismissed.has('litrpg-cluster')) {
+    insightsEl.innerHTML = `
+      <div class="drawer-evolution-content">
+        <span>✨ <strong>Adaptive Evolution:</strong> ${litRpgBooks.length} books grouped into <em>LitRPG</em></span>
+      </div>
+      <div class="drawer-evolution-actions">
+        <button type="button" class="btn-evolution-chip" onclick="reviewEvolutionNotice('book', 'LitRPG')">Review</button>
+        <button type="button" class="btn-evolution-chip dismiss" onclick="dismissDrawerEvolutionNotice('litrpg-cluster')" title="Dismiss" aria-label="Dismiss">✕</button>
+      </div>
+    `;
+    insightsEl.style.display = 'flex';
+  } else {
+    insightsEl.style.display = 'none';
+  }
+}
+
+function reviewEvolutionNotice(domain, topic) {
+  setCaptureDomainFilter(domain);
+  setCaptureTopicFilter(topic);
+  showToast(`Filtered to ${topic} cluster! 🏷️`, '📚');
+}
+
+function dismissDrawerEvolutionNotice(id) {
+  try {
+    const set = Array.from(getDismissedEvolutionNotices());
+    if (!set.includes(id)) {
+      set.push(id);
+      localStorage.setItem(DISMISSED_EVOLUTION_NOTICES_KEY, JSON.stringify(set));
+    }
+  } catch (e) {}
+
+  const el = document.getElementById('drawer-evolution-insights');
+  if (el) el.style.display = 'none';
+  showToast('Notice dismissed. ✨', '🌿');
 }
 
 const DELETED_CAPTURES_KEY = 'active_desks_deleted_captures';
