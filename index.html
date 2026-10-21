@@ -225,13 +225,13 @@
 
   </div> <!-- End App Container -->
 
-  <!-- Sticky Bottom Quick-Capture Bar -->
+  <!-- Sticky Bottom Quick-Capture Bar (Universal Intake) -->
   <div class="quick-capture-wrapper">
     <form class="quick-capture-box" onsubmit="handleQuickCapture(event)">
-      <button type="button" class="quick-capture-view-btn" onclick="openBrainDumpModal()" title="View captured thoughts" aria-label="View captured thoughts">
-        <span>🧠</span>
+      <button type="button" class="quick-capture-view-btn" onclick="openBrainDumpModal()" title="View captured stream" aria-label="View captured stream">
+        <span>⚡</span>
       </button>
-      <input type="text" id="quick-capture-input" class="quick-capture-input" placeholder="Capture a stray thought, link, or grocery item..." autocomplete="off">
+      <input type="text" id="quick-capture-input" class="quick-capture-input" placeholder="Drop a link (recipe, book, game) or type a thought..." autocomplete="off" enterkeyhint="send" aria-label="Universal capture input">
       <button type="submit" class="quick-capture-btn">
         <span>Save</span>
       </button>
@@ -325,13 +325,13 @@
     </div>
   </div>
 
-  <!-- Modal: Brain Dump / Captured Thoughts -->
+  <!-- Modal: Universal Capture Stream -->
   <div id="brain-dump-modal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 1.2rem;">🧠</span>
-          <h3 class="modal-title">Quick-Captured Thoughts</h3>
+          <span style="font-size: 1.2rem;">⚡</span>
+          <h3 class="modal-title">Universal Captures</h3>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <button type="button" id="captures-manual-sync-btn" onclick="syncCapturesManually()" style="font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); color: var(--accent-spark); border: 1px solid rgba(56, 189, 248, 0.3); cursor: pointer; font-weight: 600;">
@@ -341,9 +341,12 @@
         </div>
       </div>
       <div class="modal-body">
-        <p style="font-size: 0.84rem; color: var(--text-secondary);">
-          Stray notes captured on the fly. Synced across your devices via GitHub.
+        <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 2px;">
+          Master stream of recipes, books, games, links, and thoughts—smart-sorted by domain &amp; topic.
         </p>
+        <div id="captures-filter-bar" class="capture-filter-pills">
+          <!-- Populated dynamically -->
+        </div>
         <div id="captures-list" class="capture-items-list">
           <!-- Populated dynamically -->
         </div>

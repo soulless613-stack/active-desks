@@ -989,9 +989,22 @@ function selectRecipe(index) {
   saveState();
 }
 
-function openRecipeModal() {
+function openRecipeModal(targetRecipeOrId) {
   const rState = state.desks.recipe;
-  const rec = rState.recipes[rState.selectedIndex] || rState.recipes[0];
+  let rec = null;
+  if (targetRecipeOrId) {
+    if (typeof targetRecipeOrId === 'object') {
+      rec = targetRecipeOrId;
+    } else if (typeof targetRecipeOrId === 'string') {
+      rec = rState.recipes.find(r => r.id === targetRecipeOrId);
+    } else if (typeof targetRecipeOrId === 'number') {
+      rec = rState.recipes[targetRecipeOrId];
+    }
+  }
+  if (!rec) {
+    rec = rState.recipes[rState.selectedIndex] || rState.recipes[0];
+  }
+  if (!rec) return;
   
   document.getElementById('modal-recipe-title').textContent = rec.title;
   document.getElementById('modal-recipe-source').textContent = rec.source;
@@ -1584,43 +1597,191 @@ async function fetchGamingFromRepo() {
 }
 
 // --------------------------------------------------------------------------
-// Quick-Capture Brain Dump (Cross-Device GitHub Sync)
+// Universal Capture & Adaptive Stream Engine
 // --------------------------------------------------------------------------
+let activeCaptureDomainFilter = 'all';
+
+function setCaptureDomainFilter(domain) {
+  activeCaptureDomainFilter = domain;
+  renderCaptures();
+}
+
 function handleQuickCapture(e) {
   if (e) e.preventDefault();
   const input = document.getElementById('quick-capture-input');
-  const text = input.value.trim();
+  const text = input ? input.value.trim() : '';
   if (!text) return;
 
-  state.captures.unshift({
+  const urlMatch = text.match(/https?:\/\/[^\s]+/i);
+  const foundUrl = urlMatch ? urlMatch[0] : null;
+
+  const newCapture = {
     id: Date.now(),
-    text: text,
-    time: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-  });
-  input.value = '';
+    domain: null, // to be classified by cloud agent
+    topic: null,
+    title: text,
+    summary: null,
+    sourceUrl: foundUrl,
+    time: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+    status: 'pending',
+    rawText: text,
+    payload: null
+  };
+
+  if (!Array.isArray(state.captures)) state.captures = [];
+  state.captures.unshift(newCapture);
+
+  // If a URL was captured, keep recipeInbox synced as well for backward compatibility
+  if (foundUrl) {
+    if (!Array.isArray(state.recipeInbox)) state.recipeInbox = [];
+    state.recipeInbox.unshift({
+      id: newCapture.id,
+      url: foundUrl,
+      note: text.replace(foundUrl, '').trim() || 'Universal capture URL',
+      addedAt: new Date().toISOString()
+    });
+    markDirty('recipe-inbox.json');
+  }
+
+  if (input) input.value = '';
   saveState();
   renderCaptures();
   markDirty('captures.json');
   openBrainDumpModal();
-  showToast('Thought captured!', '💡');
+
+  if (foundUrl) {
+    showToast('Link captured! ⚡ Queued for smart extraction', '📥');
+  } else {
+    showToast('Thought captured! 💡 Queued for smart sorting', '🧠');
+  }
+
   flushDirtySync(); // Push to GitHub immediately in background if connected
+}
+
+function getDomainEmoji(domain) {
+  const map = {
+    recipe: '🍳',
+    book: '📚',
+    game: '🎮',
+    fiber: '🧶',
+    travel: '✈️',
+    home: '🏡',
+    finance: '💰',
+    writing: '✍️',
+    tech: '💻',
+    thought: '💡',
+    misc: '📌'
+  };
+  return map[domain] || '📌';
 }
 
 function renderCaptures() {
   const list = document.getElementById('captures-list');
+  const filterBar = document.getElementById('captures-filter-bar');
   if (!list) return;
-  
-  if (state.captures.length === 0) {
-    list.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 12px;">No quick thoughts captured yet. Type in the bar below anytime!</p>`;
+
+  const captures = Array.isArray(state.captures) ? state.captures : [];
+
+  // 1. Render Domain Filter Pills
+  if (filterBar) {
+    const domainCounts = {};
+    captures.forEach(c => {
+      const d = (c.domain || 'pending').toLowerCase();
+      domainCounts[d] = (domainCounts[d] || 0) + 1;
+    });
+
+    const domains = Object.keys(domainCounts).sort();
+    
+    let pillsHtml = `
+      <button type="button" class="capture-filter-pill ${activeCaptureDomainFilter === 'all' ? 'active' : ''}" onclick="setCaptureDomainFilter('all')">
+        All (${captures.length})
+      </button>
+    `;
+
+    domains.forEach(d => {
+      const label = d === 'pending' ? '⏳ Pending' : `${getDomainEmoji(d)} ${d.charAt(0).toUpperCase() + d.slice(1)}`;
+      pillsHtml += `
+        <button type="button" class="capture-filter-pill ${activeCaptureDomainFilter === d ? 'active' : ''}" onclick="setCaptureDomainFilter('${escapeHtml(d)}')">
+          ${label} (${domainCounts[d]})
+        </button>
+      `;
+    });
+
+    filterBar.innerHTML = pillsHtml;
+  }
+
+  // 2. Filter Items
+  const filtered = activeCaptureDomainFilter === 'all'
+    ? captures
+    : captures.filter(c => ((c.domain || 'pending').toLowerCase()) === activeCaptureDomainFilter);
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div style="text-align: center; padding: 24px 12px; color: var(--text-muted); font-size: 0.88rem; background: rgba(15, 23, 42, 0.4); border-radius: var(--radius-md); border: 1px dashed var(--border-subtle);">
+        <span>✨ No items found under this filter.</span><br>
+        <span style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 6px; display: inline-block;">
+          Drop any link (recipe, book, game) or raw thought in the bar below!
+        </span>
+      </div>
+    `;
     return;
   }
 
-  list.innerHTML = state.captures.map(c => `
-    <div class="capture-item">
-      <span>${escapeHtml(c.text)}</span>
-      <button class="capture-del-btn" onclick="deleteCapture(${c.id})" title="Delete">✕</button>
-    </div>
-  `).join('');
+  // 3. Render Capture Cards
+  list.innerHTML = filtered.map(c => {
+    const isPending = c.status === 'pending' || !c.domain || c.domain === 'pending';
+    const domainClass = isPending ? 'tag-domain-pending' : `tag-domain-${(c.domain || 'misc').toLowerCase()}`;
+    const badgeText = isPending 
+      ? `⏳ Processing...`
+      : `[${escapeHtml(c.domain)}] · ${escapeHtml(c.topic || 'General')}`;
+
+    const titleText = escapeHtml(c.title || c.text || c.rawText || 'Untitled Capture');
+    const summaryText = c.summary && c.summary !== c.title ? escapeHtml(c.summary) : '';
+
+    // Check if matching recipe exists in state
+    let recipeCookBtn = '';
+    if (c.domain === 'recipe' && state.desks?.recipe?.recipes) {
+      const matchingRecipe = state.desks.recipe.recipes.find(r => 
+        (r.url && c.sourceUrl && r.url === c.sourceUrl) ||
+        (c.payload?.slug && r.id === c.payload.slug) ||
+        (r.title && r.title.toLowerCase() === (c.title || '').toLowerCase())
+      );
+      if (matchingRecipe) {
+        recipeCookBtn = `
+          <button type="button" class="capture-link-btn" onclick="closeModal('brain-dump-modal'); openRecipeModal('${matchingRecipe.id}')" style="background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.4); color: #fb923c;">
+            🍳 Cook Recipe
+          </button>
+        `;
+      }
+    }
+
+    return `
+      <div class="capture-card">
+        <div class="capture-card-header">
+          <div class="capture-badge-group">
+            <span class="tag-two-tier ${domainClass}">${badgeText}</span>
+            <span style="font-size: 0.74rem; color: var(--text-muted);">${escapeHtml(c.time || '')}</span>
+          </div>
+          <button class="capture-del-btn" onclick="deleteCapture(${c.id})" title="Delete capture" aria-label="Delete">✕</button>
+        </div>
+
+        <div class="capture-card-title">${titleText}</div>
+        ${summaryText ? `<div class="capture-card-summary">${summaryText}</div>` : ''}
+
+        <div class="capture-card-footer">
+          <div class="capture-card-actions">
+            ${c.sourceUrl ? `
+              <a href="${escapeHtml(c.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="capture-link-btn">
+                🔗 Source Link
+              </a>
+            ` : ''}
+            ${recipeCookBtn}
+          </div>
+          ${c.creator ? `<span style="font-size: 0.74rem; color: var(--text-muted);">${escapeHtml(c.creator)}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 const DELETED_CAPTURES_KEY = 'active_desks_deleted_captures';
@@ -1652,21 +1813,30 @@ function mergeCaptures(remoteCaptures) {
   const deletedIds = getDeletedCaptureIds();
   let changed = false;
 
-  // Add remote items that we don't have and haven't deleted locally
   remoteCaptures.forEach(remoteItem => {
     if (!remoteItem || !remoteItem.id) return;
     if (deletedIds.has(remoteItem.id)) return;
-    const exists = state.captures.some(local => local.id === remoteItem.id);
-    if (!exists) {
+
+    const localIdx = state.captures.findIndex(local => local.id === remoteItem.id);
+    if (localIdx === -1) {
       state.captures.push(remoteItem);
       changed = true;
+    } else {
+      // Merge remote updates (domain, topic, status, payload, summary) into local
+      const local = state.captures[localIdx];
+      const isRemoteEnriched = remoteItem.status === 'processed' && local.status !== 'processed';
+      const hasDomainChange = remoteItem.domain && remoteItem.domain !== local.domain;
+      const hasTitleChange = remoteItem.title && remoteItem.title !== local.title;
+      if (isRemoteEnriched || hasDomainChange || hasTitleChange) {
+        state.captures[localIdx] = { ...local, ...remoteItem };
+        changed = true;
+      }
     }
   });
 
   // Sort newest first
   state.captures.sort((a, b) => (b.id || 0) - (a.id || 0));
 
-  // If local has items that remote doesn't have, mark dirty so they get pushed to GitHub!
   const remoteIdSet = new Set(remoteCaptures.map(r => r.id));
   const hasLocalOnly = state.captures.some(local => !remoteIdSet.has(local.id));
   if (hasLocalOnly) {
@@ -1682,7 +1852,7 @@ function deleteCapture(id) {
   saveState();
   renderCaptures();
   markDirty('captures.json');
-  showToast('Thought removed', '🗑️');
+  showToast('Item removed from stream', '🗑️');
   flushDirtySync(); // Push deletion to GitHub immediately in background if connected
 }
 
@@ -2107,6 +2277,18 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchSyncLogFromRepo();
   checkDevicePairingHash();
   updateHeaderSyncStatus();
+
+  // IME composition safety for Universal Input (per modern-web-guidance)
+  const captureInput = document.getElementById('quick-capture-input');
+  if (captureInput) {
+    captureInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        if (event.isComposing || event.keyCode === 229) {
+          return;
+        }
+      }
+    });
+  }
 });
 
 window.addEventListener('hashchange', checkDevicePairingHash);

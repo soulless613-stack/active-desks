@@ -96,10 +96,18 @@
 * **Instant Local Row Changes**: Tapping `+`/`−` immediately persists to `localStorage`, re-renders the UI with zero delay, and marks `fiber.json` dirty for background batch sync.
 * **✏️ Update Modal**: Modal allows editing project title, WIP type, yarn/needle specs, target rows, and pattern link. Features instant local save (`💾 Save Changes`) and on-demand cloud sync (`🔄 Sync to GitHub`).
 
-### 6. Quick Capture Bar & Cross-Device Sync (`captures.json`)
-* Always-available quick note capture dock storing stray thoughts directly into `localStorage` and syncing across devices.
-* Stored in [`active-desks/captures.json`](file:///c:/Users/chris/Documents/antigravity/active-desks/captures.json) on `main`.
-* Adding or deleting captures saves instantly to local state, updates the badge to Unsynced, and flushes on app exit or manual sync.
+### 6. Universal Capture Stream & Two-Tier Tagging (`captures.json` & `scripts/universal-extractor.js`)
+* **Dual-Modality Intake**: Exactly one bottom capture dock handling both URLs (Instagram reels, TikToks, GoodReads, Steam, web articles) and linkless raw thoughts (0ms local save, 100% offline).
+* **Two-Tier Tag Rule**: Every item is categorized into strictly two tags:
+  1. `[Domain]` (Macro-Anchor: `recipe`, `book`, `game`, `fiber`, `travel`, `home`, `finance`, `writing`, `tech`, `misc`).
+  2. `[Topic]` (Micro-Context: `Baking`, `Sci-Fi`, `RPG`, `HVAC`, `Investing`, etc.).
+* **Single Master Stream (`captures.json`)**: All captured thoughts, links, and recipes reside in `captures.json` as the Single Source of Truth.
+* **Autonomous Cloud Agent (`scripts/universal-extractor.js`)**:
+  * Triggered via GitHub Actions on changes to `captures.json` or `recipe-inbox.json`.
+  * For URLs: scrapes creator captions and OpenGraph metadata via User-Agent `facebookexternalhit/1.1`, queries Gemini to classify and generate rich payloads (recipes get full ingredient checklists with metric grams and markdown files, books get blurb & author details, games get platform & genre details).
+  * For Linkless Thoughts: bypasses crawlers and directly prompts Gemini to classify into `[Domain] · [Topic]`.
+* **Universal Stream Drawer UI**: Dynamic filter pills (`[ All ]`, `[ 🍳 Recipes ]`, `[ 📚 Books ]`, `[ 🎮 Games ]`, `[ 💡 Thoughts ]`), live status badges (`⏳ Processing...`), direct source links, and instant recipe cook triggers.
+
 
 ### 7. Unified Cloud Sync Engine, Exit Flush & Diagnostics (`sync-log.json`)
 * **Generic GitHub Engine**: Centralized `githubPut(filePath, data, commitMsg)` and `githubGet(filePath)` with automatic Base64 encoding/decoding, SHA tracking, 409-conflict re-fetch/retry, and uniform error diagnostics.
