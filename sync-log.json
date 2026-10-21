@@ -1,5 +1,16 @@
 [
   {
+    "id": "1792557868413xguc",
+    "time": "2026-10-21T04:44:28.413Z",
+    "displayTime": "12:44:28 AM",
+    "device": "mobile",
+    "target": "anchors.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update daily anchors: 2026-10-21 (2/3)",
+    "details": null
+  },
+  {
     "id": "1792557796725ipr1",
     "time": "2026-10-21T04:43:16.725Z",
     "displayTime": "12:43:16 AM",
@@ -692,17 +703,6 @@
     "action": "commit",
     "status": "success",
     "message": "Update reading progress: Rhythm of War (pages 222/1230)",
-    "details": null
-  },
-  {
-    "id": "1790653775000ext1",
-    "time": "2026-09-29T03:49:35.000Z",
-    "displayTime": "11:49:35 PM",
-    "device": "desktop-ide",
-    "target": "recipe-inbox.json",
-    "action": "batch-extract",
-    "status": "success",
-    "message": "Extracted 15-Minute Creamy One-Pot Garlic Herb Pasta from recipe inbox and cleared queue",
     "details": null
   }
 ]
