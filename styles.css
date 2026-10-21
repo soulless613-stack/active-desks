@@ -2059,6 +2059,11 @@ body {
 /* ==========================================================================
    Capture Detail Sheet (Progressive Disclosure)
    ========================================================================== */
+#capture-detail-modal,
+#recipe-modal {
+  z-index: 120;
+}
+
 .capture-detail-modal-content {
   max-width: 520px;
   background: linear-gradient(135deg, rgba(22, 30, 46, 0.96) 0%, rgba(15, 23, 42, 0.98) 100%);

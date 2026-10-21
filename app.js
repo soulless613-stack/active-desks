@@ -384,7 +384,7 @@ const DEFAULT_STATE = {
         },
         {
           id: 'crispy-overnight-no-knead-focaccia',
-          title: undefined,
+          title: "Crispy Overnight No-Knead Focaccia",
           source: "Cowboy (@cowboy_cooks)",
           url: "https://www.instagram.com/reel/DGq7FwPSGIV/",
           blogUrl: null,
@@ -1852,7 +1852,9 @@ function renderCaptures() {
   const filterBar = document.getElementById('captures-filter-bar');
   if (!list) return;
 
-  const captures = Array.isArray(state.captures) ? state.captures : [];
+  const captures = (Array.isArray(state.captures) ? state.captures : [])
+    .slice()
+    .sort((a, b) => (b.id || 0) - (a.id || 0));
 
   // 1. Render Domain Filter Pills
   if (filterBar) {
@@ -1960,23 +1962,6 @@ function renderCaptures() {
     const titleText = escapeHtml(c.title || c.text || c.rawText || 'Untitled Capture');
     const summaryText = c.summary && c.summary !== c.title ? escapeHtml(c.summary) : '';
 
-    // Check if matching recipe exists in state
-    let recipeCookBtn = '';
-    if (c.domain === 'recipe' && state.desks?.recipe?.recipes) {
-      const matchingRecipe = state.desks.recipe.recipes.find(r => 
-        (r.url && c.sourceUrl && r.url === c.sourceUrl) ||
-        (c.payload?.slug && r.id === c.payload.slug) ||
-        (r.title && r.title.toLowerCase() === (c.title || '').toLowerCase())
-      );
-      if (matchingRecipe) {
-        recipeCookBtn = `
-          <button type="button" class="capture-link-btn" onclick="event.stopPropagation(); closeModal('brain-dump-modal'); openRecipeModal('${matchingRecipe.id}')" style="background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.4); color: #fb923c;">
-            🍳 Cook Recipe
-          </button>
-        `;
-      }
-    }
-
     return `
       <div class="capture-card" onclick="openCaptureDetailModal(${c.id})">
         <div class="capture-card-header">
@@ -1997,7 +1982,6 @@ function renderCaptures() {
                 🔗 Source Link
               </a>
             ` : ''}
-            ${recipeCookBtn}
             <button type="button" class="capture-pin-btn" onclick="event.stopPropagation(); openPinToDeskModal(${c.id})" title="Assign to a desk or domain">
               📌 Desk
             </button>
@@ -2012,19 +1996,6 @@ function renderCaptures() {
 function openCaptureDetailModal(captureId) {
   const c = (state.captures || []).find(item => item.id === captureId);
   if (!c) return;
-
-  // If domain is recipe, open the cooking modal directly
-  if (c.domain === 'recipe') {
-    const matchingRecipe = (state.desks?.recipe?.recipes || []).find(r => 
-      (r.url && c.sourceUrl && r.url === c.sourceUrl) ||
-      (c.payload?.slug && r.id === c.payload.slug) ||
-      (r.title && r.title.toLowerCase() === (c.title || '').toLowerCase())
-    );
-    if (matchingRecipe) {
-      openRecipeModal(matchingRecipe.id);
-      return;
-    }
-  }
 
   // Populate Header
   const domainTagEl = document.getElementById('capture-modal-domain-tag');
@@ -2095,6 +2066,8 @@ function openCaptureDetailModal(captureId) {
       if (p.series) chips.push({ label: 'Series', val: p.series });
       if (p.developer) chips.push({ label: 'Developer', val: p.developer });
       if (p.yield) chips.push({ label: 'Yield', val: p.yield });
+      if (p.calories) chips.push({ label: 'Calories', val: `${p.calories} kcal` });
+      if (p.protein) chips.push({ label: 'Protein', val: typeof p.protein === 'number' ? `${p.protein}g` : p.protein });
 
       if (chips.length > 0) {
         payloadHtml += `
@@ -2109,7 +2082,31 @@ function openCaptureDetailModal(captureId) {
         `;
       }
 
-      // 2. Key Takeaways (Bullet List)
+      // 2. Ingredients List (for Recipe Captures)
+      if (Array.isArray(p.ingredientSections) && p.ingredientSections.length > 0) {
+        payloadHtml += `
+          <div>
+            <div class="payload-section-title">🛒 Ingredients</div>
+            ${p.ingredientSections.map(sec => `
+              <div style="font-size: 0.78rem; font-weight: 700; color: #fb923c; margin: 6px 0 3px;">${escapeHtml(sec.sectionTitle || '')}</div>
+              <ul class="payload-takeaways-list" style="margin-bottom: 6px;">
+                ${(sec.ingredients || []).map(ing => `<li>${escapeHtml(ing)}</li>`).join('')}
+              </ul>
+            `).join('')}
+          </div>
+        `;
+      } else if (Array.isArray(p.ingredients) && p.ingredients.length > 0) {
+        payloadHtml += `
+          <div>
+            <div class="payload-section-title">🛒 Ingredients</div>
+            <ul class="payload-takeaways-list">
+              ${p.ingredients.map(ing => `<li>${escapeHtml(ing)}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      // 3. Key Takeaways (Bullet List)
       if (Array.isArray(p.keyTakeaways) && p.keyTakeaways.length > 0) {
         payloadHtml += `
           <div>
