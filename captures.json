@@ -1,5 +1,17 @@
 [
   {
+    "id": 1792558099016,
+    "domain": null,
+    "topic": null,
+    "title": "https://www.instagram.com/reel/DGq7FwPSGIV/?rpxt=MW1vNGhwMG03djBpbg==",
+    "summary": null,
+    "sourceUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/?rpxt=MW1vNGhwMG03djBpbg==",
+    "time": "Oct 21",
+    "status": "pending",
+    "rawText": "https://www.instagram.com/reel/DGq7FwPSGIV/?rpxt=MW1vNGhwMG03djBpbg==",
+    "payload": null
+  },
+  {
     "id": 1792558029337,
     "domain": null,
     "topic": null,
@@ -17,9 +29,7 @@
     "topic": "Board Games",
     "title": "Board Game Arena",
     "summary": "An online tabletop platform letting you play hundreds of popular board games like Catan, Azul, and Wingspan directly in your browser without any setup or clean-up.",
-    "creator": "2 Kids With Adult Money (@2kidswithadultmoney)",
     "sourceUrl": "https://www.instagram.com/reel/DdJd_qSzwtB/?rpxt=MWZkN2theHA2bHd3aQ==",
-    "blogUrl": "https://boardgamearena.com",
     "time": "Oct 21",
     "status": "processed",
     "rawText": "https://www.instagram.com/reel/DdJd_qSzwtB/?rpxt=MWZkN2theHA2bHd3aQ==",
@@ -30,7 +40,9 @@
       "developer": "Board Game Arena",
       "summary": "An online platform offering hundreds of digital adaptations of popular board games with automated rules, turn-based or real-time multiplayer, and no physical setup.",
       "questOrGoal": "Create an account and host a cozy couple's game night session of Wingspan, Sky Team, or Azul."
-    }
+    },
+    "creator": "2 Kids With Adult Money (@2kidswithadultmoney)",
+    "blogUrl": "https://boardgamearena.com"
   },
   {
     "id": 1792557954978,
@@ -39,7 +51,6 @@
     "title": "Board Game Arena",
     "summary": "An online gaming platform featuring hundreds of popular board games playable directly in your browser with instant matchmaking and zero setup.",
     "sourceUrl": "https://www.instagram.com/reel/Dej_PxGlCfE/?srtk=cmg0dmJ2aHEycXNo",
-    "blogUrl": "https://boardgamearena.com",
     "time": "Oct 21",
     "status": "processed",
     "rawText": "https://www.instagram.com/reel/Dej_PxGlCfE/?srtk=cmg0dmJ2aHEycXNo",
@@ -244,7 +255,7 @@
   {
     "id": 1792000005000,
     "domain": "recipe",
-    "topic": "Bread",
+    "topic": "Baking",
     "title": "Savory Pizza Cinnamon Rolls",
     "summary": "Fluffy yeast dough rolled with marinara, mozzarella, parmesan, and pepperoni, baked golden and brushed with garlic herb butter.",
     "creator": "Lauren Ketterman (@barefoot.mimosas)",
@@ -375,7 +386,7 @@
   {
     "id": 1792000002000,
     "domain": "recipe",
-    "topic": "Bread",
+    "topic": "Baking",
     "title": "Viral Korean Salt Bread (Sogeum-ppang)",
     "summary": "Crispy and buttery golden bottom, pillowy soft crumb, and a signature hollow buttery center rolled with cold salted butter.",
     "creator": "Erin's Cozy Kitchen (@erins_cozykitchen)",
@@ -460,7 +471,7 @@
   {
     "id": 1792000000000,
     "domain": "recipe",
-    "topic": "Bread",
+    "topic": "Baking",
     "title": "Homemade Cinnamon Gifflar",
     "summary": "Soft, pillowy Swedish-style cinnamon mini-rolls layered with buttery spiced brown sugar, baked golden, and brushed with hot glossy sugar syrup.",
     "creator": "Dee | Food for everyone (@mumsfoodies)",
