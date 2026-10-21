@@ -408,6 +408,38 @@
     </div>
   </div>
 
+  <!-- Modal: Capture Detail Sheet (Progressive Disclosure) -->
+  <div id="capture-detail-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content capture-detail-modal-content">
+      <div class="modal-header">
+        <div class="capture-modal-badge-group">
+          <span id="capture-modal-domain-tag" class="tag-two-tier"></span>
+          <span id="capture-modal-time" class="capture-modal-time-tag"></span>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeModal('capture-detail-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body capture-modal-body">
+        <h3 id="capture-modal-title" class="capture-modal-title"></h3>
+        <div id="capture-modal-creator" class="capture-modal-creator" style="display: none;"></div>
+        <p id="capture-modal-summary" class="capture-modal-summary"></p>
+        
+        <!-- Dynamic Payload Sections (Chips, Takeaways, Goals) -->
+        <div id="capture-modal-payload" class="capture-modal-payload"></div>
+      </div>
+      <div class="modal-footer capture-modal-footer">
+        <a id="capture-modal-source-btn" href="#" target="_blank" rel="noopener noreferrer" class="capture-link-btn" style="display: none; padding: 7px 14px; font-size: 0.82rem;">
+          🔗 Open Source Link
+        </a>
+        <button type="button" id="capture-modal-pin-btn" class="capture-pin-btn" style="padding: 7px 14px; font-size: 0.82rem;">
+          📌 Assign Desk
+        </button>
+        <button type="button" class="quick-capture-btn" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 7px 14px; font-size: 0.82rem; margin-left: auto;" onclick="closeModal('capture-detail-modal')">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Sync & Cross-Device Pairing -->
   <div id="sync-modal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content">

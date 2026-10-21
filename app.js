@@ -551,6 +551,55 @@ let isFlushingSync = false;
 let lastTabRefreshTime = 0;
 const MIN_REFRESH_INTERVAL_MS = 15000; // Throttle to max once every 15s
 
+let lastLoadedCommitSha = null;
+let isCheckingLiveness = false;
+
+async function checkRemoteCommitLiveness() {
+  if (isCheckingLiveness) return;
+  const token = localStorage.getItem('active_desks_github_token');
+  if (!token) return;
+
+  isCheckingLiveness = true;
+  try {
+    const res = await fetch('https://api.github.com/repos/soulless613-stack/active-desks/commits/main', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json'
+      },
+      cache: 'no-store'
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const remoteSha = (data.sha || '').substring(0, 7);
+
+      if (lastLoadedCommitSha && remoteSha !== lastLoadedCommitSha) {
+        console.warn(`[SyncGuard] Remote commit moved ahead (${lastLoadedCommitSha} -> ${remoteSha}). Refreshing state from remote...`);
+        pendingDirtyFiles.clear(); // Discard stale local queue so background tab doesn't overwrite
+        lastLoadedCommitSha = remoteSha;
+
+        // Fetch fresh captures from remote
+        const remoteCaptures = await githubGet('captures.json');
+        if (Array.isArray(remoteCaptures)) {
+          state.captures = remoteCaptures;
+          saveState();
+          renderCaptures();
+        }
+
+        // Also refresh active desks
+        await refreshActiveTab();
+        updateCommitTag();
+        showToast('Synced with latest changes ✨', '🔄');
+      } else {
+        lastLoadedCommitSha = remoteSha;
+      }
+    }
+  } catch (e) {
+    console.warn('[SyncGuard] Liveness check notice:', e);
+  } finally {
+    isCheckingLiveness = false;
+  }
+}
+
 function markDirty(filename) {
   pendingDirtyFiles.add(filename);
   updateHeaderSyncStatus('pending');
@@ -659,6 +708,14 @@ async function flushDirtySync(isManual = false) {
       showToast('GitHub token not set. Open Sync menu to configure.', '⚠️');
     }
     updateHeaderSyncStatus('warning');
+    return;
+  }
+
+  // Pre-write guard: verify remote repository has not advanced
+  await checkRemoteCommitLiveness();
+  if (pendingDirtyFiles.size === 0) {
+    isFlushingSync = false;
+    updateHeaderSyncStatus('synced');
     return;
   }
 
@@ -1913,7 +1970,7 @@ function renderCaptures() {
       );
       if (matchingRecipe) {
         recipeCookBtn = `
-          <button type="button" class="capture-link-btn" onclick="closeModal('brain-dump-modal'); openRecipeModal('${matchingRecipe.id}')" style="background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.4); color: #fb923c;">
+          <button type="button" class="capture-link-btn" onclick="event.stopPropagation(); closeModal('brain-dump-modal'); openRecipeModal('${matchingRecipe.id}')" style="background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.4); color: #fb923c;">
             🍳 Cook Recipe
           </button>
         `;
@@ -1921,13 +1978,13 @@ function renderCaptures() {
     }
 
     return `
-      <div class="capture-card">
+      <div class="capture-card" onclick="openCaptureDetailModal(${c.id})">
         <div class="capture-card-header">
           <div class="capture-badge-group">
             <span class="tag-two-tier ${domainClass}">${badgeText}</span>
             <span style="font-size: 0.74rem; color: var(--text-muted);">${escapeHtml(c.time || '')}</span>
           </div>
-          <button class="capture-del-btn" onclick="deleteCapture(${c.id})" title="Delete capture" aria-label="Delete">✕</button>
+          <button class="capture-del-btn" onclick="event.stopPropagation(); deleteCapture(${c.id})" title="Delete capture" aria-label="Delete">✕</button>
         </div>
 
         <div class="capture-card-title">${titleText}</div>
@@ -1936,12 +1993,12 @@ function renderCaptures() {
         <div class="capture-card-footer">
           <div class="capture-card-actions">
             ${c.sourceUrl ? `
-              <a href="${escapeHtml(c.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="capture-link-btn">
+              <a href="${escapeHtml(c.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="capture-link-btn" onclick="event.stopPropagation();">
                 🔗 Source Link
               </a>
             ` : ''}
             ${recipeCookBtn}
-            <button type="button" class="capture-pin-btn" onclick="openPinToDeskModal(${c.id})" title="Assign to a desk or domain">
+            <button type="button" class="capture-pin-btn" onclick="event.stopPropagation(); openPinToDeskModal(${c.id})" title="Assign to a desk or domain">
               📌 Desk
             </button>
           </div>
@@ -1950,6 +2007,149 @@ function renderCaptures() {
       </div>
     `;
   }).join('');
+}
+
+function openCaptureDetailModal(captureId) {
+  const c = (state.captures || []).find(item => item.id === captureId);
+  if (!c) return;
+
+  // If domain is recipe, open the cooking modal directly
+  if (c.domain === 'recipe') {
+    const matchingRecipe = (state.desks?.recipe?.recipes || []).find(r => 
+      (r.url && c.sourceUrl && r.url === c.sourceUrl) ||
+      (c.payload?.slug && r.id === c.payload.slug) ||
+      (r.title && r.title.toLowerCase() === (c.title || '').toLowerCase())
+    );
+    if (matchingRecipe) {
+      openRecipeModal(matchingRecipe.id);
+      return;
+    }
+  }
+
+  // Populate Header
+  const domainTagEl = document.getElementById('capture-modal-domain-tag');
+  const timeEl = document.getElementById('capture-modal-time');
+  const titleEl = document.getElementById('capture-modal-title');
+  const creatorEl = document.getElementById('capture-modal-creator');
+  const summaryEl = document.getElementById('capture-modal-summary');
+  const payloadEl = document.getElementById('capture-modal-payload');
+  const sourceBtn = document.getElementById('capture-modal-source-btn');
+  const pinBtn = document.getElementById('capture-modal-pin-btn');
+
+  const domain = (c.domain || 'misc').toLowerCase();
+  if (domainTagEl) {
+    domainTagEl.className = `tag-two-tier tag-domain-${domain}`;
+    domainTagEl.textContent = `[${c.domain || 'thought'}] · ${c.topic || 'General'}`;
+  }
+
+  if (timeEl) {
+    timeEl.textContent = c.time || '';
+  }
+
+  if (titleEl) {
+    titleEl.textContent = c.title || c.text || c.rawText || 'Untitled Capture';
+  }
+
+  if (creatorEl) {
+    if (c.creator) {
+      creatorEl.innerHTML = `<span>👤</span> <span>${escapeHtml(c.creator)}</span>`;
+      creatorEl.style.display = 'inline-flex';
+    } else {
+      creatorEl.style.display = 'none';
+    }
+  }
+
+  if (summaryEl) {
+    summaryEl.textContent = c.summary && c.summary !== c.title ? c.summary : '';
+  }
+
+  // Source Link button
+  if (sourceBtn) {
+    if (c.sourceUrl) {
+      sourceBtn.href = c.sourceUrl;
+      sourceBtn.style.display = 'inline-flex';
+    } else {
+      sourceBtn.style.display = 'none';
+    }
+  }
+
+  // Pin button
+  if (pinBtn) {
+    pinBtn.onclick = () => {
+      closeModal('capture-detail-modal');
+      openPinToDeskModal(c.id);
+    };
+  }
+
+  // Build Dynamic Payload Sections
+  if (payloadEl) {
+    let payloadHtml = '';
+    const p = c.payload;
+
+    if (p && typeof p === 'object') {
+      // 1. Meta Badges (Platform, Genre, Author, Series, Developer, Yield)
+      const chips = [];
+      if (p.platform) chips.push({ label: 'Platform', val: p.platform });
+      if (p.genre) chips.push({ label: 'Genre', val: p.genre });
+      if (p.author) chips.push({ label: 'Author', val: p.author });
+      if (p.series) chips.push({ label: 'Series', val: p.series });
+      if (p.developer) chips.push({ label: 'Developer', val: p.developer });
+      if (p.yield) chips.push({ label: 'Yield', val: p.yield });
+
+      if (chips.length > 0) {
+        payloadHtml += `
+          <div class="payload-chips-container">
+            ${chips.map(chip => `
+              <div class="payload-chip">
+                <span class="payload-chip-label">${escapeHtml(chip.label)}:</span>
+                <span>${escapeHtml(chip.val)}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      // 2. Key Takeaways (Bullet List)
+      if (Array.isArray(p.keyTakeaways) && p.keyTakeaways.length > 0) {
+        payloadHtml += `
+          <div>
+            <div class="payload-section-title">✨ Key Takeaways</div>
+            <ul class="payload-takeaways-list">
+              ${p.keyTakeaways.map(t => `<li>${escapeHtml(t)}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      // 3. Highlight Quote
+      if (p.highlight) {
+        payloadHtml += `
+          <div>
+            <div class="payload-section-title">💡 Highlight</div>
+            <div class="payload-highlight-card">
+              "${escapeHtml(p.highlight)}"
+            </div>
+          </div>
+        `;
+      }
+
+      // 4. Suggested Quest / Goal Callout
+      if (p.questOrGoal) {
+        payloadHtml += `
+          <div>
+            <div class="payload-section-title">🎯 Backlog Focus</div>
+            <div class="payload-goal-card">
+              ${escapeHtml(p.questOrGoal)}
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    payloadEl.innerHTML = payloadHtml;
+  }
+
+  document.getElementById('capture-detail-modal').classList.add('active');
 }
 
 // --------------------------------------------------------------------------
@@ -2277,12 +2477,6 @@ function mergeCaptures(remoteCaptures) {
 
   // Sort newest first
   state.captures.sort((a, b) => (b.id || 0) - (a.id || 0));
-
-  const remoteIdSet = new Set(remoteCaptures.map(r => r.id));
-  const hasLocalOnly = state.captures.some(local => !remoteIdSet.has(local.id));
-  if (hasLocalOnly) {
-    markDirty('captures.json');
-  }
 
   return changed;
 }
@@ -2649,6 +2843,9 @@ async function updateCommitTag() {
       const data = await res.json();
       const latestSha = data.sha.substring(0, 7);
       tag.textContent = `#${latestSha}`;
+      if (!lastLoadedCommitSha) {
+        lastLoadedCommitSha = latestSha;
+      }
     }
   } catch (e) {
     // If offline or network error, fallback to APP_VERSION
@@ -2694,21 +2891,26 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Inactive Exit Flush & Active Tab Auto-Refresh
+// Inactive Exit Flush & Active Tab Auto-Refresh with Stale Tab Guard
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     flushDirtySync();
   } else if (document.visibilityState === 'visible') {
+    checkRemoteCommitLiveness();
     refreshActiveTab();
   }
 });
 window.addEventListener('pagehide', () => flushDirtySync());
 window.addEventListener('blur', () => flushDirtySync());
-window.addEventListener('focus', () => refreshActiveTab());
+window.addEventListener('focus', () => {
+  checkRemoteCommitLiveness();
+  refreshActiveTab();
+});
 
 // Initial render
 document.addEventListener('DOMContentLoaded', () => {
   render();
+  checkRemoteCommitLiveness();
   fetchReadingFromRepo();
   fetchRecipeInboxFromRepo();
   fetchCapturesFromRepo();

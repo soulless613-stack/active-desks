@@ -1,5 +1,24 @@
 [
   {
+    "id": "1792561000000mod",
+    "time": "2026-10-21T05:20:00.000Z",
+    "displayTime": "1:20:00 AM",
+    "device": "desktop-ide",
+    "target": "ui-and-sync-guard",
+    "action": "stale-tab-guard-and-capture-detail-modal",
+    "status": "success",
+    "message": "Activated Stale Tab Guard (visibilitychange & pre-write SHA check) and progressive Capture Detail Modal",
+    "details": {
+      "version": "active-desks-v36",
+      "features": [
+        "Capture Detail Modal reveals rich payload (key takeaways, author, platform, genre, goals) on card click",
+        "Drawer cards stay compact and calm on mobile",
+        "Stale Tab Guard checks remote /commits/main before writing and on tab focus",
+        "Removed automatic markDirty in mergeCaptures to prevent zombie capture resurrections"
+      ]
+    }
+  },
+  {
     "id": "1792558246518wyrt",
     "time": "2026-10-21T04:50:46.518Z",
     "displayTime": "12:50:46 AM",
