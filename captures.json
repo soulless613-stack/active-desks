@@ -622,20 +622,5 @@
         "Boil water, brown sugar, and butter in a small pan into a glossy syrup. Brush generously over the hot buns straight out of the oven!"
       ]
     }
-  },
-  {
-    "id": 1791804143429,
-    "text": "Can I create the extractor to also extract books from book recommendation reels?",
-    "time": "Oct 12",
-    "domain": "tech",
-    "topic": "Extractor",
-    "title": "Book recommendation extraction in cloud agent",
-    "summary": "Explore extending reel scraping to book recommendations and TBR queues.",
-    "creator": null,
-    "sourceUrl": null,
-    "blogUrl": null,
-    "status": "processed",
-    "rawText": "Can I create the extractor to also extract books from book recommendation reels?",
-    "payload": null
   }
 ]
