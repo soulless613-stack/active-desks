@@ -1,13 +1,23 @@
 [
   {
+    "id": 1792582196403,
+    "domain": null,
+    "topic": null,
+    "title": "Can I use the playwright mcp to get the video and audio from links",
+    "summary": null,
+    "sourceUrl": null,
+    "time": "Oct 21",
+    "status": "pending",
+    "rawText": "Can I use the playwright mcp to get the video and audio from links",
+    "payload": null
+  },
+  {
     "id": 1792558243177,
     "domain": "tech",
     "topic": "3D Printing",
     "title": "Wing Folding Fan 3D Print Design",
     "summary": "A creative 3D-printed articulated folding fan inspired by bird wings that smoothly expands and collapses. It highlights functional print design and mechanical joint movement for everyday handheld use.",
-    "creator": "By Asli 3D (@byasli3d)",
     "sourceUrl": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
-    "blogUrl": "https://www.instagram.com/reel/DZufqGutK9E/",
     "time": "Oct 21",
     "status": "processed",
     "rawText": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
@@ -17,7 +27,9 @@
         "Demonstrates practical mechanical design and print-in-place tolerances in desktop 3D printing.",
         "Serves as a lightweight, portable aesthetic print that doubles as a functional cooling fan."
       ]
-    }
+    },
+    "creator": "By Asli 3D (@byasli3d)",
+    "blogUrl": "https://www.instagram.com/reel/DZufqGutK9E/"
   },
   {
     "id": 1792558176000,
@@ -25,9 +37,7 @@
     "topic": "3D Printing",
     "title": "PressPrintLab Custom Hinged Box Generator",
     "summary": "PressPrintLab enables makers to create custom 3D-printable hinged boxes without CAD or 3D modeling experience, accessible via a Thangs 3D membership.",
-    "creator": "Press Print (@pressprint__)",
     "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
-    "blogUrl": null,
     "time": "Oct 21",
     "status": "processed",
     "rawText": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
@@ -39,7 +49,9 @@
         "Available as a tool through Press Print's Thangs 3D membership.",
         "Geared toward 3D printing hobbyists, gift makers, and Etsy sellers looking to produce custom products."
       ]
-    }
+    },
+    "creator": "Press Print (@pressprint__)",
+    "blogUrl": null
   },
   {
     "id": 1792558099016,
