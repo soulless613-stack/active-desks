@@ -1,5 +1,16 @@
 [
   {
+    "id": "1792560230789nhkc",
+    "time": "2026-10-21T05:23:50.789Z",
+    "displayTime": "01:23:50 AM",
+    "device": "desktop",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (16 notes)",
+    "details": null
+  },
+  {
     "id": "1792560225099fhyf",
     "time": "2026-10-21T05:23:45.099Z",
     "displayTime": "01:23:45 AM",
@@ -700,17 +711,6 @@
     "action": "commit",
     "status": "success",
     "message": "Update game quest: Stardew Valley (PC / Steam)",
-    "details": null
-  },
-  {
-    "id": "1791293423046i2jt",
-    "time": "2026-10-06T13:30:23.046Z",
-    "displayTime": "09:30:23 AM",
-    "device": "mobile",
-    "target": "reading.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update reading progress: Rhythm of War (pages 371/1230)",
     "details": null
   }
 ]
