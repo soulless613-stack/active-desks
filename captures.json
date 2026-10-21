@@ -1,15 +1,68 @@
 [
   {
     "id": 1792558099016,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DGq7FwPSGIV/?rpxt=MW1vNGhwMG03djBpbg==",
-    "summary": null,
+    "domain": "recipe",
+    "topic": "Bread",
+    "title": "Crispy Overnight No-Knead Focaccia",
+    "summary": "A foolproof, high-hydration focaccia cold-fermented overnight in the fridge to develop deep flavor and a light, bubbly crumb beneath a golden, olive-oil-crisped crust.",
+    "creator": "Cowboy (@cowboy_cooks)",
     "sourceUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/?rpxt=MW1vNGhwMG03djBpbg==",
+    "blogUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/",
     "time": "Oct 21",
-    "status": "pending",
+    "status": "processed",
     "rawText": "https://www.instagram.com/reel/DGq7FwPSGIV/?rpxt=MW1vNGhwMG03djBpbg==",
-    "payload": null
+    "payload": {
+      "slug": "crispy-overnight-no-knead-focaccia",
+      "creator": "Cowboy (@cowboy_cooks)",
+      "sourceUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/",
+      "blogUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/",
+      "tags": [
+        "baking",
+        "bread",
+        "focaccia",
+        "italian",
+        "no-knead",
+        "overnight-dough"
+      ],
+      "yield": "8-10 Servings (9x13-inch pan)",
+      "calories": 275,
+      "protein": 7,
+      "carbs": 41,
+      "fat": 10,
+      "highlight": "Simple overnight cold fermentation yields an airy, deeply bubbly crumb with a delightfully crispy, olive-oil-fried crust.",
+      "ingredientSections": [
+        {
+          "sectionTitle": "Focaccia Dough",
+          "ingredients": [
+            "500 g bread flour (approx. 4 cups)",
+            "2 tsp kosher salt (6 g)",
+            "7 g instant yeast (2 1/4 tsp / 1 standard packet)",
+            "350 g warm water (approx. 1 1/2 cups)",
+            "2 tbsp olive oil (30 ml)"
+          ]
+        },
+        {
+          "sectionTitle": "Pan & Toppings",
+          "ingredients": [
+            "Generous olive oil (for coating 9x13 pan and drizzling top)",
+            "Flaky sea salt (Maldon or coarse salt, to taste)",
+            "Optional toppings of choice (fresh rosemary, garlic, cherry tomatoes, or olives)"
+          ]
+        }
+      ],
+      "steps": [
+        "In a large mixing bowl, combine 500 g bread flour, 2 tsp kosher salt, 7 g instant yeast, 350 g warm water, and 2 tbsp olive oil.",
+        "Mix thoroughly with a spatula or wooden spoon until completely combined and a wet, sticky dough forms.",
+        "Cover the bowl tightly with plastic wrap and place in the refrigerator to cold ferment for 12 to 24 hours until doubled in size and visibly bubbly.",
+        "The next day, preheat your oven to 450°F (232°C). Coat a 9x13-inch metal baking pan generously with olive oil along the bottom and sides to prevent sticking.",
+        "Gently pour the chilled dough into the prepared pan and ease it outward toward the edges and corners until it mostly covers the bottom.",
+        "Cover loosely and let proof at room temperature for 1 to 2 hours until puffed and billowy.",
+        "Lightly wet your fingers with water to prevent sticking, then press firmly straight down into the dough with your thumbs, pointer, and middle fingers to create deep dimples throughout.",
+        "Generously drizzle olive oil over the surface, ensuring oil pools into the dimples, and finish with a liberal sprinkle of flaky sea salt and any desired toppings.",
+        "Bake at 450°F (232°C) for 20 to 25 minutes, or until the top and bottom are deep golden brown and crisp.",
+        "Let cool in the pan on a wire rack for 10 to 20 minutes before slicing and serving."
+      ]
+    }
   },
   {
     "id": 1792558029337,
@@ -163,7 +216,7 @@
   {
     "id": 1792000007000,
     "domain": "recipe",
-    "topic": "Sourdough",
+    "topic": "Bread",
     "title": "Cheesy Garlic Sourdough Focaccia",
     "summary": "Crispy, bubbly sourdough focaccia loaded with herb-tossed cheddar, mozzarella, jack, parmesan, and bubbling garlic butter.",
     "creator": "Amy Coyne (@amybakesbread)",
@@ -397,7 +450,7 @@
   {
     "id": 1792000002000,
     "domain": "recipe",
-    "topic": "Baking",
+    "topic": "Bread",
     "title": "Viral Korean Salt Bread (Sogeum-ppang)",
     "summary": "Crispy and buttery golden bottom, pillowy soft crumb, and a signature hollow buttery center rolled with cold salted butter.",
     "creator": "Erin's Cozy Kitchen (@erins_cozykitchen)",

@@ -381,6 +381,41 @@ const DEFAULT_STATE = {
             "Preheat oven to 350°F (175°C). Brush buns with egg wash and bake for 12–15 minutes until golden brown.",
             "Boil water, brown sugar, and butter in a small pan into a glossy syrup. Brush generously over the hot buns straight out of the oven!"
           ]
+        },
+        {
+          id: 'crispy-overnight-no-knead-focaccia',
+          title: undefined,
+          source: "Cowboy (@cowboy_cooks)",
+          url: "https://www.instagram.com/reel/DGq7FwPSGIV/",
+          blogUrl: null,
+          yield: "8-10 Servings (9x13-inch pan)",
+          calories: 275,
+          protein: 7,
+          carbs: 41,
+          fat: 10,
+          highlight: "Simple overnight cold fermentation yields an airy, deeply bubbly crumb with a delightfully crispy, olive-oil-fried crust.",
+          ingredients: [
+            "500 g bread flour (approx. 4 cups)",
+            "2 tsp kosher salt (6 g)",
+            "7 g instant yeast (2 1/4 tsp / 1 standard packet)",
+            "350 g warm water (approx. 1 1/2 cups)",
+            "2 tbsp olive oil (30 ml)",
+            "Generous olive oil (for coating 9x13 pan and drizzling top)",
+            "Flaky sea salt (Maldon or coarse salt, to taste)",
+            "Optional toppings of choice (fresh rosemary, garlic, cherry tomatoes, or olives)"
+          ],
+          steps: [
+            "In a large mixing bowl, combine 500 g bread flour, 2 tsp kosher salt, 7 g instant yeast, 350 g warm water, and 2 tbsp olive oil.",
+            "Mix thoroughly with a spatula or wooden spoon until completely combined and a wet, sticky dough forms.",
+            "Cover the bowl tightly with plastic wrap and place in the refrigerator to cold ferment for 12 to 24 hours until doubled in size and visibly bubbly.",
+            "The next day, preheat your oven to 450°F (232°C). Coat a 9x13-inch metal baking pan generously with olive oil along the bottom and sides to prevent sticking.",
+            "Gently pour the chilled dough into the prepared pan and ease it outward toward the edges and corners until it mostly covers the bottom.",
+            "Cover loosely and let proof at room temperature for 1 to 2 hours until puffed and billowy.",
+            "Lightly wet your fingers with water to prevent sticking, then press firmly straight down into the dough with your thumbs, pointer, and middle fingers to create deep dimples throughout.",
+            "Generously drizzle olive oil over the surface, ensuring oil pools into the dimples, and finish with a liberal sprinkle of flaky sea salt and any desired toppings.",
+            "Bake at 450°F (232°C) for 20 to 25 minutes, or until the top and bottom are deep golden brown and crisp.",
+            "Let cool in the pan on a wire rack for 10 to 20 minutes before slicing and serving."
+          ]
         }
       ]
     },
