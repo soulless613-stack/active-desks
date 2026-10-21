@@ -637,20 +637,5 @@
     "status": "processed",
     "rawText": "Can I create the extractor to also extract books from book recommendation reels?",
     "payload": null
-  },
-  {
-    "id": 1791804101797,
-    "text": "Can I create an agent to run the recipe extractor? Would that allow the same freedom as doing it on my computer?",
-    "time": "Oct 12",
-    "domain": "tech",
-    "topic": "Cloud Agent",
-    "title": "Autonomous recipe extractor agent for hands-free mobile sync",
-    "summary": "Idea to run the recipe extractor via a cloud agent to have the same freedom as running it on the computer.",
-    "creator": null,
-    "sourceUrl": null,
-    "blogUrl": null,
-    "status": "processed",
-    "rawText": "Can I create an agent to run the recipe extractor? Would that allow the same freedom as doing it on my computer?",
-    "payload": null
   }
 ]
