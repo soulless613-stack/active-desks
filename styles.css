@@ -1576,6 +1576,131 @@ body {
   line-height: 1;
 }
 
+/* Emergent Desk Evolution Nudge Banner (Rule of 5) */
+.desk-evolution-banner {
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.88) 0%, rgba(15, 23, 42, 0.96) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 15px rgba(56, 189, 248, 0.15);
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+  animation: slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.desk-evolution-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent-spark), var(--accent-reading));
+}
+
+.desk-evolution-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.desk-evolution-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.desk-evolution-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.desk-evolution-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.desk-evolution-count-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--accent-spark);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.desk-evolution-msg {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.desk-evolution-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-evolution-action {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-evolution-action.primary {
+  background: rgba(56, 189, 248, 0.2);
+  border: 1px solid var(--accent-spark);
+  color: var(--text-primary);
+}
+
+.btn-evolution-action.primary:hover {
+  background: var(--accent-spark);
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.btn-evolution-action.dismiss {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: var(--text-muted);
+}
+
+.btn-evolution-action.dismiss:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+}
+
+/* Drawer Evolution Insights */
+.drawer-evolution-insights {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.drawer-evolution-insights strong {
+  color: var(--accent-spark);
+}
+
 /* QR Code Device Pairing Modal & Toast */
 .qr-canvas-card {
   background: #ffffff;

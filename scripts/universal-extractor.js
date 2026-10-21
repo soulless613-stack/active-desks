@@ -33,6 +33,7 @@ const RECIPES_DIR = path.join(ROOT_DIR, 'recipes');
 const APP_JS_PATH = path.join(ROOT_DIR, 'app.js');
 const SW_JS_PATH = path.join(ROOT_DIR, 'sw.js');
 const SYNC_LOG_PATH = path.join(ROOT_DIR, 'sync-log.json');
+const SUGGESTIONS_PATH = path.join(ROOT_DIR, 'desk-suggestions.json');
 const PROJECT_CONTEXT_PATH = path.join(ROOT_DIR, 'project-context.md');
 
 // Supported Gemini models with search grounding support in order of preference
@@ -115,8 +116,10 @@ export async function runUniversalExtractor() {
     }
   });
 
-  if (pendingIndices.length === 0) {
-    console.log('No pending captures or queued recipes to process. Everything is up to date.');
+  const forceRecluster = process.argv.includes('--recluster') || process.argv.includes('--evolve');
+  if (pendingIndices.length === 0 && !forceRecluster) {
+    runDeskEvolutionDetectionOnly(captures);
+    console.log('No pending captures to classify. Desk evolution suggestions checked.');
     // Still clear recipe-inbox.json if items were already migrated
     if (Array.isArray(inbox) && inbox.length > 0) {
       fs.writeFileSync(INBOX_PATH, '[]\n', 'utf8');
@@ -221,20 +224,23 @@ export async function runUniversalExtractor() {
     process.exit(1);
   }
 
-  // 3. Save updated captures.json
+  // 3. Phase 3: Adaptive Intelligence (Rule of 3 Re-clustering & Rule of 5 Evolution)
+  await runSemanticReclusteringAndEvolution(captures, apiKey);
+
+  // 4. Save updated captures.json
   fs.writeFileSync(CAPTURES_PATH, JSON.stringify(captures, null, 2) + '\n', 'utf8');
   console.log(`\n-> Successfully saved ${captures.length} item(s) to captures.json`);
 
-  // 4. Clear recipe-inbox.json to []
+  // 5. Clear recipe-inbox.json to []
   if (fs.existsSync(INBOX_PATH)) {
     fs.writeFileSync(INBOX_PATH, '[]\n', 'utf8');
     console.log('-> Cleared recipe-inbox.json to []');
   }
 
-  // 5. Bump Service Worker cache version
+  // 6. Bump Service Worker cache version
   bumpServiceWorkerCache();
 
-  // 6. Append audit log to sync-log.json
+  // 7. Append audit log to sync-log.json
   appendSyncLog(processedItems);
 
   console.log(`=== Completed successfully: ${processedItems.length} item(s) processed and classified! ===`);
@@ -789,6 +795,185 @@ function slugify(text) {
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Phase 3: Adaptive Intelligence
+ * 1. Rule of 3: Semantic Re-clustering (Topic Sharpening) & Domain Harmonization (for non-desk thoughts).
+ * 2. Rule of 5: Emergent Desk Evolution Nudges (noticing clusters outside active desks).
+ */
+export async function runSemanticReclusteringAndEvolution(captures, apiKey) {
+  console.log('\n--- Evaluating Adaptive Taxonomy (Rule of 3 & Rule of 5) ---');
+
+  if (!Array.isArray(captures) || captures.length === 0) {
+    console.log('No captures found for taxonomy analysis.');
+    return { reclusteredCount: 0, newSuggestionsCount: 0 };
+  }
+
+  let reclusteredCount = 0;
+
+  // 1. RULE OF 3: Check for semantic clusters needing topic sharpening or domain elevation
+  const processedCaptures = captures.filter(c => c && c.status === 'processed' && c.domain);
+
+  const byDomain = {};
+  processedCaptures.forEach(c => {
+    const d = c.domain.toLowerCase();
+    if (!byDomain[d]) byDomain[d] = [];
+    byDomain[d].push({
+      id: c.id,
+      title: c.title,
+      currentTopic: c.topic,
+      summary: c.summary,
+      rawText: c.rawText
+    });
+  });
+
+  const candidateDomains = Object.keys(byDomain).filter(d => byDomain[d].length >= 3);
+
+  if (candidateDomains.length > 0 && apiKey) {
+    try {
+      const candidatesToAnalyze = candidateDomains.flatMap(d => 
+        byDomain[d].map(item => ({ ...item, currentDomain: d }))
+      );
+
+      const prompt = `You are the adaptive taxonomy engine for Active Desks, an intentional productivity PWA.
+The user collects bookmarks, recipes, books, games, and raw thoughts.
+Review these items:
+${JSON.stringify(candidatesToAnalyze, null, 2)}
+
+TASK: Apply the RULE OF 3 for Topic Crystallization & Domain Harmonization:
+1. Topic Crystallization: When 3 or more items in the same domain share a narrower, more specific sub-genre or micro-topic (e.g., inside domain "book", 3 or more items are specifically "LitRPG" rather than general "Fantasy" or "Sci-Fi"; or inside domain "recipe", 3 or more items are specifically "Sourdough" or "Slow Cooker"), assign them that specific "newTopic".
+2. Domain Harmonization (Non-Desk Thoughts): If 3 or more items currently under domain "thought" or "misc" share a clear life domain (such as "finance", "travel", "home", "writing", "tech"), elevate their "newDomain" to that macro domain.
+
+RULES:
+- Only return items that actually need a change. Do NOT change items that already have accurate, specific topics.
+- Require at least 3 items to justify creating or switching to a sub-genre cluster.
+- Return ONLY a valid JSON array:
+[
+  {
+    "id": 1234567,
+    "newDomain": "finance" | null,
+    "newTopic": "LitRPG" | null,
+    "reason": "Brief reason for cluster adjustment"
+  }
+]
+If no items need re-clustering, return an empty array [].`;
+
+      const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash'];
+      for (const model of candidateModels) {
+        try {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          });
+
+          if (!res.ok) continue;
+
+          const resData = await res.json();
+          const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const updates = parseJsonFromResponse(rawText);
+
+          if (Array.isArray(updates) && updates.length > 0) {
+            updates.forEach(u => {
+              const target = captures.find(c => c.id === u.id);
+              if (target) {
+                let changed = false;
+                if (u.newDomain && u.newDomain.toLowerCase() !== target.domain) {
+                  target.domain = u.newDomain.toLowerCase();
+                  changed = true;
+                }
+                if (u.newTopic && u.newTopic !== target.topic) {
+                  target.topic = u.newTopic;
+                  changed = true;
+                }
+                if (changed) {
+                  reclusteredCount++;
+                  console.log(`  🌱 Re-clustered [${target.id}] "${target.title}": [${target.domain}] · ${target.topic} (${u.reason || 'Rule of 3'})`);
+                }
+              }
+            });
+          }
+          break;
+        } catch (err) {
+          console.warn(`Re-clustering attempt with ${model} failed:`, err.message);
+        }
+      }
+    } catch (err) {
+      console.warn('Semantic re-clustering error:', err.message);
+    }
+  }
+
+  // 2. RULE OF 5: Detect Emergent Desk Evolution Nudges
+  const newSuggestionsCount = runDeskEvolutionDetectionOnly(captures);
+
+  console.log(`--- Adaptive Taxonomy Complete: ${reclusteredCount} item(s) re-clustered ---`);
+  return { reclusteredCount, newSuggestionsCount };
+}
+
+/**
+ * Fast Rule of 5 Desk Evolution Evaluator (Runs offline in 0ms, zero API cost)
+ */
+export function runDeskEvolutionDetectionOnly(captures) {
+  if (!Array.isArray(captures)) return 0;
+  const ACTIVE_DESK_DOMAINS = ['book', 'recipe', 'game', 'fiber'];
+
+  const nonDeskCounts = {};
+  captures.forEach(c => {
+    if (!c || !c.domain) return;
+    const d = c.domain.toLowerCase();
+    if (!ACTIVE_DESK_DOMAINS.includes(d) && d !== 'misc') {
+      nonDeskCounts[d] = (nonDeskCounts[d] || 0) + 1;
+    }
+  });
+
+  let existingSuggestions = [];
+  if (fs.existsSync(SUGGESTIONS_PATH)) {
+    try {
+      const raw = fs.readFileSync(SUGGESTIONS_PATH, 'utf8').trim();
+      existingSuggestions = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      existingSuggestions = [];
+    }
+  }
+
+  let newCount = 0;
+  const updatedSuggestions = [...existingSuggestions];
+
+  for (const [domain, count] of Object.entries(nonDeskCounts)) {
+    if (count >= 5) {
+      const domainLabel = domain.charAt(0).toUpperCase() + domain.slice(1);
+      const existingIdx = updatedSuggestions.findIndex(s => s.domain === domain);
+
+      const suggestionObj = {
+        id: `sug-${domain}`,
+        domain: domain,
+        topic: domainLabel,
+        itemCount: count,
+        title: `${domainLabel} Workbench`,
+        message: `You've captured ${count} items about ${domainLabel} recently. Ready to spin up an active desk to focus on this?`,
+        status: 'pending',
+        detectedAt: new Date().toISOString()
+      };
+
+      if (existingIdx === -1) {
+        updatedSuggestions.push(suggestionObj);
+        newCount++;
+        console.log(`  💡 Emergent Desk Evolution Detected: ${domainLabel} has ${count} items (>= 5 threshold)!`);
+      } else {
+        updatedSuggestions[existingIdx].itemCount = count;
+      }
+    }
+  }
+
+  try {
+    fs.writeFileSync(SUGGESTIONS_PATH, JSON.stringify(updatedSuggestions, null, 2) + '\n', 'utf8');
+  } catch (e) {
+    console.warn('Could not save desk-suggestions.json:', e.message);
+  }
+
+  return newCount;
 }
 
 // Direct CLI invocation

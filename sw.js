@@ -1,9 +1,10 @@
-const CACHE_NAME = 'active-desks-v27';
+const CACHE_NAME = 'active-desks-v28';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './desk-suggestions.json',
   './qrious.min.js',
   './manifest.json'
 ];

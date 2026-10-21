@@ -81,6 +81,28 @@
       <span class="desks-section-title">Current Workbenches</span>
     </div>
 
+    <!-- Emergent Desk Evolution Nudge Banner (Rule of 5) -->
+    <div id="desk-evolution-banner" class="desk-evolution-banner" style="display: none;">
+      <div class="desk-evolution-content">
+        <div class="desk-evolution-header">
+          <span class="desk-evolution-icon">🌱</span>
+          <span class="desk-evolution-title" id="evolution-banner-title">Emergent Workbench Opportunity</span>
+          <span class="desk-evolution-count-pill" id="evolution-banner-count">5 Items</span>
+        </div>
+        <div class="desk-evolution-msg" id="evolution-banner-msg">
+          You've captured 5 items outside your current workbenches. Ready to spin up an active desk to match your focus?
+        </div>
+        <div class="desk-evolution-actions">
+          <button type="button" class="btn-evolution-action primary" id="evolution-focus-btn" onclick="acceptDeskEvolutionSuggestion()">
+            <span>✨ Focus Desk Captures</span>
+          </button>
+          <button type="button" class="btn-evolution-action dismiss" onclick="dismissDeskEvolutionSuggestion()">
+            <span>Dismiss</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- The 4 Active Desks Grid -->
     <main class="desks-grid">
 
@@ -372,6 +394,7 @@
         <p style="font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 2px;">
           Master stream of recipes, books, games, links, and thoughts—smart-sorted by domain &amp; topic.
         </p>
+        <div id="drawer-evolution-insights" class="drawer-evolution-insights" style="display: none;"></div>
         <div id="captures-filter-bar" class="capture-filter-pills">
           <!-- Populated dynamically -->
         </div>

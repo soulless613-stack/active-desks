@@ -799,7 +799,8 @@ function render() {
   // 1. Render 3-Bucket Banner
   renderBuckets();
 
-  // 2. Render Desks
+  // 2. Render Desks & Emergent Evolution Nudges
+  renderDeskEvolutionBanner();
   renderFiberDesk();
   renderRecipeDesk();
   renderReadingDesk();
@@ -1778,6 +1779,44 @@ function renderCaptures() {
     filterBar.innerHTML = pillsHtml;
   }
 
+  // 1b. Render Drawer Evolution Insights (Rule of 3 & Rule of 5)
+  const insightsEl = document.getElementById('drawer-evolution-insights');
+  if (insightsEl) {
+    const ACTIVE_DESK_DOMAINS = ['book', 'recipe', 'game', 'fiber'];
+    const nonDesk = [];
+    const topicClusters = {};
+
+    captures.forEach(c => {
+      if (!c.domain) return;
+      const d = c.domain.toLowerCase();
+      if (!ACTIVE_DESK_DOMAINS.includes(d) && d !== 'misc') {
+        const existing = nonDesk.find(x => x.domain === d);
+        if (existing) existing.count++;
+        else nonDesk.push({ domain: d, count: 1 });
+      }
+      if (c.topic && c.topic !== 'General') {
+        topicClusters[c.topic] = (topicClusters[c.topic] || 0) + 1;
+      }
+    });
+
+    const activeEmergent = nonDesk.filter(x => x.count >= 5);
+    const prominentTopics = Object.entries(topicClusters).filter(([t, count]) => count >= 3);
+
+    if (activeEmergent.length > 0 || prominentTopics.length > 0) {
+      const parts = [];
+      activeEmergent.forEach(e => {
+        parts.push(`🌱 <strong>${e.domain.charAt(0).toUpperCase() + e.domain.slice(1)}</strong>: ${e.count} items outside active desks`);
+      });
+      prominentTopics.forEach(([topic, count]) => {
+        parts.push(`🏷️ <strong>${topic}</strong>: ${count} items clustered`);
+      });
+      insightsEl.innerHTML = `<span>${parts.join(' &nbsp;•&nbsp; ')}</span>`;
+      insightsEl.style.display = 'flex';
+    } else {
+      insightsEl.style.display = 'none';
+    }
+  }
+
   // 2. Filter Items
   const filtered = activeCaptureDomainFilter === 'all'
     ? captures
@@ -1945,6 +1984,125 @@ function setActiveGameFromCapture(captureId) {
   flushDirtySync();
   renderGamingDesk();
   showToast(`Active Game set to: "${c.title}"!`, '🎮');
+}
+
+// --------------------------------------------------------------------------
+// Phase 3: Emergent Desk Evolution Nudge Engine (Rule of 5)
+// --------------------------------------------------------------------------
+const DISMISSED_SUGGESTIONS_KEY = 'active_desks_dismissed_suggestions';
+let currentActiveDeskSuggestion = null;
+
+function getDismissedSuggestions() {
+  try {
+    const raw = localStorage.getItem(DISMISSED_SUGGESTIONS_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function renderDeskEvolutionBanner() {
+  const banner = document.getElementById('desk-evolution-banner');
+  if (!banner) return;
+
+  const dismissed = getDismissedSuggestions();
+  const ACTIVE_DESK_DOMAINS = ['book', 'recipe', 'game', 'fiber'];
+
+  // 1. Find candidates from captures where domain has >= 5 items outside active desks
+  const nonDeskCounts = {};
+  (state.captures || []).forEach(c => {
+    if (!c || !c.domain) return;
+    const d = c.domain.toLowerCase();
+    if (!ACTIVE_DESK_DOMAINS.includes(d) && d !== 'misc') {
+      nonDeskCounts[d] = (nonDeskCounts[d] || 0) + 1;
+    }
+  });
+
+  // Find first domain reaching threshold that hasn't been dismissed
+  let candidateDomain = null;
+  let candidateCount = 0;
+
+  for (const [d, count] of Object.entries(nonDeskCounts)) {
+    if (count >= 5 && !dismissed.has(d)) {
+      candidateDomain = d;
+      candidateCount = count;
+      break;
+    }
+  }
+
+  // Also check state.deskSuggestions if fetched from repo
+  if (!candidateDomain && Array.isArray(state.deskSuggestions)) {
+    const sug = state.deskSuggestions.find(s => s.domain && !dismissed.has(s.domain.toLowerCase()));
+    if (sug) {
+      candidateDomain = sug.domain.toLowerCase();
+      candidateCount = sug.itemCount || 5;
+    }
+  }
+
+  if (!candidateDomain) {
+    banner.style.display = 'none';
+    currentActiveDeskSuggestion = null;
+    return;
+  }
+
+  currentActiveDeskSuggestion = candidateDomain;
+  const domainLabel = candidateDomain.charAt(0).toUpperCase() + candidateDomain.slice(1);
+  const domainEmoji = getDomainEmoji(candidateDomain);
+
+  const titleEl = document.getElementById('evolution-banner-title');
+  const countEl = document.getElementById('evolution-banner-count');
+  const msgEl = document.getElementById('evolution-banner-msg');
+
+  if (titleEl) titleEl.textContent = `${domainEmoji} Emergent Workbench: ${domainLabel}`;
+  if (countEl) countEl.textContent = `${candidateCount} Items`;
+  if (msgEl) {
+    msgEl.textContent = `You've captured ${candidateCount} items about ${domainLabel} recently. Ready to spin up an active desk to focus on this?`;
+  }
+
+  banner.style.display = 'block';
+}
+
+function acceptDeskEvolutionSuggestion() {
+  if (!currentActiveDeskSuggestion) return;
+  const domain = currentActiveDeskSuggestion;
+  const domainLabel = domain.charAt(0).toUpperCase() + domain.slice(1);
+
+  // Open Universal Drawer filtered to this domain
+  openBrainDumpModal();
+  setCaptureDomainFilter(domain);
+
+  showToast(`Focusing on your ${domainLabel} captures! 💡`, getDomainEmoji(domain));
+}
+
+function dismissDeskEvolutionSuggestion() {
+  if (!currentActiveDeskSuggestion) return;
+  const domain = currentActiveDeskSuggestion;
+
+  try {
+    const dismissed = Array.from(getDismissedSuggestions());
+    if (!dismissed.includes(domain)) {
+      dismissed.push(domain);
+      localStorage.setItem(DISMISSED_SUGGESTIONS_KEY, JSON.stringify(dismissed));
+    }
+  } catch (e) {}
+
+  const banner = document.getElementById('desk-evolution-banner');
+  if (banner) banner.style.display = 'none';
+
+  showToast('Suggestion dismissed. Calm focus maintained. ✨', '🌿');
+}
+
+async function fetchDeskSuggestionsFromRepo() {
+  try {
+    const res = await fetch('./desk-suggestions.json?t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        state.deskSuggestions = data;
+        renderDeskEvolutionBanner();
+      }
+    }
+  } catch (e) {}
 }
 
 const DELETED_CAPTURES_KEY = 'active_desks_deleted_captures';
@@ -2438,6 +2596,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchGamingFromRepo();
   fetchAnchorsFromRepo();
   fetchSyncLogFromRepo();
+  fetchDeskSuggestionsFromRepo();
   checkDevicePairingHash();
   updateHeaderSyncStatus();
 
