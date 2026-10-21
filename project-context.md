@@ -1,7 +1,8 @@
 # Active Desks & Reading Automation — Project Context & Handoff
 
 > **CRITICAL INSTRUCTION FOR THE ANTIGRAVITY IDE & AGENTS**:  
-> **DO NOT modify any code or files in this project without presenting your plan and getting explicit user approval first.** The user strictly requires review and sign-off on all proposed changes before implementation. Maintain the minimal, clean, zero-bloat philosophy.
+> **DO NOT modify any code or files in this project without presenting your plan and getting explicit user approval first.**  
+> **Always ask the user about creating a granular, low-level implementation plan** before moving forward from a high-level conceptual plan into execution. Because monolithic files (`app.js`, `index.html`) can cause excessive analysis turns and context compactions, a low-level implementation plan with exact file anchors, DOM line numbers, and function signatures ensures efficient, one-shot implementation. Maintain the minimal, clean, zero-bloat philosophy.
 
 ---
 
