@@ -257,7 +257,7 @@
   {
     "id": 1792000007000,
     "domain": "recipe",
-    "topic": "Bread",
+    "topic": "Sourdough",
     "title": "Cheesy Garlic Sourdough Focaccia",
     "summary": "Crispy, bubbly sourdough focaccia loaded with herb-tossed cheddar, mozzarella, jack, parmesan, and bubbling garlic butter.",
     "creator": "Amy Coyne (@amybakesbread)",
@@ -491,7 +491,7 @@
   {
     "id": 1792000002000,
     "domain": "recipe",
-    "topic": "Bread",
+    "topic": "Baking",
     "title": "Viral Korean Salt Bread (Sogeum-ppang)",
     "summary": "Crispy and buttery golden bottom, pillowy soft crumb, and a signature hollow buttery center rolled with cold salted butter.",
     "creator": "Erin's Cozy Kitchen (@erins_cozykitchen)",
@@ -622,5 +622,35 @@
         "Boil water, brown sugar, and butter in a small pan into a glossy syrup. Brush generously over the hot buns straight out of the oven!"
       ]
     }
+  },
+  {
+    "id": 1791804143429,
+    "text": "Can I create the extractor to also extract books from book recommendation reels?",
+    "time": "Oct 12",
+    "domain": "tech",
+    "topic": "Extractor",
+    "title": "Book recommendation extraction in cloud agent",
+    "summary": "Explore extending reel scraping to book recommendations and TBR queues.",
+    "creator": null,
+    "sourceUrl": null,
+    "blogUrl": null,
+    "status": "processed",
+    "rawText": "Can I create the extractor to also extract books from book recommendation reels?",
+    "payload": null
+  },
+  {
+    "id": 1791804101797,
+    "text": "Can I create an agent to run the recipe extractor? Would that allow the same freedom as doing it on my computer?",
+    "time": "Oct 12",
+    "domain": "tech",
+    "topic": "Cloud Agent",
+    "title": "Autonomous recipe extractor agent for hands-free mobile sync",
+    "summary": "Idea to run the recipe extractor via a cloud agent to have the same freedom as running it on the computer.",
+    "creator": null,
+    "sourceUrl": null,
+    "blogUrl": null,
+    "status": "processed",
+    "rawText": "Can I create an agent to run the recipe extractor? Would that allow the same freedom as doing it on my computer?",
+    "payload": null
   }
 ]
