@@ -1,4 +1,4 @@
-const CACHE_NAME = 'active-desks-v37';
+const CACHE_NAME = 'active-desks-v38';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

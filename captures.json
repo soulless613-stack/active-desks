@@ -1,15 +1,22 @@
 [
   {
     "id": 1792582196403,
-    "domain": null,
-    "topic": null,
-    "title": "Can I use the playwright mcp to get the video and audio from links",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Web Scraping",
+    "title": "Extracting Media with Playwright MCP",
+    "summary": "Exploring whether the Playwright Model Context Protocol (MCP) server can be leveraged to extract video and audio streams from URLs.",
+    "creator": null,
     "sourceUrl": null,
+    "blogUrl": null,
     "time": "Oct 21",
-    "status": "pending",
+    "status": "processed",
     "rawText": "Can I use the playwright mcp to get the video and audio from links",
-    "payload": null
+    "payload": {
+      "checklist": [
+        "Check Playwright MCP documentation for media capture capabilities",
+        "Test media stream extraction using Playwright MCP on sample links"
+      ]
+    }
   },
   {
     "id": 1792558243177,
@@ -269,7 +276,7 @@
   {
     "id": 1792000007000,
     "domain": "recipe",
-    "topic": "Sourdough",
+    "topic": "Bread",
     "title": "Cheesy Garlic Sourdough Focaccia",
     "summary": "Crispy, bubbly sourdough focaccia loaded with herb-tossed cheddar, mozzarella, jack, parmesan, and bubbling garlic butter.",
     "creator": "Amy Coyne (@amybakesbread)",
@@ -503,7 +510,7 @@
   {
     "id": 1792000002000,
     "domain": "recipe",
-    "topic": "Baking",
+    "topic": "Bread",
     "title": "Viral Korean Salt Bread (Sogeum-ppang)",
     "summary": "Crispy and buttery golden bottom, pillowy soft crumb, and a signature hollow buttery center rolled with cold salted butter.",
     "creator": "Erin's Cozy Kitchen (@erins_cozykitchen)",
