@@ -41,18 +41,24 @@
   },
   {
     "id": 1792558176000,
-    "domain": null,
-    "topic": null,
-    "title": "PressPrintLab Custom Hinged Box Generator",
-    "summary": null,
+    "domain": "tech",
+    "topic": "3D Printing",
+    "title": "PressPrint Lab Hinged Box Generator",
+    "summary": "PressPrint Lab offers a browser-based hinged box generator that lets makers create fully customizable, print-in-place hinged boxes without any CAD modeling experience.",
+    "creator": "Press Print (@pressprint__)",
     "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
+    "blogUrl": "https://pressprintlab.com/designs",
     "time": "Oct 21",
-    "status": "pending",
-    "mediaStatus": null,
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
-    "payload": null,
-    "creator": null,
-    "blogUrl": null
+    "payload": {
+      "keyTakeaways": [
+        "Quickly generate custom parametric hinged boxes ready for print-in-place 3D printing without needing CAD skills.",
+        "Allows direct configuration of box dimensions, wall thickness, internal compartment grids (rows/columns), and lid opening angles.",
+        "Supports adding custom embossed or cut-in lid text and cut-out surface patterns before exporting directly to 3MF."
+      ]
+    }
   },
   {
     "id": 1792558099016,
