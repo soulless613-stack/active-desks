@@ -41,25 +41,17 @@
   },
   {
     "id": 1792558176000,
-    "domain": "tech",
-    "topic": "3D Printing",
+    "domain": null,
+    "topic": null,
     "title": "PressPrintLab Custom Hinged Box Generator",
-    "summary": "PressPrintLab enables makers to create custom 3D-printable hinged boxes without CAD or 3D modeling experience, accessible via a Thangs 3D membership.",
+    "summary": null,
     "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
     "time": "Oct 21",
-    "status": "processed",
-    "mediaStatus": "fallback_text",
+    "status": "pending",
+    "mediaStatus": null,
     "rawText": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
-    "payload": {
-      "title": "PressPrintLab Custom Hinged Box Generator",
-      "summary": "PressPrintLab enables makers to create custom 3D-printable hinged boxes without CAD or 3D modeling experience, accessible via a Thangs 3D membership.",
-      "keyTakeaways": [
-        "Generates customized hinged box STL/3D models without requiring manual CAD modeling skills.",
-        "Available as a tool through Press Print's Thangs 3D membership.",
-        "Geared toward 3D printing hobbyists, gift makers, and Etsy sellers looking to produce custom products."
-      ]
-    },
-    "creator": "Press Print (@pressprint__)",
+    "payload": null,
+    "creator": null,
     "blogUrl": null
   },
   {
