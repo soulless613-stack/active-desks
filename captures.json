@@ -1,16 +1,25 @@
 [
   {
+    "id": 1792668151645,
+    "domain": null,
+    "topic": null,
+    "title": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
+    "summary": null,
+    "sourceUrl": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
+    "time": "Oct 22",
+    "status": "pending",
+    "rawText": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
+    "payload": null
+  },
+  {
     "id": 1792650746263,
     "domain": "tech",
     "topic": "AI Coding",
     "title": "Karpathy Skills: Claude Code & Cursor Guidelines",
     "summary": "A zero-code GitHub repository providing a CLAUDE.md and Cursor rule configuration based on Andrej Karpathy's observations on common LLM coding pitfalls.",
-    "creator": "Prince Gupta (@princegupta.ai)",
     "sourceUrl": "https://www.instagram.com/reel/DewhNn1AZGQ/?rpxt=NXZybmR4Z2UzeTJ4",
-    "blogUrl": "https://github.com/multica-ai/andrej-karpathy-skills",
     "time": "Oct 22",
     "status": "processed",
-    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DewhNn1AZGQ/?rpxt=NXZybmR4Z2UzeTJ4",
     "payload": {
       "repository": "multica-ai/andrej-karpathy-skills",
@@ -19,7 +28,10 @@
         "Solves Primary LLM Pitfalls: Prevents agents from silently making wrong assumptions, creating massive 1000-line rewrites when 50 lines suffice, and introducing orthogonal edits into untouched files.",
         "Multi-Tool Support: Installs directly as a Claude Code plugin (`/plugin marketplace add forrestchang/andrej-karpathy-skills`), a local `CLAUDE.md` project file, or a Cursor rule (`.cursor/rules/karpathy-guidelines.mdc`)."
       ]
-    }
+    },
+    "creator": "Prince Gupta (@princegupta.ai)",
+    "blogUrl": "https://github.com/multica-ai/andrej-karpathy-skills",
+    "mediaStatus": "video_extracted"
   },
   {
     "id": 1792558243177,
