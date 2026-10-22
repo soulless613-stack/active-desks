@@ -154,14 +154,14 @@ export async function runUniversalExtractor() {
           console.log(`  -> Scraped creator caption (${metadata.caption.length} chars)`);
         }
 
-        const audioBase64 = fetchMediaAudioBuffer(sourceUrl);
-        const itemMediaStatus = audioBase64 ? 'audio_extracted' : 'fallback_text';
+        const mediaResult = fetchMediaBuffer(sourceUrl);
+        const itemMediaStatus = mediaResult ? mediaResult.status : 'fallback_text';
 
         classification = await extractUrlWithGemini({
           url: sourceUrl,
           note: itemText,
           metadata,
-          audioBase64,
+          mediaResult,
           mediaStatus: itemMediaStatus
         }, apiKey, errorLogList);
 
@@ -264,17 +264,56 @@ function extractUrlFromText(text) {
 }
 
 /**
- * Extract small voiceover audio track via yt-dlp if available
- * Returns base64 audio string or null if fallback is required
+ * Tiered Media Downloader via yt-dlp:
+ * Tier 1: Compressed MP4 Video (max 720p, <= 20MB) -> Gemini watches visual frames + listens to audio.
+ * Tier 2: MP3 Audio track (<= 15MB) -> Gemini listens to spoken voiceover.
+ * Tier 3: Returns null (signals fallback to scraped text caption + Google Search grounding).
  */
-function fetchMediaAudioBuffer(url) {
+function fetchMediaBuffer(url) {
   if (!url || typeof url !== 'string') return null;
   const isVideoUrl = url.includes('instagram.com') || url.includes('tiktok.com') || url.includes('youtube.com') || url.includes('youtu.be');
   if (!isVideoUrl) return null;
 
-  const tempFile = path.join(os.tmpdir(), `audio-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.mp3`);
+  // --- TIER 1: Full Video (.mp4 <= 20MB) ---
+  const tempVideoFile = path.join(os.tmpdir(), `media-vid-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.mp4`);
   try {
-    console.log(`  -> Attempting audio extraction via yt-dlp: ${url}`);
+    console.log(`  -> [Tier 1] Attempting video extraction via yt-dlp: ${url}`);
+    execFileSync('yt-dlp', [
+      '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+      '--max-filesize', '20M',
+      '--no-playlist',
+      '--no-warnings',
+      '-o', tempVideoFile,
+      url
+    ], { timeout: 45000, stdio: ['ignore', 'pipe', 'pipe'] });
+
+    if (fs.existsSync(tempVideoFile)) {
+      const stats = fs.statSync(tempVideoFile);
+      if (stats.size > 1000 && stats.size <= 20 * 1024 * 1024) {
+        const videoBuffer = fs.readFileSync(tempVideoFile);
+        fs.unlinkSync(tempVideoFile);
+        console.log(`  -> [Tier 1 Success] Extracted full video (.mp4, ${Math.round(videoBuffer.length / 1024)} KB). Vision + Audio enabled!`);
+        return {
+          mimeType: 'video/mp4',
+          data: videoBuffer.toString('base64'),
+          status: 'video_extracted'
+        };
+      } else {
+        console.warn(`  Notice: Video file size (${stats.size} bytes) outside acceptable 20MB limit. Falling back to Tier 2 audio.`);
+        fs.unlinkSync(tempVideoFile);
+      }
+    }
+  } catch (err) {
+    console.warn(`  Notice: Video stream download skipped/failed (${err.message}). Trying Tier 2 audio fallback...`);
+    if (fs.existsSync(tempVideoFile)) {
+      try { fs.unlinkSync(tempVideoFile); } catch (e) {}
+    }
+  }
+
+  // --- TIER 2: Audio Only (.mp3 <= 15MB) ---
+  const tempAudioFile = path.join(os.tmpdir(), `media-aud-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.mp3`);
+  try {
+    console.log(`  -> [Tier 2] Attempting audio-only extraction via yt-dlp: ${url}`);
     execFileSync('yt-dlp', [
       '-x',
       '--audio-format', 'mp3',
@@ -282,22 +321,33 @@ function fetchMediaAudioBuffer(url) {
       '--max-filesize', '15M',
       '--no-playlist',
       '--no-warnings',
-      '-o', tempFile,
+      '-o', tempAudioFile,
       url
     ], { timeout: 35000, stdio: ['ignore', 'pipe', 'pipe'] });
 
-    if (fs.existsSync(tempFile)) {
-      const audioBuffer = fs.readFileSync(tempFile);
-      fs.unlinkSync(tempFile);
-      console.log(`  -> Successfully extracted audio track (${Math.round(audioBuffer.length / 1024)} KB)`);
-      return audioBuffer.toString('base64');
+    if (fs.existsSync(tempAudioFile)) {
+      const stats = fs.statSync(tempAudioFile);
+      if (stats.size > 500 && stats.size <= 15 * 1024 * 1024) {
+        const audioBuffer = fs.readFileSync(tempAudioFile);
+        fs.unlinkSync(tempAudioFile);
+        console.log(`  -> [Tier 2 Success] Extracted voiceover audio (.mp3, ${Math.round(audioBuffer.length / 1024)} KB). Narration listening enabled!`);
+        return {
+          mimeType: 'audio/mp3',
+          data: audioBuffer.toString('base64'),
+          status: 'audio_extracted'
+        };
+      }
+      fs.unlinkSync(tempAudioFile);
     }
   } catch (err) {
-    console.warn(`  Notice: Audio stream extraction skipped/failed (${err.message}). Using text & search fallback.`);
-    if (fs.existsSync(tempFile)) {
-      try { fs.unlinkSync(tempFile); } catch (e) {}
+    console.warn(`  Notice: Audio stream extraction skipped/failed (${err.message}). Falling back to Tier 3 text & web search.`);
+    if (fs.existsSync(tempAudioFile)) {
+      try { fs.unlinkSync(tempAudioFile); } catch (e) {}
     }
   }
+
+  // --- TIER 3: Fallback text ---
+  console.log('  -> [Tier 3] Relying on scraped creator caption & Google Search grounding.');
   return null;
 }
 
@@ -411,14 +461,19 @@ async function fetchOembedData(url) {
  * Universal Gemini Classifier for URLs (with Google Search Grounding)
  */
 async function extractUrlWithGemini(input, apiKey, errorLogList = []) {
-  const { url, note, metadata, audioBase64, mediaStatus } = input;
+  const { url, note, metadata, mediaResult, mediaStatus } = input;
   let shortcode = '';
   const reelMatch = url.match(/reel\/([A-Za-z0-9_-]+)/);
   if (reelMatch) shortcode = reelMatch[1];
 
-  const audioNotice = audioBase64
-    ? `- Attached Audio Track: AVAILABLE (Voiceover audio recording attached. Listen closely to transcribe all spoken recommendations, titles, rules, tolerances, and measurements).`
-    : `- Attached Audio Track: NONE (Video could not be downloaded; text fallback active. Rely on creator captions and live Google Search grounding).`;
+  let mediaNotice = '';
+  if (mediaResult?.status === 'video_extracted') {
+    mediaNotice = `- Attached Media Track: FULL VIDEO (.mp4 video attached). Watch visual frames closely (read on-screen text overlays, title cards, book covers, board game boxes, 3D printer slicer temps/speeds/tolerances, ingredient measurement graphics) and simultaneously listen to the spoken voiceover narration.`;
+  } else if (mediaResult?.status === 'audio_extracted') {
+    mediaNotice = `- Attached Media Track: AUDIO ONLY (.mp3 audio attached). Listen closely to transcribe all spoken recommendations, titles, rules, tolerances, and measurements.`;
+  } else {
+    mediaNotice = `- Attached Media Track: NONE (Media could not be downloaded directly; text fallback active. Rely on creator captions and live Google Search grounding).`;
+  }
 
   const prompt = `You are an expert autonomous knowledge classifier and data extractor for a personal Progressive Web App called Active Desks.
 The user saved a link: "${url}"
@@ -427,16 +482,18 @@ ${note ? `- User Note: "${note}"` : ''}
 ${metadata?.title ? `- Post Title / Author: "${metadata.title}"` : ''}
 ${metadata?.author ? `- Author Handle: "${metadata.author}"` : ''}
 ${metadata?.caption ? `- Full Creator Post Caption:\n"""\n${metadata.caption}\n"""` : ''}
-${audioNotice}
+${mediaNotice}
 
 INSTRUCTIONS:
-1. MULTIMODAL LISTENING (CRITICAL):
-   If an audio recording is attached, listen to the speaker's voiceover. Creators frequently speak crucial details aloud that are missing from text captions:
-   - For BOOKS: Listen for book titles, authors, why they recommend them, and series order (e.g. LitRPG, Fantasy, Sci-Fi recs).
-   - For GAMES: Listen for game titles, platforms (Steam, Board Game Arena, Switch), mechanics, player count, and rules.
-   - For TECH / 3D PRINTING: Listen for print-in-place tolerances, nozzle temps, layer heights, filament types, and slicer tools.
-   - For FIBER: Listen for yarn weight, needle/hook sizes, pattern names, and stitch techniques.
-   - For RECIPES: Listen for exact ingredient measurements (convert to metric grams where possible) and sequential steps.
+1. MULTIMODAL COMPREHENSION (CRITICAL):
+   - IF FULL VIDEO IS ATTACHED:
+     * 👁️ READ ON-SCREEN TEXT (OCR): Look at on-screen text overlays, title cards, book covers, board game boxes, 3D printer slicer temperatures/speeds/tolerances, yarn labels, and ingredient measurement lists shown on screen.
+     * 👂 LISTEN TO SPOKEN VOICEOVER: Transcribe and integrate spoken recommendations, rule explanations, ingredient amounts, and creator tips.
+     * 🎬 OBSERVE DEMONSTRATIONS: Note physical steps (e.g., dough folding, part assembly, sewing technique, gameplay flow).
+   - IF AUDIO IS ATTACHED:
+     * Listen to the speaker's voiceover for crucial details missing from captions (titles, authors, rules, tolerances, exact measurements).
+   - IF NO MEDIA ATTACHED:
+     * Rely on the creator's post caption and Google Search grounding to accurately extract information.
 
 2. Determine the item's DOMAIN. Choose the single most appropriate macro domain from this list:
    - "recipe": Cooking, baking, meal prep, drinks, food dishes.
@@ -509,11 +566,11 @@ Return ONLY a valid JSON object matching this exact schema:
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         
         const requestParts = [];
-        if (audioBase64) {
+        if (mediaResult && mediaResult.data) {
           requestParts.push({
             inlineData: {
-              mimeType: 'audio/mp3',
-              data: audioBase64
+              mimeType: mediaResult.mimeType,
+              data: mediaResult.data
             }
           });
         }
@@ -546,7 +603,7 @@ Return ONLY a valid JSON object matching this exact schema:
 
         const parsed = parseJsonFromResponse(rawText);
         if (parsed && parsed.domain && parsed.title) {
-          parsed.mediaStatus = mediaStatus || (audioBase64 ? 'audio_extracted' : 'fallback_text');
+          parsed.mediaStatus = mediaStatus || (mediaResult ? mediaResult.status : 'fallback_text');
           return parsed;
         }
       } catch (e) {

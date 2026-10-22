@@ -1966,7 +1966,13 @@ function renderCaptures() {
     // Media extraction status badge (placed at bottom of card, above separator)
     let mediaBadgeHtml = '';
     if (c.sourceUrl) {
-      if (c.mediaStatus === 'audio_extracted') {
+      if (c.mediaStatus === 'video_extracted') {
+        mediaBadgeHtml = `
+          <div class="capture-card-media-status video-success" title="Video frames and audio voiceover were analyzed by Gemini">
+            <span>🎬 Video &amp; Audio Analyzed</span>
+          </div>
+        `;
+      } else if (c.mediaStatus === 'audio_extracted') {
         mediaBadgeHtml = `
           <div class="capture-card-media-status audio-success" title="Voiceover audio was downloaded and analyzed by Gemini">
             <span>🎙️ Voiceover Audio Verified</span>
@@ -2082,7 +2088,9 @@ function openCaptureDetailModal(captureId) {
       // 1. Meta Badges (Platform, Genre, Author, Series, Developer, Yield)
       const chips = [];
       if (c.sourceUrl) {
-        if (c.mediaStatus === 'audio_extracted') {
+        if (c.mediaStatus === 'video_extracted') {
+          chips.push({ label: 'Media', val: '🎬 Video & Audio Analyzed' });
+        } else if (c.mediaStatus === 'audio_extracted') {
           chips.push({ label: 'Media', val: '🎙️ Voiceover Verified' });
         } else if (c.mediaStatus === 'fallback_text') {
           chips.push({ label: 'Extraction', val: '⚠️ Text & Web Fallback' });

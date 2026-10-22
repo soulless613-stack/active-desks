@@ -27,6 +27,7 @@
     "sourceUrl": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
     "time": "Oct 21",
     "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
     "payload": {
       "keyTakeaways": [
@@ -47,6 +48,7 @@
     "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
     "time": "Oct 21",
     "status": "processed",
+    "mediaStatus": "fallback_text",
     "rawText": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
     "payload": {
       "title": "PressPrintLab Custom Hinged Box Generator",

@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup Audio Tools (ffmpeg & yt-dlp)
+      - name: Setup Media Tools (ffmpeg & yt-dlp)
         run: |
           sudo apt-get update -y
           sudo apt-get install -y ffmpeg
