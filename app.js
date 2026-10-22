@@ -2142,6 +2142,28 @@ function openCaptureDetailModal(captureId) {
         `;
       }
 
+      // 2b. Recommended Books List (for Book Roundup / Recs)
+      if (Array.isArray(p.books) && p.books.length > 0) {
+        payloadHtml += `
+          <div>
+            <div class="payload-section-title">📚 Recommended Books (${p.books.length})</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+              ${p.books.map((b, idx) => `
+                <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 10px 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+                    <div style="font-weight: 700; color: #a5b4fc; font-size: 0.88rem;">${idx + 1}. ${escapeHtml(b.title)}</div>
+                    ${b.author ? `<div style="font-size: 0.76rem; color: var(--text-muted);">${escapeHtml(b.author)}</div>` : ''}
+                  </div>
+                  ${b.series ? `<div style="font-size: 0.74rem; color: #818cf8; margin-top: 2px;">📖 ${escapeHtml(b.series)}</div>` : ''}
+                  ${b.summary ? `<div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.4;">${escapeHtml(b.summary)}</div>` : ''}
+                  ${b.highlight ? `<div style="font-size: 0.74rem; color: #c7d2fe; font-style: italic; margin-top: 4px;">✨ ${escapeHtml(b.highlight)}</div>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
       // 3. Key Takeaways (Bullet List)
       if (Array.isArray(p.keyTakeaways) && p.keyTakeaways.length > 0) {
         payloadHtml += `
