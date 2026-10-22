@@ -129,24 +129,16 @@
   },
   {
     "id": 1792558029337,
-    "domain": "book",
-    "topic": "LitRPG",
+    "domain": null,
+    "topic": null,
     "title": "Books to Read While Waiting for Dungeon Crawler Carl Book 8",
-    "summary": "A curated roundup of LitRPG and progression fantasy book recommendations to bridge the wait until the eighth installment of Dungeon Crawler Carl releases.",
+    "summary": null,
     "sourceUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
     "time": "Oct 21",
-    "status": "processed",
+    "status": "pending",
     "rawText": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
-    "payload": {
-      "title": "Dungeon Crawler Carl (Read-Alikes & Recommendations)",
-      "author": "Matt Dinniman",
-      "series": "Dungeon Crawler Carl",
-      "genre": "LitRPG / Progression Fantasy",
-      "summary": "For readers enduring the wait for Dungeon Crawler Carl Book 8, creator Adam Michael highlights top progression fantasy and LitRPG novels that capture comparable high-stakes action, irreverent humor, and intricate leveling mechanics.",
-      "highlight": "Essential progression fantasy recommendations tailored specifically to scratch the itch for fans of Matt Dinniman's chaotic, fast-paced dungeon crawl.",
-      "linkUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0"
-    },
-    "creator": "Adam Michael (@weread4xp)",
+    "payload": null,
+    "creator": null,
     "blogUrl": null
   },
   {
