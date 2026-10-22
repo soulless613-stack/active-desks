@@ -1,24 +1,5 @@
 [
   {
-    "id": 1792582196403,
-    "domain": "tech",
-    "topic": "Web Scraping",
-    "title": "Extracting Media with Playwright MCP",
-    "summary": "Exploring whether the Playwright Model Context Protocol (MCP) server can be leveraged to extract video and audio streams from URLs.",
-    "creator": null,
-    "sourceUrl": null,
-    "blogUrl": null,
-    "time": "Oct 21",
-    "status": "processed",
-    "rawText": "Can I use the playwright mcp to get the video and audio from links",
-    "payload": {
-      "checklist": [
-        "Check Playwright MCP documentation for media capture capabilities",
-        "Test media stream extraction using Playwright MCP on sample links"
-      ]
-    }
-  },
-  {
     "id": 1792558243177,
     "domain": "tech",
     "topic": "3D Printing",
@@ -45,9 +26,7 @@
     "topic": "3D Printing",
     "title": "PressPrint Lab Hinged Box Generator",
     "summary": "PressPrint Lab offers a browser-based hinged box generator that lets makers create fully customizable, print-in-place hinged boxes without any CAD modeling experience.",
-    "creator": "Press Print (@pressprint__)",
     "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
-    "blogUrl": "https://pressprintlab.com/designs",
     "time": "Oct 21",
     "status": "processed",
     "mediaStatus": "video_extracted",
@@ -58,7 +37,9 @@
         "Allows direct configuration of box dimensions, wall thickness, internal compartment grids (rows/columns), and lid opening angles.",
         "Supports adding custom embossed or cut-in lid text and cut-out surface patterns before exporting directly to 3MF."
       ]
-    }
+    },
+    "creator": "Press Print (@pressprint__)",
+    "blogUrl": "https://pressprintlab.com/designs"
   },
   {
     "id": 1792558099016,
