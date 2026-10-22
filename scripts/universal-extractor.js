@@ -22,6 +22,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execFileSync } from 'child_process';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -152,10 +154,15 @@ export async function runUniversalExtractor() {
           console.log(`  -> Scraped creator caption (${metadata.caption.length} chars)`);
         }
 
+        const audioBase64 = fetchMediaAudioBuffer(sourceUrl);
+        const itemMediaStatus = audioBase64 ? 'audio_extracted' : 'fallback_text';
+
         classification = await extractUrlWithGemini({
           url: sourceUrl,
           note: itemText,
-          metadata
+          metadata,
+          audioBase64,
+          mediaStatus: itemMediaStatus
         }, apiKey, errorLogList);
 
         if (!classification) {
@@ -191,7 +198,7 @@ export async function runUniversalExtractor() {
         }
       }
 
-      // Update capture item with two-tier tags and rich metadata
+      // Update capture item with two-tier tags, rich metadata, and media extraction status
       captures[idx] = {
         id: item.id || Date.now(),
         domain: (classification.domain || 'thought').toLowerCase(),
@@ -203,12 +210,13 @@ export async function runUniversalExtractor() {
         blogUrl: classification.blogUrl || null,
         time: item.time || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         status: 'processed',
+        mediaStatus: classification.mediaStatus || (sourceUrl ? 'fallback_text' : 'none'),
         rawText: itemText,
         payload: classification.payload || classification.recipeData || null
       };
 
       processedItems.push(captures[idx]);
-      console.log(`  -> Tagged as: [${captures[idx].domain}] · ${captures[idx].topic}`);
+      console.log(`  -> Tagged as: [${captures[idx].domain}] · ${captures[idx].topic} (media: ${captures[idx].mediaStatus})`);
       console.log(`  -> Title: "${captures[idx].title}"`);
 
     } catch (err) {
@@ -253,6 +261,44 @@ function extractUrlFromText(text) {
   if (!text) return null;
   const match = text.match(/https?:\/\/[^\s]+/i);
   return match ? match[0] : null;
+}
+
+/**
+ * Extract small voiceover audio track via yt-dlp if available
+ * Returns base64 audio string or null if fallback is required
+ */
+function fetchMediaAudioBuffer(url) {
+  if (!url || typeof url !== 'string') return null;
+  const isVideoUrl = url.includes('instagram.com') || url.includes('tiktok.com') || url.includes('youtube.com') || url.includes('youtu.be');
+  if (!isVideoUrl) return null;
+
+  const tempFile = path.join(os.tmpdir(), `audio-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.mp3`);
+  try {
+    console.log(`  -> Attempting audio extraction via yt-dlp: ${url}`);
+    execFileSync('yt-dlp', [
+      '-x',
+      '--audio-format', 'mp3',
+      '--audio-quality', '5',
+      '--max-filesize', '15M',
+      '--no-playlist',
+      '--no-warnings',
+      '-o', tempFile,
+      url
+    ], { timeout: 35000, stdio: ['ignore', 'pipe', 'pipe'] });
+
+    if (fs.existsSync(tempFile)) {
+      const audioBuffer = fs.readFileSync(tempFile);
+      fs.unlinkSync(tempFile);
+      console.log(`  -> Successfully extracted audio track (${Math.round(audioBuffer.length / 1024)} KB)`);
+      return audioBuffer.toString('base64');
+    }
+  } catch (err) {
+    console.warn(`  Notice: Audio stream extraction skipped/failed (${err.message}). Using text & search fallback.`);
+    if (fs.existsSync(tempFile)) {
+      try { fs.unlinkSync(tempFile); } catch (e) {}
+    }
+  }
+  return null;
 }
 
 /**
@@ -365,10 +411,14 @@ async function fetchOembedData(url) {
  * Universal Gemini Classifier for URLs (with Google Search Grounding)
  */
 async function extractUrlWithGemini(input, apiKey, errorLogList = []) {
-  const { url, note, metadata } = input;
+  const { url, note, metadata, audioBase64, mediaStatus } = input;
   let shortcode = '';
   const reelMatch = url.match(/reel\/([A-Za-z0-9_-]+)/);
   if (reelMatch) shortcode = reelMatch[1];
+
+  const audioNotice = audioBase64
+    ? `- Attached Audio Track: AVAILABLE (Voiceover audio recording attached. Listen closely to transcribe all spoken recommendations, titles, rules, tolerances, and measurements).`
+    : `- Attached Audio Track: NONE (Video could not be downloaded; text fallback active. Rely on creator captions and live Google Search grounding).`;
 
   const prompt = `You are an expert autonomous knowledge classifier and data extractor for a personal Progressive Web App called Active Desks.
 The user saved a link: "${url}"
@@ -377,9 +427,18 @@ ${note ? `- User Note: "${note}"` : ''}
 ${metadata?.title ? `- Post Title / Author: "${metadata.title}"` : ''}
 ${metadata?.author ? `- Author Handle: "${metadata.author}"` : ''}
 ${metadata?.caption ? `- Full Creator Post Caption:\n"""\n${metadata.caption}\n"""` : ''}
+${audioNotice}
 
 INSTRUCTIONS:
-1. Determine the item's DOMAIN. Choose the single most appropriate macro domain from this list:
+1. MULTIMODAL LISTENING (CRITICAL):
+   If an audio recording is attached, listen to the speaker's voiceover. Creators frequently speak crucial details aloud that are missing from text captions:
+   - For BOOKS: Listen for book titles, authors, why they recommend them, and series order (e.g. LitRPG, Fantasy, Sci-Fi recs).
+   - For GAMES: Listen for game titles, platforms (Steam, Board Game Arena, Switch), mechanics, player count, and rules.
+   - For TECH / 3D PRINTING: Listen for print-in-place tolerances, nozzle temps, layer heights, filament types, and slicer tools.
+   - For FIBER: Listen for yarn weight, needle/hook sizes, pattern names, and stitch techniques.
+   - For RECIPES: Listen for exact ingredient measurements (convert to metric grams where possible) and sequential steps.
+
+2. Determine the item's DOMAIN. Choose the single most appropriate macro domain from this list:
    - "recipe": Cooking, baking, meal prep, drinks, food dishes.
    - "book": Book recommendation, book review, TBR reading list, literature, author.
    - "game": Video game, tabletop RPG, board game, gaming rig backlog.
@@ -388,12 +447,12 @@ INSTRUCTIONS:
    - "home": Home repair, DIY, furniture, HVAC, plants, gardening.
    - "finance": Personal finance, budgeting, investing, index funds, retirement.
    - "writing": Creative writing, worldbuilding, storytelling, blog ideas.
-   - "tech": Software, development, computer hardware, electronics.
+   - "tech": Software, development, computer hardware, 3D printing, electronics.
    - "misc": Anything else.
 
-2. Determine the item's TOPIC: Exactly ONE specific micro-topic descriptor (e.g. "Baking", "Sci-Fi", "RPG", "Embroidery", "Kyoto", "HVAC", "Investing", "React").
+3. Determine the item's TOPIC: Exactly ONE specific micro-topic descriptor (e.g. "Baking", "Sci-Fi", "LitRPG", "Board Games", "3D Printing", "Embroidery", "Kyoto", "HVAC", "Investing", "React").
 
-3. EXTRACT RICH PAYLOAD:
+4. EXTRACT RICH PAYLOAD:
    - IF DOMAIN IS "recipe":
      * Title: Clean descriptive recipe title.
      * Creator: Full name & handle (e.g. "Dee | Food for everyone (@mumsfoodies)").
@@ -407,21 +466,21 @@ INSTRUCTIONS:
      * Title: Book title.
      * Author: Author name.
      * Series: Series name / book # or null.
-     * Genre: e.g. "Space Opera", "Progression Fantasy", "Historical Fiction".
+     * Genre: e.g. "Space Opera", "LitRPG", "Progression Fantasy", "Historical Fiction".
      * Summary: 2-3 sentence engaging blurb.
      * Highlight: Why it is recommended / what makes it compelling.
      * LinkUrl: StoryGraph, Goodreads, Audible, or Amazon link if known, or source URL.
    - IF DOMAIN IS "game":
      * Title: Game title.
-     * Platform: e.g. "PC / Steam", "Nintendo Switch", "PS5".
-     * Genre: e.g. "Cozy Farm Sim", "Action RPG", "Metroidvania".
+     * Platform: e.g. "PC / Steam", "Board Game Arena", "Nintendo Switch", "PS5".
+     * Genre: e.g. "Cozy Farm Sim", "Euro Board Game", "Action RPG", "Metroidvania".
      * Developer: Studio / developer name or null.
      * Summary: 1-2 sentence gameplay summary.
      * QuestOrGoal: Suggested initial goal or quest backlog entry.
-   - FOR ALL OTHER DOMAINS (travel, home, finance, writing, tech, misc):
+   - FOR ALL OTHER DOMAINS (travel, home, finance, writing, tech, fiber, misc):
      * Title: Concise descriptive headline.
      * Summary: 1-2 sentence core takeaway / bookmark summary.
-     * KeyTakeaways: Array of 1-3 crisp bullet takeaways or actionable tips.
+     * KeyTakeaways: Array of 1-3 crisp bullet takeaways or actionable tips (e.g. print tolerances, stitch counts, destinations).
 
 ANTI-HALLUCINATION RULE:
 - Never fabricate fake blog URLs.
@@ -435,7 +494,7 @@ Return ONLY a valid JSON object matching this exact schema:
   "creator": "Creator Name (@handle) or null",
   "blogUrl": "URL or null",
   "recipeData": { ... only if domain is recipe, with slug, creator, sourceUrl, blogUrl, tags, yield, calories, protein, carbs, fat, highlight, ingredientSections, steps ... },
-  "payload": { ... structured domain data for book, game, travel, etc. ... }
+  "payload": { ... structured domain data for book, game, tech, etc. ... }
 }`;
 
   for (const model of CANDIDATE_MODELS) {
@@ -448,7 +507,19 @@ Return ONLY a valid JSON object matching this exact schema:
     for (const toolCfg of toolModes) {
       try {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-        const payload = { contents: [{ parts: [{ text: prompt }] }] };
+        
+        const requestParts = [];
+        if (audioBase64) {
+          requestParts.push({
+            inlineData: {
+              mimeType: 'audio/mp3',
+              data: audioBase64
+            }
+          });
+        }
+        requestParts.push({ text: prompt });
+
+        const payload = { contents: [{ parts: requestParts }] };
         if (toolCfg.tools.length > 0) payload.tools = toolCfg.tools;
 
         const res = await fetch(endpoint, {
@@ -475,6 +546,7 @@ Return ONLY a valid JSON object matching this exact schema:
 
         const parsed = parseJsonFromResponse(rawText);
         if (parsed && parsed.domain && parsed.title) {
+          parsed.mediaStatus = mediaStatus || (audioBase64 ? 'audio_extracted' : 'fallback_text');
           return parsed;
         }
       } catch (e) {

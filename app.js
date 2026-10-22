@@ -1929,8 +1929,9 @@ function renderCaptures() {
     }
   }
 
-  // 1c. Render Drawer Evolution Notice (Actionable & Dismissible)
+  // 1c. Render Drawer Evolution Notice & Fallback Alert
   renderDrawerEvolutionNotice(captures);
+  renderDrawerFallbackBanner(captures);
 
   // 2. Filter Items by Domain AND Topic
   const filtered = captures.filter(c => {
@@ -1962,6 +1963,24 @@ function renderCaptures() {
     const titleText = escapeHtml(c.title || c.text || c.rawText || 'Untitled Capture');
     const summaryText = c.summary && c.summary !== c.title ? escapeHtml(c.summary) : '';
 
+    // Media extraction status badge (placed at bottom of card, above separator)
+    let mediaBadgeHtml = '';
+    if (c.sourceUrl) {
+      if (c.mediaStatus === 'audio_extracted') {
+        mediaBadgeHtml = `
+          <div class="capture-card-media-status audio-success" title="Voiceover audio was downloaded and analyzed by Gemini">
+            <span>🎙️ Voiceover Audio Verified</span>
+          </div>
+        `;
+      } else if (c.mediaStatus === 'fallback_text') {
+        mediaBadgeHtml = `
+          <div class="capture-card-media-status text-fallback" title="Video download could not be completed; extracted using creator caption & web search">
+            <span>⚠️ Text &amp; Search Fallback (Video Skipped)</span>
+          </div>
+        `;
+      }
+    }
+
     return `
       <div class="capture-card" onclick="openCaptureDetailModal(${c.id})">
         <div class="capture-card-header">
@@ -1974,6 +1993,8 @@ function renderCaptures() {
 
         <div class="capture-card-title">${titleText}</div>
         ${summaryText ? `<div class="capture-card-summary">${summaryText}</div>` : ''}
+
+        ${mediaBadgeHtml}
 
         <div class="capture-card-footer">
           <div class="capture-card-actions">
@@ -2060,6 +2081,13 @@ function openCaptureDetailModal(captureId) {
     if (p && typeof p === 'object') {
       // 1. Meta Badges (Platform, Genre, Author, Series, Developer, Yield)
       const chips = [];
+      if (c.sourceUrl) {
+        if (c.mediaStatus === 'audio_extracted') {
+          chips.push({ label: 'Media', val: '🎙️ Voiceover Verified' });
+        } else if (c.mediaStatus === 'fallback_text') {
+          chips.push({ label: 'Extraction', val: '⚠️ Text & Web Fallback' });
+        }
+      }
       if (p.platform) chips.push({ label: 'Platform', val: p.platform });
       if (p.genre) chips.push({ label: 'Genre', val: p.genre });
       if (p.author) chips.push({ label: 'Author', val: p.author });
@@ -2420,6 +2448,25 @@ function dismissDrawerEvolutionNotice(id) {
   const el = document.getElementById('drawer-evolution-insights');
   if (el) el.style.display = 'none';
   showToast('Notice dismissed. ✨', '🌿');
+}
+
+function renderDrawerFallbackBanner(captures) {
+  const bannerEl = document.getElementById('drawer-fallback-banner');
+  if (!bannerEl) return;
+
+  const fallbackItems = (captures || []).filter(c => c && c.mediaStatus === 'fallback_text');
+  if (fallbackItems.length > 0) {
+    bannerEl.style.display = 'flex';
+    bannerEl.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 1.05rem;">⚠️</span>
+        <span><strong>Text Fallback Used (${fallbackItems.length} item${fallbackItems.length > 1 ? 's' : ''})</strong>: Video couldn't be downloaded directly (used creator caption &amp; web search instead).</span>
+      </div>
+      <button type="button" onclick="document.getElementById('drawer-fallback-banner').style.display='none'" style="background: none; border: none; color: #fde68a; cursor: pointer; font-size: 0.85rem; padding: 2px 6px;" aria-label="Dismiss">✕</button>
+    `;
+  } else {
+    bannerEl.style.display = 'none';
+  }
 }
 
 const DELETED_CAPTURES_KEY = 'active_desks_deleted_captures';

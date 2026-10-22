@@ -26,6 +26,12 @@ jobs:
         with:
           node-version: 20
 
+      - name: Setup Audio Tools (ffmpeg & yt-dlp)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+          python3 -m pip install --upgrade yt-dlp
+
       - name: Run Universal Extractor Cloud Agent
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
