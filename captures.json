@@ -1,15 +1,26 @@
 [
   {
     "id": 1792668151645,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Claude Code",
+    "title": "10 Powerful GitHub Repos for Claude Code & Token Saver Analysis",
+    "summary": "A curated breakdown of 10 high-impact GitHub repos and tools to expand Claude Code's capabilities, paired with real-world benchmark data testing popular token-saving extensions.",
+    "creator": "Dripthecup (@dripthecup)",
     "sourceUrl": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
+    "blogUrl": "https://dripthecup.com/links",
     "time": "Oct 22",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
-    "payload": null
+    "payload": {
+      "title": "10 Powerful GitHub Repos for Claude Code & Token Saver Analysis",
+      "summary": "A curated breakdown of 10 high-impact GitHub repos and tools to expand Claude Code's capabilities, paired with real-world benchmark data testing popular token-saving extensions.",
+      "keyTakeaways": [
+        "Top 10 recommended repos/skills: heygen-com/hyperframes (video rendering), blader/humanizer (de-hyping copy), googleworkspace/cli (Google CLI integration), Apify's MCP server (web scraping), addyosmani/agent-skills (spec/plan persistence), Expo skills (native app rules), Supabase + Stripe skills (RLS & webhook security), Microsoft's playwright-cli (browser automation), and Anthropic's claude-security plugin.",
+        "JetBrains benchmark tests showed hyped 'token savers' often fall short: rtk-ai/rtk actually increased cost by +7.6%, caveman saved only 8.5% (advertised 65%), and ponytail saved 10.3% (half of its 20% claim).",
+        "Actionable tips: inspect Claude AI spend with 'npx codeburn', and turn off default anonymous telemetry in claude-mem using 'npx claude-mem telemetry disable'."
+      ]
+    }
   },
   {
     "id": 1792650746263,
