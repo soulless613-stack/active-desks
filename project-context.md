@@ -74,7 +74,7 @@
 * **Bundled Recipes** (Markdown source files stored in [`active-desks/recipes/`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/)):
   1. [`butter-chicken-mac-n-cheese.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/butter-chicken-mac-n-cheese.md) — 480 kcal, 45g P, 38g C, 16g F.
   2. [`crispy-potato-meatballs.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/crispy-potato-meatballs.md) — 410 kcal, 32g P, 28g C, 18g F.
-  3. [`cheesy-garlic-sourdough-focaccia.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/cheesy-garlic-sourdough-focaccia.md) — 349 kcal, 14g P, 33g C, 17g F (by Amy Coyne @amybakesbread).
+  3. [`crispy-overnight-no-knead-focaccia.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/crispy-overnight-no-knead-focaccia.md) — 349 kcal, 14g P, 33g C, 17g F (by Amy Coyne @amybakesbread).
   4. [`chocolate-chip-cookie-donut-loaf.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/chocolate-chip-cookie-donut-loaf.md) — 395 kcal, 5g P, 59g C, 16g F (by Angela Heckler @obsessedwithcashews).
   5. [`savory-pizza-cinnamon-rolls.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/savory-pizza-cinnamon-rolls.md) — 285 kcal, 12g P, 26g C, 14g F (by Lauren Ketterman @barefoot.mimosas).
   6. [`glazed-donut-bread-pudding.md`](file:///c:/Users/chris/Documents/antigravity/active-desks/recipes/glazed-donut-bread-pudding.md) — 455 kcal, 7g P, 65g C, 19g F (by 12 Tomatoes @12_tomatoes).
@@ -97,17 +97,39 @@
 * **Instant Local Row Changes**: Tapping `+`/`−` immediately persists to `localStorage`, re-renders the UI with zero delay, and marks `fiber.json` dirty for background batch sync.
 * **✏️ Update Modal**: Modal allows editing project title, WIP type, yarn/needle specs, target rows, and pattern link. Features instant local save (`💾 Save Changes`) and on-demand cloud sync (`🔄 Sync to GitHub`).
 
-### 6. Universal Capture Stream & Two-Tier Tagging (`captures.json` & `scripts/universal-extractor.js`)
+### 6. Universal Capture Stream, Multimodal Video & Adaptive Intelligence (`captures.json` & `scripts/universal-extractor.js`)
 * **Dual-Modality Intake**: Exactly one bottom capture dock handling both URLs (Instagram reels, TikToks, GoodReads, Steam, web articles) and linkless raw thoughts (0ms local save, 100% offline).
 * **Two-Tier Tag Rule**: Every item is categorized into strictly two tags:
   1. `[Domain]` (Macro-Anchor: `recipe`, `book`, `game`, `fiber`, `travel`, `home`, `finance`, `writing`, `tech`, `misc`).
-  2. `[Topic]` (Micro-Context: `Baking`, `Sci-Fi`, `RPG`, `HVAC`, `Investing`, etc.).
+  2. `[Topic]` (Micro-Context: `Baking`, `Sci-Fi`, `RPG`, `3D Printing`, `HVAC`, `Investing`, etc.).
 * **Single Master Stream (`captures.json`)**: All captured thoughts, links, and recipes reside in `captures.json` as the Single Source of Truth.
-* **Autonomous Cloud Agent (`scripts/universal-extractor.js`)**:
+* **Autonomous Multimodal Cloud Agent (`scripts/universal-extractor.js` & `.github/workflows/recipe-extractor.yml`)**:
   * Triggered via GitHub Actions on changes to `captures.json` or `recipe-inbox.json`.
-  * For URLs: scrapes creator captions and OpenGraph metadata via User-Agent `facebookexternalhit/1.1`, queries Gemini to classify and generate rich payloads (recipes get full ingredient checklists with metric grams and markdown files, books get blurb & author details, games get platform & genre details).
-  * For Linkless Thoughts: bypasses crawlers and directly prompts Gemini to classify into `[Domain] · [Topic]`.
-* **Universal Stream Drawer UI**: Dynamic filter pills (`[ All ]`, `[ 🍳 Recipes ]`, `[ 📚 Books ]`, `[ 🎮 Games ]`, `[ 💡 Thoughts ]`), live status badges (`⏳ Processing...`), direct source links, and instant recipe cook triggers.
+  * **Tiered Multimodal Pipeline (`fetchMediaBuffer`)**:
+    - **Tier 1 (Full Video `.mp4` $\le$ 20MB)**: Uses `yt-dlp` in the GitHub Actions runner to download compressed 720p/480p `.mp4` video. Passes base64 video directly to Gemini via `inlineData: { mimeType: 'video/mp4' }`. Gemini **watches visual frames** (reading on-screen text overlays, title cards, book covers, board game boxes, 3D printer slicer temps/speeds/tolerances, ingredient graphics) while **simultaneously listening to the spoken voiceover**. Tagged with `mediaStatus: "video_extracted"`.
+    - **Tier 2 (Audio Only `.mp3` $\le$ 15MB)**: If video download is throttled or exceeds 20MB, extracts the voiceover audio track for verbal narration listening. Tagged with `mediaStatus: "audio_extracted"`.
+    - **Tier 3 (Text & Search Fallback)**: If media download fails or is blocked, falls back to OpenGraph/caption scraping via `facebookexternalhit/1.1` and live Google Search grounding. Tagged with `mediaStatus: "fallback_text"`.
+  * **Rich Domain Payloads**:
+    - `recipe`: strict 1-ingredient-per-item checklists with metric gram weights, nutrition macros, markdown generation in `recipes/<slug>.md`, and registration in `app.js`.
+    - `book`: single books or listicles (`payload.books` with title, author, series, summary, and highlight).
+    - `game`: platform, genre, developer, summary, initial quest backlog goal.
+    - `tech` / `home` / `finance` / `fiber`: concise summary + key takeaways (e.g. 3D printer tolerances, temperatures, needle sizes).
+  * **Linkless Thoughts**: Bypasses scrapers and prompts Gemini directly into `[Domain] · [Topic]`.
+* **Card Media Badges**:
+  * Placed at the **bottom of each capture card**, directly **above the footer separator line**:
+    - `🎬 Video & Audio Analyzed` (purple badge, `video_extracted`).
+    - `🎙️ Voiceover Audio Verified` (cyan badge, `audio_extracted`).
+    - `⚠️ Text & Search Fallback (Video Skipped)` (amber badge, `fallback_text`).
+* **Drawer Fallback Alert Banner (`#drawer-fallback-banner`)**:
+  * Dismissible amber alert banner at the top of the Universal Captures Drawer displaying the count of any items that required text fallback due to video download blocks.
+* **Unified Capture Detail Modal (`#capture-detail-modal`)**:
+  * Clicking *any* card in the Universal Captures Drawer opens `#capture-detail-modal` with glassmorphic styling, media badge chip, metadata chips (Platform, Genre, Author, Series, Developer, Yield), ingredient checklists, takeaways, highlights, and multi-book carousels (`payload.books`).
+  * Kitchen Desk specifically retains `#recipe-modal` for the active cooking view. Both modals use `z-index: 120` to render cleanly above the drawer.
+* **Adaptive Intelligence (Phase 3 Taxonomy)**:
+  * **Rule of 3 (Topic Crystallization & Domain Harmonization)**: Automatically re-clusters topics when $\ge$3 items share a specific sub-genre (e.g., grouping into `LitRPG` under `book`), or promotes linkless raw thoughts into macro domains. Includes dismissible change notice chips in the drawer.
+  * **Rule of 5 (Emergent Desk Evolution Nudges)**: Detects when $\ge$5 items gather in an unassigned domain (e.g. `tech` with 3D Printing), writing to `desk-suggestions.json` and rendering an actionable, calm banner prompting the user to spin up an emergent workbench.
+* **Zombie Deletion Tombstone Guard (`DELETED_CAPTURES_KEY`)**:
+  * Deletions in the drawer record IDs into `localStorage['active_desks_deleted_captures']` (up to 100 entries), preventing background repo sync merges from resurrecting deleted cards.
 
 
 ### 7. Unified Cloud Sync Engine, Exit Flush & Diagnostics (`sync-log.json`)
