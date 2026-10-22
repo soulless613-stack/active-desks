@@ -4,6 +4,21 @@
 > **DO NOT modify any code or files in this project without presenting the finalized low-level plan and getting EXPLICIT user confirmation to execute.** Directional feedback, design agreements, or comments like "include this" or "I like that" mean update the plan—NOT start coding. Always present the finalized low-level plan and wait for the user's explicit green light so they have space to review and catch errors.  
 > **Always ask the user about creating a granular, low-level implementation plan** before moving forward from a high-level conceptual plan into execution. Because monolithic files (`app.js`, `index.html`) can cause excessive analysis turns and context compactions, a low-level implementation plan with exact file anchors, DOM line numbers, and function signatures ensures efficient, one-shot implementation. Maintain the minimal, clean, zero-bloat philosophy.
 
+> [!IMPORTANT]
+> **NEXT SESSION PRIORITY TASK: Re-Run Button on Fallback Badge (Mobile & Cloud On-Demand Retry)**
+> - **User Goal**: Allow the user to retry media extraction for any item that fell back to text directly from the UI (on their phone or desktop) without needing to use their computer or terminal.
+> - **Execution Plan**:
+>   1. **Badge UI ([`app.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/app.js) & [`styles.css`](file:///c:/Users/chris/Documents/antigravity/active-desks/styles.css))**:
+>      - On the `.capture-card-media-status.text-fallback` badge, render an actionable button: `<button type="button" class="btn-badge-rerun" onclick="event.stopPropagation(); retryCaptureExtraction(${c.id})">🔄 Re-run</button>`.
+>      - Also add a Re-run button inside the `#capture-detail-modal` header/chips row if `c.mediaStatus === 'fallback_text'`.
+>   2. **Action Handler (`retryCaptureExtraction(captureId)`)**:
+>      - Finds capture item by ID in `state.captures`.
+>      - Resets `status: 'pending'`, `domain: null`, `topic: null`, `summary: null`, `payload: null`, `mediaStatus: null`.
+>      - Calls `saveState()` and `renderCaptures()` so the card immediately shows `⏳ Processing...`.
+>      - Calls `markDirty('captures.json')` and `flushDirtySync(true)` to commit the pending reset to GitHub via REST API immediately.
+>      - Displays toast: `showToast('Extraction queued! Cloud agent re-analyzing media...', '🎬')`.
+>      - GitHub Actions cloud runner (`recipe-extractor.yml`) triggers automatically hands-free!
+
 ---
 
 ## 1. Project Infrastructure & Repositories
