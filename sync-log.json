@@ -1,5 +1,21 @@
 [
   {
+    "id": "17926475271915a2p",
+    "time": "2026-10-22T05:38:47.183Z",
+    "displayTime": "05:38:47 AM",
+    "device": "cloud-agent",
+    "target": "captures.json",
+    "action": "universal-extract-and-classify",
+    "status": "success",
+    "message": "Classified [book] · LitRPG: 5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
+    "details": {
+      "domain": "book",
+      "topic": "LitRPG",
+      "title": "5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
+      "sourceUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0"
+    }
+  },
+  {
     "id": "17925821982515fkk",
     "time": "2026-10-21T11:29:58.251Z",
     "displayTime": "07:29:58 AM",

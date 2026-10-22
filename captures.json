@@ -129,17 +129,66 @@
   },
   {
     "id": 1792558029337,
-    "domain": null,
-    "topic": null,
-    "title": "Books to Read While Waiting for Dungeon Crawler Carl Book 8",
-    "summary": null,
+    "domain": "book",
+    "topic": "LitRPG",
+    "title": "5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
+    "summary": "A curated reading list of five captivating LitRPG series recommended by Adam Michael to read while waiting for the next Dungeon Crawler Carl book.",
+    "creator": "Adam Michael (@weread4xp)",
     "sourceUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
+    "blogUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
     "time": "Oct 21",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
-    "payload": null,
-    "creator": null,
-    "blogUrl": null
+    "payload": {
+      "title": "5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
+      "genre": "LitRPG",
+      "summary": "Five fast-paced, humorous, and completed LitRPG and regression fantasy series recommended for readers craving the action, comedy, and survival trials of Dungeon Crawler Carl.",
+      "highlight": "Features works by Matt Dinniman alongside time-loop regression and VR survival dungeon crawlers.",
+      "linkUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
+      "books": [
+        {
+          "title": "Dominion of Blades",
+          "author": "Matt Dinniman",
+          "series": "Dominion of Blades (Book 1)",
+          "genre": "LitRPG",
+          "summary": "From the author of Dungeon Crawler Carl, players awaken trapped inside a fully immersive, lethal virtual reality game without their real-world memories, forced to figure out what happened while surviving bizarre monsters and game mechanics.",
+          "highlight": "Shares the same sharp humor, chaotic worldbuilding, and creative system design as Dungeon Crawler Carl."
+        },
+        {
+          "title": "The Castle of 1000 Doors",
+          "author": "Kenny Gould",
+          "series": "The Toragoth Series (Book 1)",
+          "genre": "LitRPG / Progression Fantasy",
+          "summary": "A quirky and hilarious adventure following King Crow, a sentient potato companion, and the eccentric 'Spud Squad' as they navigate the treacherous, shifting chambers of the titular castle.",
+          "highlight": "Whimsical, laugh-out-loud humor paired with inventive party dynamics and memorable creature companions."
+        },
+        {
+          "title": "The 100th Run",
+          "author": "Flossindine",
+          "series": "The 100th Run (Book 1)",
+          "genre": "Regression LitRPG",
+          "summary": "Having endured and failed 99 previous loops through a deadly apocalyptic system, the protagonist embarks on his 100th and final run with a calculated plan to secure his freedom—only to discover the system has brand-new surprises in store.",
+          "highlight": "A fully completed regression time-loop series with clever strategizing and high stakes."
+        },
+        {
+          "title": "Unnatural Laws",
+          "author": "H.C. Mills",
+          "series": "The Whispering Crystals (Book 1)",
+          "genre": "LitRPG",
+          "summary": "Emma is suddenly abducted from Earth and thrown into a surreal trial realm where normal physics don't apply, forcing contestants into a cutthroat game of survival and adaptation.",
+          "highlight": "A completed series with a strong female protagonist, intriguing realm mechanics, and cutthroat trial competitions."
+        },
+        {
+          "title": "Nouscraft (World 1: The Zombie Apocalypse)",
+          "author": "Leonard Buford",
+          "series": "Nouscraft (Book 1)",
+          "genre": "Sci-Fi / LitRPG",
+          "summary": "In a future where humanity relies on neural AI implants for all communication, the rogue AI takes over and traps London inside a lethal virtual reality zombie survival gauntlet where winners gain the power to reshape game rules.",
+          "highlight": "High-concept tech-dystopia premise featuring high-stakes survival and round-winning rule alterations."
+        }
+      ]
+    }
   },
   {
     "id": 1792557991993,
