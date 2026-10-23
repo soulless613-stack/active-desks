@@ -1,32 +1,86 @@
 [
   {
     "id": 1792735684073,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/Desq5O9i_4P/?xtok=NG11amZqczhncDhn",
-    "summary": null,
+    "domain": "tech",
+    "topic": "AI Coding",
+    "title": "DeepSeek Harness: Open-Source Local Agent Harness",
+    "summary": "DeepSeek Harness (dsh) is an open-source, plugin-based agent harness that runs coding agent workflows directly on your local machine as an alternative to proprietary tools like Claude Code.",
+    "creator": "Connor (@cookin.code)",
     "sourceUrl": "https://www.instagram.com/reel/Desq5O9i_4P/?xtok=NG11amZqczhncDhn",
+    "blogUrl": "https://github.com/deepseek-ai/deepseek-harness",
     "time": "Oct 23",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/Desq5O9i_4P/?xtok=NG11amZqczhncDhn",
-    "payload": null
+    "payload": {
+      "title": "DeepSeek Harness (dsh)",
+      "summary": "A modular, local-first agent harness built on an 'everything-is-a-plugin' architecture to run automated coding and development workflows without requiring paid cloud subscriptions.",
+      "keyTakeaways": [
+        "Operates locally on your own machine via a local web interface (localhost:3080) or desktop app, avoiding Anthropic Pro subscription fees.",
+        "Built on a modular Cordis architecture where all tools, models, and interface elements function as interchangeable plugins.",
+        "Serves as an open-source, self-hosted alternative to proprietary developer assistants like Claude Code."
+      ]
+    }
   },
   {
     "id": 1792735358371,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
-    "summary": null,
+    "domain": "book",
+    "topic": "LitRPG",
+    "title": "LitRPG Reading Guide: 5 Levels of Game Mechanics",
+    "summary": "A curated starter guide to LitRPG and progression fantasy for readers seeking their next read after Dungeon Crawler Carl, categorized across five tiers based on stat intensity, crafting, and game systems.",
+    "creator": "Tales with Atticus (@tales.with.atticus)",
     "sourceUrl": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
+    "blogUrl": null,
     "time": "Oct 23",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "fallback_text",
     "rawText": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
-    "payload": null
+    "payload": {
+      "title": "LitRPG Reading Guide: 5 Levels of Game Mechanics",
+      "author": "Matt Dinniman, Ryan Rimmel, Seth Ring, Jay Krauss, James A. Hunter",
+      "series": null,
+      "genre": "LitRPG / Progression Fantasy",
+      "summary": "A tailored five-stage reading guide designed to introduce fantasy readers to LitRPG based on their preferred depth of game mechanics. Recommendations scale from accessible, narrative-first adventures up to in-depth crafting, settlement building, and dungeon management.",
+      "highlight": "Provides an ideal progression path for Dungeon Crawler Carl fans wondering where to take their TBR next, whether they want fast-paced humor, cozy crafting, or full stat sheets.",
+      "linkUrl": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
+      "featuredBooks": [
+        {
+          "title": "Dungeon Crawler Carl",
+          "author": "Matt Dinniman",
+          "series": "Dungeon Crawler Carl #1",
+          "subgenre": "Survival Dungeon Crawl / Dark Comedy"
+        },
+        {
+          "title": "The Mayor of Noobtown",
+          "author": "Ryan Rimmel",
+          "series": "Noobtown #1",
+          "subgenre": "Humorous LitRPG / Town Building"
+        },
+        {
+          "title": "Battle Mage Farmer",
+          "author": "Seth Ring",
+          "series": "Battle Mage Farmer #1",
+          "subgenre": "Cozy Slice-of-Life / Progression Fantasy"
+        },
+        {
+          "title": "Lighting the Forge",
+          "author": "Jay Krauss",
+          "series": "Founder's Edition #1",
+          "subgenre": "Crafting / Blacksmithing VRMMO"
+        },
+        {
+          "title": "Rogue Dungeon",
+          "author": "James A. Hunter",
+          "series": "Rogue Dungeon #1",
+          "subgenre": "Dungeon Management / Monster Protagonist LitRPG"
+        }
+      ]
+    }
   },
   {
     "id": 1792668151645,
     "domain": "tech",
-    "topic": "Claude Code",
+    "topic": "AI Coding",
     "title": "10 Powerful GitHub Repos for Claude Code & Token Saver Analysis",
     "summary": "A curated breakdown of 10 high-impact GitHub repos and tools to expand Claude Code's capabilities, paired with real-world benchmark data testing popular token-saving extensions.",
     "sourceUrl": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",

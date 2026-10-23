@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "sug-tech",
+    "domain": "tech",
+    "topic": "Tech",
+    "itemCount": 5,
+    "title": "Tech Workbench",
+    "message": "You've captured 5 items about Tech recently. Ready to spin up an active desk to focus on this?",
+    "status": "pending",
+    "detectedAt": "2026-10-23T06:09:47.652Z"
+  }
+]
