@@ -1,16 +1,25 @@
 [
   {
+    "id": 1792735358371,
+    "domain": null,
+    "topic": null,
+    "title": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
+    "summary": null,
+    "sourceUrl": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
+    "time": "Oct 23",
+    "status": "pending",
+    "rawText": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
+    "payload": null
+  },
+  {
     "id": 1792668151645,
     "domain": "tech",
     "topic": "Claude Code",
     "title": "10 Powerful GitHub Repos for Claude Code & Token Saver Analysis",
     "summary": "A curated breakdown of 10 high-impact GitHub repos and tools to expand Claude Code's capabilities, paired with real-world benchmark data testing popular token-saving extensions.",
-    "creator": "Dripthecup (@dripthecup)",
     "sourceUrl": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
-    "blogUrl": "https://dripthecup.com/links",
     "time": "Oct 22",
     "status": "processed",
-    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
     "payload": {
       "title": "10 Powerful GitHub Repos for Claude Code & Token Saver Analysis",
@@ -20,7 +29,10 @@
         "JetBrains benchmark tests showed hyped 'token savers' often fall short: rtk-ai/rtk actually increased cost by +7.6%, caveman saved only 8.5% (advertised 65%), and ponytail saved 10.3% (half of its 20% claim).",
         "Actionable tips: inspect Claude AI spend with 'npx codeburn', and turn off default anonymous telemetry in claude-mem using 'npx claude-mem telemetry disable'."
       ]
-    }
+    },
+    "creator": "Dripthecup (@dripthecup)",
+    "blogUrl": "https://dripthecup.com/links",
+    "mediaStatus": "video_extracted"
   },
   {
     "id": 1792650746263,
