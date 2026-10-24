@@ -1,16 +1,25 @@
 [
   {
+    "id": 1792879634195,
+    "domain": null,
+    "topic": null,
+    "title": "https://www.instagram.com/reel/DczR-QlSMdK/?rpxt=MXB5MzZwYmZpZmt1cg==",
+    "summary": null,
+    "sourceUrl": "https://www.instagram.com/reel/DczR-QlSMdK/?rpxt=MXB5MzZwYmZpZmt1cg==",
+    "time": "Oct 24",
+    "status": "pending",
+    "rawText": "https://www.instagram.com/reel/DczR-QlSMdK/?rpxt=MXB5MzZwYmZpZmt1cg==",
+    "payload": null
+  },
+  {
     "id": 1792842574998,
     "domain": "tech",
     "topic": "Cloud Hosting",
     "title": "Oracle Always Free Tier Setup for AI Agents and Hosting",
     "summary": "Oracle Cloud provides a lifetime free tier featuring up to three virtual servers, two 20 GB managed databases, and 10 TB of monthly outbound traffic. The resources can be configured using Claude to run 24/7 autonomous agents, self-hosted AI models, and client websites.",
-    "creator": "rick (@rick.automates)",
     "sourceUrl": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
-    "blogUrl": null,
     "time": "Oct 24",
     "status": "processed",
-    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
     "payload": {
       "keyTakeaways": [
@@ -18,7 +27,10 @@
         "The larger ARM instance has sufficient capacity to run local AI models or host continuous Claude agents around the clock without keeping a personal laptop running.",
         "Claude can be used to automate server setup, manage configuration scripts, and deploy websites or bots for personal use or client hosting."
       ]
-    }
+    },
+    "creator": "rick (@rick.automates)",
+    "blogUrl": null,
+    "mediaStatus": "video_extracted"
   },
   {
     "id": 1792735684073,
@@ -124,7 +136,7 @@
   {
     "id": 1792650746263,
     "domain": "tech",
-    "topic": "AI Coding",
+    "topic": "Claude Code",
     "title": "Karpathy Skills: Claude Code & Cursor Guidelines",
     "summary": "A zero-code GitHub repository providing a CLAUDE.md and Cursor rule configuration based on Andrej Karpathy's observations on common LLM coding pitfalls.",
     "sourceUrl": "https://www.instagram.com/reel/DewhNn1AZGQ/?rpxt=NXZybmR4Z2UzeTJ4",
@@ -144,25 +156,6 @@
     "mediaStatus": "video_extracted"
   },
   {
-    "id": 1792582196403,
-    "domain": "tech",
-    "topic": "Web Scraping",
-    "title": "Extracting Media with Playwright MCP",
-    "summary": "Exploring whether the Playwright Model Context Protocol (MCP) server can be leveraged to extract video and audio streams from URLs.",
-    "creator": null,
-    "sourceUrl": null,
-    "blogUrl": null,
-    "time": "Oct 21",
-    "status": "processed",
-    "rawText": "Can I use the playwright mcp to get the video and audio from links",
-    "payload": {
-      "checklist": [
-        "Check Playwright MCP documentation for media capture capabilities",
-        "Test media stream extraction using Playwright MCP on sample links"
-      ]
-    }
-  },
-  {
     "id": 1792558243177,
     "domain": "tech",
     "topic": "3D Printing",
@@ -171,6 +164,7 @@
     "sourceUrl": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
     "time": "Oct 21",
     "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
     "payload": {
       "keyTakeaways": [
@@ -191,6 +185,7 @@
     "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
     "time": "Oct 21",
     "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
     "payload": {
       "keyTakeaways": [
@@ -200,8 +195,7 @@
       ]
     },
     "creator": "Press Print (@pressprint__)",
-    "blogUrl": "https://pressprintlab.com/designs",
-    "mediaStatus": "video_extracted"
+    "blogUrl": "https://pressprintlab.com/designs"
   },
   {
     "id": 1792558099016,
@@ -274,9 +268,12 @@
     "topic": "LitRPG",
     "title": "5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
     "summary": "A curated reading list of five captivating LitRPG series recommended by Adam Michael to read while waiting for the next Dungeon Crawler Carl book.",
+    "creator": "Adam Michael (@weread4xp)",
     "sourceUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
+    "blogUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
     "time": "Oct 21",
     "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
     "payload": {
       "title": "5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
@@ -326,10 +323,7 @@
           "highlight": "High-concept tech-dystopia premise featuring high-stakes survival and round-winning rule alterations."
         }
       ]
-    },
-    "creator": "Adam Michael (@weread4xp)",
-    "blogUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
-    "mediaStatus": "video_extracted"
+    }
   },
   {
     "id": 1792557991993,
