@@ -39,58 +39,18 @@
   },
   {
     "id": 1792735358371,
-    "domain": "book",
-    "topic": "LitRPG",
+    "domain": null,
+    "topic": null,
     "title": "LitRPG Reading Guide: 5 Levels of Game Mechanics",
-    "summary": "A curated starter guide to LitRPG and progression fantasy for readers seeking their next read after Dungeon Crawler Carl, categorized across five tiers based on stat intensity, crafting, and game systems.",
+    "summary": null,
     "creator": "Tales with Atticus (@tales.with.atticus)",
     "sourceUrl": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
     "blogUrl": null,
     "time": "Oct 23",
-    "status": "processed",
-    "mediaStatus": "fallback_text",
+    "status": "pending",
+    "mediaStatus": null,
     "rawText": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
-    "payload": {
-      "title": "LitRPG Reading Guide: 5 Levels of Game Mechanics",
-      "author": "Matt Dinniman, Ryan Rimmel, Seth Ring, Jay Krauss, James A. Hunter",
-      "series": null,
-      "genre": "LitRPG / Progression Fantasy",
-      "summary": "A tailored five-stage reading guide designed to introduce fantasy readers to LitRPG based on their preferred depth of game mechanics. Recommendations scale from accessible, narrative-first adventures up to in-depth crafting, settlement building, and dungeon management.",
-      "highlight": "Provides an ideal progression path for Dungeon Crawler Carl fans wondering where to take their TBR next, whether they want fast-paced humor, cozy crafting, or full stat sheets.",
-      "linkUrl": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
-      "featuredBooks": [
-        {
-          "title": "Dungeon Crawler Carl",
-          "author": "Matt Dinniman",
-          "series": "Dungeon Crawler Carl #1",
-          "subgenre": "Survival Dungeon Crawl / Dark Comedy"
-        },
-        {
-          "title": "The Mayor of Noobtown",
-          "author": "Ryan Rimmel",
-          "series": "Noobtown #1",
-          "subgenre": "Humorous LitRPG / Town Building"
-        },
-        {
-          "title": "Battle Mage Farmer",
-          "author": "Seth Ring",
-          "series": "Battle Mage Farmer #1",
-          "subgenre": "Cozy Slice-of-Life / Progression Fantasy"
-        },
-        {
-          "title": "Lighting the Forge",
-          "author": "Jay Krauss",
-          "series": "Founder's Edition #1",
-          "subgenre": "Crafting / Blacksmithing VRMMO"
-        },
-        {
-          "title": "Rogue Dungeon",
-          "author": "James A. Hunter",
-          "series": "Rogue Dungeon #1",
-          "subgenre": "Dungeon Management / Monster Protagonist LitRPG"
-        }
-      ]
-    }
+    "payload": null
   },
   {
     "id": 1792668151645,
