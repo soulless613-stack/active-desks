@@ -1,5 +1,27 @@
 [
   {
+    "id": "1792879636797b9oe",
+    "time": "2026-10-24T22:07:16.797Z",
+    "displayTime": "06:07:16 PM",
+    "device": "mobile",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (22 notes)",
+    "details": null
+  },
+  {
+    "id": "1792879635440zddm",
+    "time": "2026-10-24T22:07:15.440Z",
+    "displayTime": "06:07:15 PM",
+    "device": "mobile",
+    "target": "recipe-inbox.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update recipe inbox (1 pending)",
+    "details": null
+  },
+  {
     "id": "1792845737246qmqt",
     "time": "2026-10-24T12:42:17.246Z",
     "displayTime": "08:42:17 AM",
@@ -600,31 +622,5 @@
     "status": "success",
     "message": "Update reading progress: Rhythm of War (pages 668/1230)",
     "details": null
-  },
-  {
-    "id": "1792033911859raq6",
-    "time": "2026-10-15T03:11:51.859Z",
-    "displayTime": "11:11:51 PM",
-    "device": "mobile",
-    "target": "captures.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update captured thoughts (2 notes)",
-    "details": null
-  },
-  {
-    "id": "1791950435976y6j5",
-    "time": "2026-10-14T04:00:35.962Z",
-    "displayTime": "04:00:35 AM",
-    "device": "cloud-agent",
-    "target": "recipe-inbox.json",
-    "action": "auto-extract",
-    "status": "success",
-    "message": "Auto-extracted recipe: Classic Syracuse Salt Potatoes",
-    "details": {
-      "slug": "classic-syracuse-salt-potatoes",
-      "yield": "6 Servings",
-      "calories": "250 kcal"
-    }
   }
 ]
