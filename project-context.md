@@ -130,13 +130,17 @@
     - `game`: platform, genre, developer, summary, initial quest backlog goal.
     - `tech` / `home` / `finance` / `fiber`: concise summary + key takeaways (e.g. 3D printer tolerances, temperatures, needle sizes).
   * **Linkless Thoughts**: Bypasses scrapers and prompts Gemini directly into `[Domain] · [Topic]`.
-* **Card Media Badges**:
+* **Card Media Badges (4-Tier Taxonomy)**:
   * Placed at the **bottom of each capture card**, directly **above the footer separator line**:
-    - `🎬 Video & Audio Analyzed` (purple badge, `video_extracted`).
-    - `🎙️ Voiceover Audio Verified` (cyan badge, `audio_extracted`).
-    - `⚠️ Text & Search Fallback (Video Skipped)` (amber badge, `fallback_text`).
+    - `🎬 Video & Audio Analyzed` (purple badge, `video_extracted`): Full `.mp4` video frames inspected by Gemini OCR + spoken voiceover transcribed.
+    - `🎙️ Voiceover Audio Verified` (cyan badge, `audio_extracted`): Voiceover `.mp3` extracted and analyzed by Gemini narration listening.
+    - `📚 Text & Images` (slate calm badge, `text_images`): Static post (Instagram photo carousels `/p/`, articles, blogs) where no video stream was needed. Extraction succeeded normally!
+    - `⚠️ Video Skipped (Text Fallback)` (amber badge, `fallback_text`): Video reel download was skipped or blocked by platform rate-limits; contains a live `<button class="btn-badge-rerun">🔄 Re-run</button>` to retry on-demand from any mobile or desktop browser without touching a computer.
+* **Mobile On-Demand Re-Run Engine (`retryCaptureExtraction(id)`)**:
+  * Tapping `[ 🔄 Re-run ]` on the fallback badge (or inside `#capture-detail-modal`) immediately resets the capture item to `pending` and pushes `captures.json` to GitHub via REST API (`flushDirtySync(true)`).
+  * Automatically triggers the GitHub Actions cloud runner to re-attempt video download and Gemini multimodal analysis hands-free!
 * **Drawer Fallback Alert Banner (`#drawer-fallback-banner`)**:
-  * Dismissible amber alert banner at the top of the Universal Captures Drawer displaying the count of any items that required text fallback due to video download blocks.
+  * Dismissible amber alert banner at the top of the Universal Captures Drawer displaying the count of any items that required text fallback due to video download blocks (`text_images` items never trigger this banner).
 * **Unified Capture Detail Modal (`#capture-detail-modal`)**:
   * Clicking *any* card in the Universal Captures Drawer opens `#capture-detail-modal` with glassmorphic styling, media badge chip, metadata chips (Platform, Genre, Author, Series, Developer, Yield), ingredient checklists, takeaways, highlights, and multi-book carousels (`payload.books`).
   * Kitchen Desk specifically retains `#recipe-modal` for the active cooking view. Both modals use `z-index: 120` to render cleanly above the drawer.
