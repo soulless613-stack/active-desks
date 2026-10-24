@@ -1,15 +1,24 @@
 [
   {
     "id": 1792879634195,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DczR-QlSMdK/?rpxt=MXB5MzZwYmZpZmt1cg==",
-    "summary": null,
+    "domain": "tech",
+    "topic": "AI Agents",
+    "title": "Bot Crossing: Open-Source Game Workspace for AI Agents",
+    "summary": "Bot Crossing transforms active AI coding agent threads into a colony simulation on a hex-grid planet, where agents visually wave their hands whenever they encounter an issue and need human input.",
+    "creator": "Jarren Rocks (@jarrenrocks)",
     "sourceUrl": "https://www.instagram.com/reel/DczR-QlSMdK/?rpxt=MXB5MzZwYmZpZmt1cg==",
+    "blogUrl": "https://botcrossing.com",
     "time": "Oct 24",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DczR-QlSMdK/?rpxt=MXB5MzZwYmZpZmt1cg==",
-    "payload": null
+    "payload": {
+      "keyTakeaways": [
+        "Visualizes coding agent threads as interactive astronauts living in a colony on your machine.",
+        "Agents wave their hands when waiting on human input, allowing you to click directly on them to inspect needs and resolve blockers.",
+        "Fully open-source and detailed in a full walkthrough on the Jarren Rocks YouTube channel."
+      ]
+    }
   },
   {
     "id": 1792842574998,
