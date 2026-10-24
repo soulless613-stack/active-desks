@@ -1,18 +1,24 @@
 [
   {
     "id": 1792842574998,
-    "domain": null,
-    "topic": null,
-    "title": "Setting Up Free Oracle Cloud Servers and Databases with Claude",
-    "summary": null,
-    "creator": "Rick (@rick.automates)",
+    "domain": "tech",
+    "topic": "Cloud Hosting",
+    "title": "Oracle Always Free Tier Setup for AI Agents and Hosting",
+    "summary": "Oracle Cloud provides a lifetime free tier featuring up to three virtual servers, two 20 GB managed databases, and 10 TB of monthly outbound traffic. The resources can be configured using Claude to run 24/7 autonomous agents, self-hosted AI models, and client websites.",
+    "creator": "rick (@rick.automates)",
     "sourceUrl": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
     "blogUrl": null,
     "time": "Oct 24",
-    "status": "pending",
-    "mediaStatus": null,
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
-    "payload": null
+    "payload": {
+      "keyTakeaways": [
+        "Oracle's Always Free tier offers an ARM instance configured with 2 CPUs and 12 GB RAM, two AMD micro instances, two 20 GB databases, and 10 TB monthly outbound traffic.",
+        "The larger ARM instance has sufficient capacity to run local AI models or host continuous Claude agents around the clock without keeping a personal laptop running.",
+        "Claude can be used to automate server setup, manage configuration scripts, and deploy websites or bots for personal use or client hosting."
+      ]
+    }
   },
   {
     "id": 1792735684073,
