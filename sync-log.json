@@ -1,5 +1,16 @@
 [
   {
+    "id": "179284568581238lq",
+    "time": "2026-10-24T12:41:25.812Z",
+    "displayTime": "08:41:25 AM",
+    "device": "desktop",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (22 notes)",
+    "details": null
+  },
+  {
     "id": "1792842577844d1lt",
     "time": "2026-10-24T11:49:37.844Z",
     "displayTime": "07:49:37 AM",
@@ -615,16 +626,5 @@
     "status": "success",
     "message": "Update recipe inbox (1 pending)",
     "details": null
-  },
-  {
-    "id": "1791948511545agvd",
-    "time": "2026-10-14T03:28:31.545Z",
-    "displayTime": "11:28:31 PM",
-    "device": "mobile",
-    "target": "auth",
-    "action": "test",
-    "status": "success",
-    "message": "GitHub token verified! Connected to soulless613-stack/active-desks",
-    "details": "Write permission: YES. API calls remaining: 4882"
   }
 ]
