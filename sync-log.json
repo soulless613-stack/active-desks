@@ -1,5 +1,16 @@
 [
   {
+    "id": "1792845737246qmqt",
+    "time": "2026-10-24T12:42:17.246Z",
+    "displayTime": "08:42:17 AM",
+    "device": "desktop",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (22 notes)",
+    "details": null
+  },
+  {
     "id": "179284568581238lq",
     "time": "2026-10-24T12:41:25.812Z",
     "displayTime": "08:41:25 AM",
@@ -615,16 +626,5 @@
       "yield": "6 Servings",
       "calories": "250 kcal"
     }
-  },
-  {
-    "id": "1791950073543tjej",
-    "time": "2026-10-14T03:54:33.543Z",
-    "displayTime": "11:54:33 PM",
-    "device": "mobile",
-    "target": "recipe-inbox.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update recipe inbox (1 pending)",
-    "details": null
   }
 ]
