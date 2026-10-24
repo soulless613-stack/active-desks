@@ -45,18 +45,58 @@
   },
   {
     "id": 1792735358371,
-    "domain": null,
-    "topic": null,
-    "title": "LitRPG Reading Guide: 5 Levels of Game Mechanics",
-    "summary": null,
+    "domain": "book",
+    "topic": "LitRPG",
+    "title": "LitRPG Reading Guide: 5 Levels to Level Up Your TBR",
+    "summary": "A 5-level LitRPG reading guide by Tales with Atticus categorizing entry points into the genre based on stat depth, game mechanics, crafting, and dungeon management.",
     "creator": "Tales with Atticus (@tales.with.atticus)",
     "sourceUrl": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
     "blogUrl": null,
     "time": "Oct 23",
-    "status": "pending",
-    "mediaStatus": null,
+    "status": "processed",
+    "mediaStatus": "text_images",
     "rawText": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
-    "payload": null
+    "payload": {
+      "title": "LitRPG Reading Guide: 5 Levels to Level Up Your TBR",
+      "author": "Tales with Atticus (Curator)",
+      "series": null,
+      "genre": "LitRPG / Progression Fantasy",
+      "summary": "A structured recommendation guide designed for readers looking to break into LitRPG or find their next read after Dungeon Crawler Carl. The list tiers five books across five levels of stat complexity, ranging from light, high-action narrative adventures to crafting and dungeon monster management.",
+      "highlight": "Provides an accessible progression ladder for LitRPG newcomers, matching readers with titles based on how heavily they prefer game mechanics, stat tables, and skill progression.",
+      "featuredBooks": [
+        {
+          "title": "Dungeon Crawler Carl",
+          "author": "Matt Dinniman",
+          "series": "Dungeon Crawler Carl (#1)",
+          "subgenre": "Apocalyptic LitRPG / Survival Comedy"
+        },
+        {
+          "title": "The Mayor of Noobtown",
+          "author": "Ryan Rimmel",
+          "series": "Noobtown (#1)",
+          "subgenre": "Isekai / Settlement & Town Building"
+        },
+        {
+          "title": "Battle Mage Farmer",
+          "author": "Seth Ring",
+          "series": "Battle Mage Farmer (#1)",
+          "subgenre": "Slice-of-Life / Cozy Progression Fantasy"
+        },
+        {
+          "title": "Lighting the Forge",
+          "author": "Jay Krauss",
+          "series": "Founder's Edition (#1)",
+          "subgenre": "Crafting / Blacksmithing VRMMO"
+        },
+        {
+          "title": "Rogue Dungeon",
+          "author": "James A. Hunter & Eden Hudson",
+          "series": "The Rogue Dungeon (#1)",
+          "subgenre": "Dungeon Management / Monster POV"
+        }
+      ],
+      "linkUrl": "https://www.instagram.com/p/DeuNRYXlMJn/"
+    }
   },
   {
     "id": 1792668151645,
