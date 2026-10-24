@@ -4,20 +4,13 @@
 > **DO NOT modify any code or files in this project without presenting the finalized low-level plan and getting EXPLICIT user confirmation to execute.** Directional feedback, design agreements, or comments like "include this" or "I like that" mean update the plan—NOT start coding. Always present the finalized low-level plan and wait for the user's explicit green light so they have space to review and catch errors.  
 > **Always ask the user about creating a granular, low-level implementation plan** before moving forward from a high-level conceptual plan into execution. Because monolithic files (`app.js`, `index.html`) can cause excessive analysis turns and context compactions, a low-level implementation plan with exact file anchors, DOM line numbers, and function signatures ensures efficient, one-shot implementation. Maintain the minimal, clean, zero-bloat philosophy.
 
-> [!IMPORTANT]
-> **NEXT SESSION PRIORITY TASK: Re-Run Button on Fallback Badge (Mobile & Cloud On-Demand Retry)**
-> - **User Goal**: Allow the user to retry media extraction for any item that fell back to text directly from the UI (on their phone or desktop) without needing to use their computer or terminal.
-> - **Execution Plan**:
->   1. **Badge UI ([`app.js`](file:///c:/Users/chris/Documents/antigravity/active-desks/app.js) & [`styles.css`](file:///c:/Users/chris/Documents/antigravity/active-desks/styles.css))**:
->      - On the `.capture-card-media-status.text-fallback` badge, render an actionable button: `<button type="button" class="btn-badge-rerun" onclick="event.stopPropagation(); retryCaptureExtraction(${c.id})">🔄 Re-run</button>`.
->      - Also add a Re-run button inside the `#capture-detail-modal` header/chips row if `c.mediaStatus === 'fallback_text'`.
->   2. **Action Handler (`retryCaptureExtraction(captureId)`)**:
->      - Finds capture item by ID in `state.captures`.
->      - Resets `status: 'pending'`, `domain: null`, `topic: null`, `summary: null`, `payload: null`, `mediaStatus: null`.
->      - Calls `saveState()` and `renderCaptures()` so the card immediately shows `⏳ Processing...`.
->      - Calls `markDirty('captures.json')` and `flushDirtySync(true)` to commit the pending reset to GitHub via REST API immediately.
->      - Displays toast: `showToast('Extraction queued! Cloud agent re-analyzing media...', '🎬')`.
->      - GitHub Actions cloud runner (`recipe-extractor.yml`) triggers automatically hands-free!
+> [!NOTE]
+> **RECENT MILESTONE: Dynamic Desk Concentration & Workbench Swapping (v50)**
+> - **4-Workbench Concentration**: Main dashboard strictly maintains focus on **4 active workbenches** in the 2x2 grid (`state.activeDeskIds`).
+> - **Zero Data Loss**: Inactive desks remain dormant in DOM and storage (`localStorage` & remote sync) preserving all counters, active quests, and projection backlogs.
+> - **Emergent Desk Swapping**: Tapping *"Focus Desk Captures"* on the Emergent Desk Opportunity banner (`🌱 Emergent Workbench: Tech (7 Items)`) directly opens the `#swap-desk-modal` with the emergent desk pre-selected to swap into any active slot.
+> - **Header Swap Button**: Subtle `⚙️ Swap Desks` button in `.desks-section-header` lets user swap any active desk for any dormant workbench (e.g. `tech` vs `fiber`) in 1 click.
+> - **Tech Workbench**: Dedicated `#desk-card-tech` workbench with project title, tool link, current focus, and dynamic `💻 Tech Tools & Backlog` tray filtering from `captures.json` where `domain === 'tech'`.
 
 ---
 

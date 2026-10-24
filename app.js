@@ -435,8 +435,17 @@ const DEFAULT_STATE = {
       linkText: "Game Wiki",
       linkUrl: "https://bg3.wiki",
       lastUpdated: null
+    },
+    tech: {
+      title: "PressPrint Lab Parametric Boxes",
+      tool: "3D Printing & Parametric CAD",
+      focus: "Parametric hinged boxes with customized compartment grids & embossed lids",
+      linkText: "PressPrintLab",
+      linkUrl: "https://pressprintlab.com/designs",
+      lastUpdated: null
     }
   },
+  activeDeskIds: ['reading', 'recipe', 'gaming', 'fiber'],
   captures: [],
   recipeInbox: []
 };
@@ -499,6 +508,16 @@ function loadState() {
       // Ensure gaming defaults
       if (parsed.desks && !parsed.desks.gaming) {
         parsed.desks.gaming = JSON.parse(JSON.stringify(DEFAULT_STATE.desks.gaming));
+      }
+
+      // Ensure tech defaults
+      if (parsed.desks && !parsed.desks.tech) {
+        parsed.desks.tech = JSON.parse(JSON.stringify(DEFAULT_STATE.desks.tech));
+      }
+
+      // Ensure activeDeskIds exists and has 4 slots
+      if (!Array.isArray(parsed.activeDeskIds) || parsed.activeDeskIds.length !== 4) {
+        parsed.activeDeskIds = ['reading', 'recipe', 'gaming', 'fiber'];
       }
 
       // Ensure captures array exists and prune obsolete sample and test-seeded items
@@ -887,6 +906,31 @@ function getFormattedDate() {
 }
 
 // ==========================================================================
+// DESK REGISTRY & CONCENTRATION ENGINE
+// ==========================================================================
+const KNOWN_DESKS = {
+  reading: { id: 'reading', domain: 'book', name: 'Reading Nook', icon: '📚', getSub: (s) => s.desks?.reading?.title || 'StoryGraph' },
+  recipe: { id: 'recipe', domain: 'recipe', name: 'Kitchen Shelf', icon: '🍳', getSub: (s) => `${s.desks?.recipe?.recipes?.length || 0} recipes saved` },
+  gaming: { id: 'gaming', domain: 'game', name: 'Game Rig', icon: '🎮', getSub: (s) => s.desks?.gaming?.title || 'Active Game' },
+  fiber: { id: 'fiber', domain: 'fiber', name: 'Fiber Arts', icon: '🧶', getSub: (s) => `Row ${s.desks?.fiber?.rows || 0} (${s.desks?.fiber?.name || 'Project'})` },
+  tech: { id: 'tech', domain: 'tech', name: 'Tech Workbench', icon: '💻', getSub: (s) => s.desks?.tech?.title || 'Parametric Design' }
+};
+
+function renderDesksVisibility() {
+  const activeSet = new Set(state.activeDeskIds || ['reading', 'recipe', 'gaming', 'fiber']);
+  Object.keys(KNOWN_DESKS).forEach(id => {
+    const el = document.getElementById(`desk-card-${id}`);
+    if (el) {
+      if (activeSet.has(id)) {
+        el.style.display = 'flex';
+      } else {
+        el.style.display = 'none';
+      }
+    }
+  });
+}
+
+// ==========================================================================
 // RENDER UI
 // ==========================================================================
 function render() {
@@ -897,12 +941,14 @@ function render() {
   // 1. Render 3-Bucket Banner
   renderBuckets();
 
-  // 2. Render Desks & Emergent Evolution Nudges
+  // 2. Render Desks Visibility (Caps at 4 Active Workbenches) & Content
+  renderDesksVisibility();
   renderDeskEvolutionBanner();
   renderFiberDesk();
   renderRecipeDesk();
   renderReadingDesk();
   renderGamingDesk();
+  renderTechDesk();
 
   // 3. Render Captures & Recipe Inbox
   renderCaptures();
@@ -1762,6 +1808,153 @@ async function fetchGamingFromRepo() {
 }
 
 // --------------------------------------------------------------------------
+// Tech Workbench Desk (3D Printing, Software & Tools)
+// --------------------------------------------------------------------------
+function renderTechDesk() {
+  const t = (state.desks && state.desks.tech) ? state.desks.tech : DEFAULT_STATE.desks.tech;
+  const titleEl = document.getElementById('tech-title');
+  const toolEl = document.getElementById('tech-tool');
+  const focusEl = document.getElementById('tech-focus');
+  const linkEl = document.getElementById('tech-link');
+  const linkTextEl = document.getElementById('tech-link-text');
+  const syncStatusEl = document.getElementById('tech-sync-status');
+
+  if (titleEl) titleEl.textContent = t.title || 'Tech Project';
+  if (toolEl) toolEl.textContent = t.tool || '3D Printing & Parametric CAD';
+  if (focusEl) focusEl.textContent = t.focus || 'Focus project backlog';
+
+  if (linkEl) {
+    linkEl.href = t.linkUrl || '#';
+  }
+  if (linkTextEl) {
+    linkTextEl.textContent = t.linkText || 'Open Tool';
+  }
+
+  if (syncStatusEl) {
+    if (pendingDirtyFiles.has('tech.json')) {
+      syncStatusEl.textContent = 'Unsynced (exits to sync)';
+      syncStatusEl.style.color = 'var(--accent-spark)';
+    } else if (t.lastUpdated) {
+      const timeStr = new Date(t.lastUpdated).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      syncStatusEl.textContent = `Updated ${timeStr}`;
+      syncStatusEl.style.color = 'var(--text-muted)';
+    } else {
+      syncStatusEl.textContent = 'Synced';
+      syncStatusEl.style.color = 'var(--text-muted)';
+    }
+  }
+
+  // Projected Tech Tools & Backlog Tray (from captures.json where domain === 'tech')
+  const backlogCountEl = document.getElementById('tech-backlog-count');
+  const backlogListEl = document.getElementById('tech-backlog-list');
+  if (backlogListEl) {
+    const techCaptures = (Array.isArray(state.captures) ? state.captures : [])
+      .filter(c => (c.domain || '').toLowerCase() === 'tech');
+
+    if (backlogCountEl) backlogCountEl.textContent = techCaptures.length;
+
+    if (techCaptures.length === 0) {
+      backlogListEl.innerHTML = `
+        <div style="text-align: center; padding: 12px 8px; color: var(--text-muted); font-size: 0.78rem;">
+          No tech items in backlog yet. Drop links, repos, or CAD ideas in Universal Capture below!
+        </div>
+      `;
+    } else {
+      backlogListEl.innerHTML = techCaptures.map(c => `
+        <div class="projection-item">
+          <div class="projection-item-main">
+            <div class="projection-item-title" title="${escapeHtml(c.title)}">${escapeHtml(c.title)}</div>
+            <div class="projection-item-meta">
+              <span class="projection-item-tag">${escapeHtml(c.topic || 'Tech')}</span>
+              ${c.summary ? `<span>${escapeHtml(c.summary).slice(0, 42)}...</span>` : ''}
+            </div>
+          </div>
+          <button type="button" class="projection-action-btn" onclick="setActiveTechFromCapture(${c.id})" title="Set as active tech focus">
+            💻 Set Active
+          </button>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+function setActiveTechFromCapture(captureId) {
+  const c = (state.captures || []).find(item => item.id === captureId);
+  if (!c) return;
+
+  if (!state.desks.tech) state.desks.tech = JSON.parse(JSON.stringify(DEFAULT_STATE.desks.tech));
+  state.desks.tech.title = c.title || 'Tech Project';
+  if (c.topic) state.desks.tech.tool = c.topic;
+  if (c.summary) state.desks.tech.focus = c.summary;
+  if (c.sourceUrl) {
+    state.desks.tech.linkUrl = c.sourceUrl;
+    state.desks.tech.linkText = c.creator ? c.creator.split(' ')[0] : 'Open Link';
+  }
+  state.desks.tech.lastUpdated = new Date().toISOString();
+
+  saveState();
+  markDirty('tech.json');
+  flushDirtySync();
+  renderTechDesk();
+  showToast(`Active Tech focus set to: "${c.title}"!`, '💻');
+}
+
+function openTechModal() {
+  const t = (state.desks && state.desks.tech) ? state.desks.tech : DEFAULT_STATE.desks.tech;
+  const titleInput = document.getElementById('edit-tech-title');
+  const toolInput = document.getElementById('edit-tech-tool');
+  const focusInput = document.getElementById('edit-tech-focus');
+  const linkInput = document.getElementById('edit-tech-link');
+  const linkTextInput = document.getElementById('edit-tech-link-text');
+
+  if (titleInput) titleInput.value = t.title || '';
+  if (toolInput) toolInput.value = t.tool || '';
+  if (focusInput) focusInput.value = t.focus || '';
+  if (linkInput) linkInput.value = t.linkUrl || '';
+  if (linkTextInput) linkTextInput.value = t.linkText || '';
+
+  document.getElementById('tech-modal').classList.add('active');
+}
+
+function handleTechSave(e) {
+  if (e) e.preventDefault();
+  const title = document.getElementById('edit-tech-title').value.trim();
+  const tool = document.getElementById('edit-tech-tool').value.trim();
+  const focus = document.getElementById('edit-tech-focus').value.trim();
+  const linkUrl = document.getElementById('edit-tech-link').value.trim();
+  const linkText = document.getElementById('edit-tech-link-text').value.trim();
+  const now = new Date().toISOString();
+
+  if (!state.desks.tech) state.desks.tech = JSON.parse(JSON.stringify(DEFAULT_STATE.desks.tech));
+  state.desks.tech.title = title;
+  state.desks.tech.tool = tool;
+  state.desks.tech.focus = focus;
+  if (linkUrl) state.desks.tech.linkUrl = linkUrl;
+  if (linkText) state.desks.tech.linkText = linkText;
+  state.desks.tech.lastUpdated = now;
+
+  saveState();
+  markDirty('tech.json');
+  closeModal('tech-modal');
+  showToast('Tech workbench updated!', '💻');
+  renderTechDesk();
+}
+
+async function fetchTechFromRepo() {
+  try {
+    const data = await githubGet('tech.json');
+    if (data && data.title) {
+      if (!state.desks.tech) state.desks.tech = JSON.parse(JSON.stringify(DEFAULT_STATE.desks.tech));
+      Object.assign(state.desks.tech, data);
+      saveState();
+      renderTechDesk();
+    }
+  } catch (e) {
+    console.log('Using local tech state (offline or local server)');
+  }
+}
+
+// --------------------------------------------------------------------------
 // Universal Capture & Adaptive Stream Engine
 // --------------------------------------------------------------------------
 let activeCaptureDomainFilter = 'all';
@@ -2332,14 +2525,15 @@ function renderDeskEvolutionBanner() {
   if (!banner) return;
 
   const dismissed = getDismissedSuggestions();
-  const ACTIVE_DESK_DOMAINS = ['book', 'recipe', 'game', 'fiber'];
+  const activeIds = state.activeDeskIds || ['reading', 'recipe', 'gaming', 'fiber'];
+  const activeDomains = activeIds.map(id => (KNOWN_DESKS[id]?.domain || id).toLowerCase());
 
   // 1. Find candidates from captures where domain has >= 5 items outside active desks
   const nonDeskCounts = {};
   (state.captures || []).forEach(c => {
     if (!c || !c.domain) return;
     const d = c.domain.toLowerCase();
-    if (!ACTIVE_DESK_DOMAINS.includes(d) && d !== 'misc') {
+    if (!activeDomains.includes(d) && d !== 'misc') {
       nonDeskCounts[d] = (nonDeskCounts[d] || 0) + 1;
     }
   });
@@ -2358,7 +2552,7 @@ function renderDeskEvolutionBanner() {
 
   // Also check state.deskSuggestions if fetched from repo
   if (!candidateDomain && Array.isArray(state.deskSuggestions)) {
-    const sug = state.deskSuggestions.find(s => s.domain && !dismissed.has(s.domain.toLowerCase()));
+    const sug = state.deskSuggestions.find(s => s.domain && !dismissed.has(s.domain.toLowerCase()) && !activeDomains.includes(s.domain.toLowerCase()));
     if (sug) {
       candidateDomain = sug.domain.toLowerCase();
       candidateCount = sug.itemCount || 5;
@@ -2391,13 +2585,7 @@ function renderDeskEvolutionBanner() {
 function acceptDeskEvolutionSuggestion() {
   if (!currentActiveDeskSuggestion) return;
   const domain = currentActiveDeskSuggestion;
-  const domainLabel = domain.charAt(0).toUpperCase() + domain.slice(1);
-
-  // Open Universal Drawer filtered to this domain
-  openBrainDumpModal();
-  setCaptureDomainFilter(domain);
-
-  showToast(`Focusing on your ${domainLabel} captures! 💡`, getDomainEmoji(domain));
+  openSwapDeskModal(domain);
 }
 
 function dismissDeskEvolutionSuggestion() {
@@ -2417,6 +2605,139 @@ function dismissDeskEvolutionSuggestion() {
 
   showToast('Suggestion dismissed. Calm focus maintained. ✨', '🌿');
 }
+
+// --------------------------------------------------------------------------
+// Workbench Swapping & Focus Concentration Engine
+// --------------------------------------------------------------------------
+let pretargetedIncomingDeskId = null;
+
+function openSwapDeskModal(targetIncomingDomainOrId) {
+  let targetId = null;
+  if (targetIncomingDomainOrId) {
+    const dLower = String(targetIncomingDomainOrId).toLowerCase();
+    const foundEntry = Object.values(KNOWN_DESKS).find(k => k.id === dLower || k.domain === dLower);
+    if (foundEntry) {
+      targetId = foundEntry.id;
+    }
+  }
+
+  pretargetedIncomingDeskId = targetId;
+  renderSwapDeskModalContent();
+  document.getElementById('swap-desk-modal').classList.add('active');
+}
+
+function renderSwapDeskModalContent() {
+  const activeContainer = document.getElementById('swap-active-slots-list');
+  const dormantContainer = document.getElementById('swap-dormant-slots-list');
+  const instructionsEl = document.getElementById('swap-modal-instructions');
+  if (!activeContainer || !dormantContainer) return;
+
+  const activeIds = state.activeDeskIds || ['reading', 'recipe', 'gaming', 'fiber'];
+  const allDeskKeys = Object.keys(KNOWN_DESKS);
+  const dormantIds = allDeskKeys.filter(id => !activeIds.includes(id));
+
+  // If pretargeted incoming desk is already active, clear pretarget
+  if (pretargetedIncomingDeskId && activeIds.includes(pretargetedIncomingDeskId)) {
+    pretargetedIncomingDeskId = null;
+  }
+
+  // Incoming desk target to swap in
+  const incomingDesk = pretargetedIncomingDeskId 
+    ? KNOWN_DESKS[pretargetedIncomingDeskId] 
+    : (dormantIds.length > 0 ? KNOWN_DESKS[dormantIds[0]] : null);
+
+  if (instructionsEl) {
+    if (incomingDesk) {
+      instructionsEl.innerHTML = `Ready to activate <strong>${incomingDesk.icon} ${incomingDesk.name}</strong>. Choose an active workbench below to swap into dormancy:`;
+    } else {
+      instructionsEl.innerHTML = `Focus is intentionally capped at <strong>4 active workbenches</strong>. Dormant desks keep all their row counts, reading positions, and backlogs intact.`;
+    }
+  }
+
+  // Render 4 Active Slots
+  activeContainer.innerHTML = activeIds.map(deskId => {
+    const desk = KNOWN_DESKS[deskId] || { name: deskId, icon: '📌', getSub: () => '' };
+    const subText = desk.getSub(state);
+    const swapTargetName = incomingDesk ? incomingDesk.name : 'Dormant Desk';
+    const swapTargetIcon = incomingDesk ? incomingDesk.icon : '🔄';
+
+    return `
+      <div class="swap-desk-card">
+        <div class="swap-desk-info">
+          <span class="swap-desk-icon">${desk.icon}</span>
+          <div class="swap-desk-text">
+            <div class="swap-desk-title">${escapeHtml(desk.name)}</div>
+            <div class="swap-desk-sub">${escapeHtml(subText)}</div>
+          </div>
+        </div>
+        ${incomingDesk ? `
+          <button type="button" class="swap-action-btn active-target" onclick="executeDeskSwap('${deskId}', '${incomingDesk.id}')">
+            <span>Swap with ${swapTargetIcon} ${swapTargetName}</span> ➔
+          </button>
+        ` : `
+          <span style="font-size: 0.72rem; color: var(--accent-body); font-weight: 600;">Active</span>
+        `}
+      </div>
+    `;
+  }).join('');
+
+  // Render Dormant Slots
+  if (dormantIds.length === 0) {
+    dormantContainer.innerHTML = `
+      <div style="font-size: 0.78rem; color: var(--text-muted); text-align: center; padding: 10px;">
+        All known workbenches are currently active!
+      </div>
+    `;
+  } else {
+    dormantContainer.innerHTML = dormantIds.map(dormantId => {
+      const desk = KNOWN_DESKS[dormantId] || { name: dormantId, icon: '📌', getSub: () => '' };
+      const subText = desk.getSub(state);
+      const isSelectedTarget = incomingDesk && incomingDesk.id === dormantId;
+
+      return `
+        <div class="swap-desk-card ${isSelectedTarget ? 'dormant-highlight' : ''}">
+          <div class="swap-desk-info">
+            <span class="swap-desk-icon">${desk.icon}</span>
+            <div class="swap-desk-text">
+              <div class="swap-desk-title">${escapeHtml(desk.name)}</div>
+              <div class="swap-desk-sub">${escapeHtml(subText)}</div>
+            </div>
+          </div>
+          <button type="button" class="swap-action-btn ${isSelectedTarget ? 'active-target' : ''}" onclick="selectIncomingDeskForSwap('${dormantId}')">
+            ${isSelectedTarget ? '✓ Selected to Spin Up' : '✨ Select to Spin Up'}
+          </button>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function selectIncomingDeskForSwap(incomingDeskId) {
+  pretargetedIncomingDeskId = incomingDeskId;
+  renderSwapDeskModalContent();
+}
+
+function executeDeskSwap(oldDeskId, newDeskId) {
+  if (!state.activeDeskIds) state.activeDeskIds = ['reading', 'recipe', 'gaming', 'fiber'];
+  const oldIdx = state.activeDeskIds.indexOf(oldDeskId);
+  if (oldIdx === -1) return;
+
+  state.activeDeskIds[oldIdx] = newDeskId;
+  saveState();
+  closeModal('swap-desk-modal');
+
+  const oldDesk = KNOWN_DESKS[oldDeskId] || { name: oldDeskId, icon: '📦' };
+  const newDesk = KNOWN_DESKS[newDeskId] || { name: newDeskId, icon: '✨' };
+
+  showToast(`${newDesk.icon} ${newDesk.name} is now active! ${oldDesk.name} resting safely.`, '🔄');
+}
+
+window.openSwapDeskModal = openSwapDeskModal;
+window.selectIncomingDeskForSwap = selectIncomingDeskForSwap;
+window.executeDeskSwap = executeDeskSwap;
+window.openTechModal = openTechModal;
+window.handleTechSave = handleTechSave;
+window.setActiveTechFromCapture = setActiveTechFromCapture;
 
 async function fetchDeskSuggestionsFromRepo() {
   try {
@@ -3025,6 +3346,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchCapturesFromRepo();
   fetchFiberFromRepo();
   fetchGamingFromRepo();
+  fetchTechFromRepo();
   fetchAnchorsFromRepo();
   fetchSyncLogFromRepo();
   fetchDeskSuggestionsFromRepo();

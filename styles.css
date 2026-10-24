@@ -367,6 +367,27 @@ body {
   color: var(--text-muted);
 }
 
+.btn-manage-desks {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-manage-desks:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+  border-color: var(--border-glow);
+}
+
 .desks-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -422,6 +443,7 @@ body {
 .desk-badge.recipe { background: rgba(249, 115, 22, 0.15); color: var(--accent-recipe); }
 .desk-badge.reading { background: rgba(129, 140, 248, 0.15); color: var(--accent-reading); }
 .desk-badge.gaming { background: rgba(192, 132, 252, 0.15); color: var(--accent-gaming); }
+.desk-badge.tech { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
 
 .desk-action-btn {
   background: none;
@@ -2285,6 +2307,119 @@ body {
 .btn-badge-rerun:active {
   transform: translateY(0);
 }
+
+/* ==========================================================================
+   Swap Workbenches Modal & Concentration Engine
+   ========================================================================== */
+.swap-modal-section {
+  margin-bottom: 18px;
+}
+
+.swap-modal-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
+.swap-section-heading {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.swap-desk-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.swap-desk-card:hover {
+  border-color: var(--border-glow);
+  background: rgba(22, 30, 46, 0.8);
+}
+
+.swap-desk-card.dormant-highlight {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.swap-desk-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.swap-desk-icon {
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.swap-desk-text {
+  min-width: 0;
+}
+
+.swap-desk-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.swap-desk-sub {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.swap-action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.swap-action-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
+.swap-action-btn.active-target {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(129, 140, 248, 0.25));
+  border-color: #38bdf8;
+  color: #f8fafc;
+}
+
 
 
 

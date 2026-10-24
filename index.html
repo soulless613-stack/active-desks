@@ -79,6 +79,7 @@
     <!-- Desks Section Title -->
     <div class="desks-section-header">
       <span class="desks-section-title">Current Workbenches</span>
+      <button type="button" class="btn-manage-desks" onclick="openSwapDeskModal()" title="Swap active workbenches">⚙️ Swap Desks</button>
     </div>
 
     <!-- Emergent Desk Evolution Nudge Banner (Rule of 5) -->
@@ -107,7 +108,7 @@
     <main class="desks-grid">
 
       <!-- 1. Reading Nook Desk -->
-      <article class="desk-card" aria-label="Reading Nook">
+      <article id="desk-card-reading" class="desk-card" aria-label="Reading Nook">
         <div class="desk-top">
           <span class="desk-badge reading">📚 Reading Nook</span>
           <button class="desk-action-btn" onclick="openReadingModal()" title="Update Reading Progress" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
@@ -154,7 +155,7 @@
       </article>
 
       <!-- 2. Recipes Shelf Desk -->
-      <article class="desk-card" aria-label="Kitchen & Recipe Shelf">
+      <article id="desk-card-recipe" class="desk-card" aria-label="Kitchen & Recipe Shelf">
         <div class="desk-top">
           <span class="desk-badge recipe">🍳 Kitchen Shelf</span>
           <button class="desk-action-btn" onclick="openRecipeInboxModal()" title="Recipe Queue" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
@@ -188,7 +189,7 @@
       </article>
 
       <!-- 3. Gaming Rig Desk -->
-      <article class="desk-card" aria-label="Gaming Rig">
+      <article id="desk-card-gaming" class="desk-card" aria-label="Gaming Rig">
         <div class="desk-top">
           <span class="desk-badge gaming">🎮 Game Rig</span>
           <div style="display: flex; gap: 6px; align-items: center;">
@@ -235,7 +236,7 @@
       </article>
 
       <!-- 4. Fiber Arts Desk -->
-      <article class="desk-card" aria-label="Fiber Arts Workbench">
+      <article id="desk-card-fiber" class="desk-card" aria-label="Fiber Arts Workbench">
         <div class="desk-top">
           <span class="desk-badge fiber">🧶 Fiber Arts</span>
           <div style="display: flex; gap: 6px; align-items: center;">
@@ -268,6 +269,50 @@
             <span>Open Ravelry</span> ↗
           </a>
           <span id="fiber-sync-status" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
+        </div>
+      </article>
+
+      <!-- 5. Tech Workbench Desk -->
+      <article id="desk-card-tech" class="desk-card" aria-label="Tech Workbench" style="display: none;">
+        <div class="desk-top">
+          <span class="desk-badge tech">💻 Tech Workbench</span>
+          <button class="desk-action-btn" onclick="openTechModal()" title="Edit Tech Project" style="font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+            ✏️ Update
+          </button>
+        </div>
+
+        <div>
+          <h2 class="desk-title" id="tech-title">PressPrint Lab Parametric Boxes</h2>
+          <div class="desk-meta" id="tech-tool" style="margin-top: 4px;">3D Printing &amp; Parametric CAD</div>
+        </div>
+
+        <!-- Active Focus / Quest Note -->
+        <div class="quest-box">
+          <span class="quest-icon">⚙️</span>
+          <div class="quest-text" id="tech-focus">
+            Parametric hinged boxes with customized compartment grids &amp; embossed lids
+          </div>
+        </div>
+
+        <!-- Projected Tech Tools & Backlog Tray (from captures.json where domain === 'tech') -->
+        <details class="desk-projection-tray" id="tech-backlog-tray">
+          <summary class="projection-summary">
+            <span class="projection-summary-left">
+              <span>💻 Tech Tools &amp; Backlog</span>
+              <span class="projection-badge" id="tech-backlog-count">0</span>
+            </span>
+            <span class="projection-summary-arrow">▾</span>
+          </summary>
+          <div class="projection-items-list" id="tech-backlog-list">
+            <!-- Populated dynamically from captures.json -->
+          </div>
+        </details>
+
+        <div class="desk-footer">
+          <a id="tech-link" href="https://pressprintlab.com/designs" target="_blank" class="desk-link" style="color: var(--accent-home); font-weight: 600;">
+            <span id="tech-link-text">PressPrintLab</span> ↗
+          </a>
+          <span id="tech-sync-status" style="font-size: 0.75rem; color: var(--text-muted);">Synced</span>
         </div>
       </article>
 
@@ -821,6 +866,84 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Manage Workbenches / Swap Active Desks -->
+  <div id="swap-desk-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="swap-modal-title">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.25rem;">⚙️</span>
+          <h3 class="modal-title" id="swap-modal-title">Manage Workbenches</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('swap-desk-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="swap-modal-subtitle" id="swap-modal-instructions">
+          Focus is intentionally capped at <strong>4 active workbenches</strong>. Inactive workbenches rest safely in dormancy without losing their data, row counts, or backlogs.
+        </div>
+
+        <div class="swap-modal-section">
+          <div class="swap-section-heading">
+            <span>Active Workbenches (4 Max)</span>
+            <span style="font-size: 0.72rem; color: var(--accent-body);">● Live on Dashboard</span>
+          </div>
+          <div id="swap-active-slots-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <div class="swap-modal-section" style="margin-bottom: 0;">
+          <div class="swap-section-heading">
+            <span>Dormant Workbenches</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Resting in Storage</span>
+          </div>
+          <div id="swap-dormant-slots-list">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Update Tech Workbench -->
+  <div id="tech-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tech-modal-title">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">💻</span>
+          <h3 class="modal-title" id="tech-modal-title">Update Tech Workbench</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('tech-modal')" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="handleTechSave(event)" style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label class="input-label" for="edit-tech-title">Project / Repository Title</label>
+            <input type="text" id="edit-tech-title" class="form-input" required placeholder="e.g. PressPrint Lab Parametric Boxes">
+          </div>
+          <div>
+            <label class="input-label" for="edit-tech-tool">Tool / Stack / Hardware</label>
+            <input type="text" id="edit-tech-tool" class="form-input" placeholder="e.g. 3D Printing, Python, Claude Code, Next.js">
+          </div>
+          <div>
+            <label class="input-label" for="edit-tech-focus">Current Focus / Goal</label>
+            <textarea id="edit-tech-focus" class="form-input" rows="3" placeholder="What are you currently building, printing, or debugging?" style="resize: vertical;"></textarea>
+          </div>
+          <div>
+            <label class="input-label" for="edit-tech-link">Project / Tool URL</label>
+            <input type="url" id="edit-tech-link" class="form-input" placeholder="https://pressprintlab.com/designs">
+          </div>
+          <div>
+            <label class="input-label" for="edit-tech-link-text">Link Label</label>
+            <input type="text" id="edit-tech-link-text" class="form-input" placeholder="PressPrintLab">
+          </div>
+          <button type="submit" class="quick-capture-btn" id="tech-save-btn" style="justify-content: center; margin-top: 4px;">
+            <span>💾 Save Changes</span>
+          </button>
+        </form>
       </div>
     </div>
   </div>
