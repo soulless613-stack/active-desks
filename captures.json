@@ -1,15 +1,26 @@
 [
   {
     "id": 1792842574998,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Cloud Computing",
+    "title": "Setting Up Free Oracle Cloud Servers and Databases with Claude",
+    "summary": "Oracle Cloud Free Tier provides free-forever virtual servers, autonomous databases, and 10 TB of monthly bandwidth that can be configured with Claude to run 24/7 AI agents, bots, and hosted websites.",
+    "creator": "Rick (@rick.automates)",
     "sourceUrl": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
+    "blogUrl": null,
     "time": "Oct 24",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "fallback_text",
     "rawText": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
-    "payload": null
+    "payload": {
+      "title": "Setting Up Free Oracle Cloud Servers and Databases with Claude",
+      "summary": "Oracle Cloud Free Tier provides free-forever virtual servers, autonomous databases, and 10 TB of monthly bandwidth that can be configured with Claude to run 24/7 AI agents, bots, and hosted websites.",
+      "keyTakeaways": [
+        "Oracle Cloud Free Tier offers an Ampere ARM instance (up to 2 CPUs / 12 GB RAM) plus two x86 micro compute instances free forever.",
+        "Includes two managed databases (20 GB each) and 10 TB of monthly outbound data transfer at no cost.",
+        "Claude can be used as an AI assistant to walk through command-line configuration, hosting setups, and 24/7 background agent workflows."
+      ]
+    }
   },
   {
     "id": 1792735684073,
@@ -115,7 +126,7 @@
   {
     "id": 1792650746263,
     "domain": "tech",
-    "topic": "Claude Code",
+    "topic": "AI Coding",
     "title": "Karpathy Skills: Claude Code & Cursor Guidelines",
     "summary": "A zero-code GitHub repository providing a CLAUDE.md and Cursor rule configuration based on Andrej Karpathy's observations on common LLM coding pitfalls.",
     "sourceUrl": "https://www.instagram.com/reel/DewhNn1AZGQ/?rpxt=NXZybmR4Z2UzeTJ4",
