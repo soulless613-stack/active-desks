@@ -2247,10 +2247,43 @@ body {
   border: 1px solid rgba(56, 189, 248, 0.25);
 }
 
+.capture-card-media-status.static-content {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
 .capture-card-media-status.text-fallback {
   background: rgba(245, 158, 11, 0.12);
   color: #fbbf24;
   border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.btn-badge-rerun {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fde68a;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-badge-rerun:hover {
+  background: rgba(245, 158, 11, 0.35);
+  color: #ffffff;
+  border-color: rgba(245, 158, 11, 0.6);
+  transform: translateY(-1px);
+}
+
+.btn-badge-rerun:active {
+  transform: translateY(0);
 }
 
 

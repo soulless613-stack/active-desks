@@ -154,8 +154,16 @@ export async function runUniversalExtractor() {
           console.log(`  -> Scraped creator caption (${metadata.caption.length} chars)`);
         }
 
-        const mediaResult = fetchMediaBuffer(sourceUrl);
-        const itemMediaStatus = mediaResult ? mediaResult.status : 'fallback_text';
+        const isVideo = isVideoLink(sourceUrl);
+        let mediaResult = null;
+        let itemMediaStatus = 'text_images';
+
+        if (isVideo) {
+          mediaResult = fetchMediaBuffer(sourceUrl);
+          itemMediaStatus = mediaResult ? mediaResult.status : 'fallback_text';
+        } else {
+          console.log(`  -> Static media link detected (photo carousel / post / article). No video download needed.`);
+        }
 
         classification = await extractUrlWithGemini({
           url: sourceUrl,
@@ -264,6 +272,21 @@ function extractUrlFromText(text) {
 }
 
 /**
+ * Detect whether a URL points to a video stream (Reels, TikTok, YouTube)
+ * Static content (Instagram photo carousels /p/, articles, GoodReads) returns false.
+ */
+function isVideoLink(url) {
+  if (!url || typeof url !== 'string') return false;
+  if (url.includes('instagram.com/reel/') || url.includes('instagram.com/reels/') || url.includes('instagram.com/tv/')) {
+    return true;
+  }
+  if (url.includes('tiktok.com') || url.includes('youtube.com') || url.includes('youtu.be')) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Tiered Media Downloader via yt-dlp:
  * Tier 1: Compressed MP4 Video (max 720p, <= 20MB) -> Gemini watches visual frames + listens to audio.
  * Tier 2: MP3 Audio track (<= 15MB) -> Gemini listens to spoken voiceover.
@@ -271,20 +294,23 @@ function extractUrlFromText(text) {
  */
 function fetchMediaBuffer(url) {
   if (!url || typeof url !== 'string') return null;
-  const isVideoUrl = url.includes('instagram.com') || url.includes('tiktok.com') || url.includes('youtube.com') || url.includes('youtu.be');
-  if (!isVideoUrl) return null;
+  if (!isVideoLink(url)) return null;
+
+  // Clean URL: strip tracking query parameters (e.g. ?vrfl=..., ?igsh=...)
+  const cleanUrl = url.split('?')[0];
 
   // --- TIER 1: Full Video (.mp4 <= 20MB) ---
   const tempVideoFile = path.join(os.tmpdir(), `media-vid-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.mp4`);
   try {
-    console.log(`  -> [Tier 1] Attempting video extraction via yt-dlp: ${url}`);
+    console.log(`  -> [Tier 1] Attempting video extraction via yt-dlp: ${cleanUrl}`);
     execFileSync('yt-dlp', [
-      '-f', 'bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+      '-S', 'res:720,ext:mp4:m4a',
+      '-f', 'bv*[height<=720][ext=mp4]+ba[ext=m4a]/b[height<=720][ext=mp4]/bestvideo[height<=720]+bestaudio/best',
       '--max-filesize', '20M',
       '--no-playlist',
       '--no-warnings',
       '-o', tempVideoFile,
-      url
+      cleanUrl
     ], { timeout: 45000, stdio: ['ignore', 'pipe', 'pipe'] });
 
     if (fs.existsSync(tempVideoFile)) {
@@ -313,16 +339,15 @@ function fetchMediaBuffer(url) {
   // --- TIER 2: Audio Only (.mp3 <= 15MB) ---
   const tempAudioFile = path.join(os.tmpdir(), `media-aud-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.mp3`);
   try {
-    console.log(`  -> [Tier 2] Attempting audio-only extraction via yt-dlp: ${url}`);
+    console.log(`  -> [Tier 2] Attempting audio-only extraction via yt-dlp: ${cleanUrl}`);
     execFileSync('yt-dlp', [
       '-x',
       '--audio-format', 'mp3',
       '--audio-quality', '5',
-      '--max-filesize', '15M',
       '--no-playlist',
       '--no-warnings',
       '-o', tempAudioFile,
-      url
+      cleanUrl
     ], { timeout: 35000, stdio: ['ignore', 'pipe', 'pipe'] });
 
     if (fs.existsSync(tempAudioFile)) {
@@ -471,6 +496,8 @@ async function extractUrlWithGemini(input, apiKey, errorLogList = []) {
     mediaNotice = `- Attached Media Track: FULL VIDEO (.mp4 video attached). Watch visual frames closely (read on-screen text overlays, title cards, book covers, board game boxes, 3D printer slicer temps/speeds/tolerances, ingredient measurement graphics) and simultaneously listen to the spoken voiceover narration.`;
   } else if (mediaResult?.status === 'audio_extracted') {
     mediaNotice = `- Attached Media Track: AUDIO ONLY (.mp3 audio attached). Listen closely to transcribe all spoken recommendations, titles, rules, tolerances, and measurements.`;
+  } else if (mediaStatus === 'text_images') {
+    mediaNotice = `- Attached Media Track: STATIC CONTENT (Post / Photo Carousel / Web Article). Extract information accurately from the post caption, image descriptions, and Google Search grounding.`;
   } else {
     mediaNotice = `- Attached Media Track: NONE (Media could not be downloaded directly; text fallback active. Rely on creator captions and live Google Search grounding).`;
   }

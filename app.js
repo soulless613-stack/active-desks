@@ -1978,10 +1978,17 @@ function renderCaptures() {
             <span>🎙️ Voiceover Audio Verified</span>
           </div>
         `;
+      } else if (c.mediaStatus === 'text_images') {
+        mediaBadgeHtml = `
+          <div class="capture-card-media-status static-content" title="Static post / carousel with no video needed; extracted from text & images">
+            <span>📚 Text &amp; Images</span>
+          </div>
+        `;
       } else if (c.mediaStatus === 'fallback_text') {
         mediaBadgeHtml = `
           <div class="capture-card-media-status text-fallback" title="Video download could not be completed; extracted using creator caption & web search">
-            <span>⚠️ Text &amp; Search Fallback (Video Skipped)</span>
+            <span>⚠️ Video Skipped (Text Fallback)</span>
+            <button type="button" class="btn-badge-rerun" onclick="event.stopPropagation(); retryCaptureExtraction(${c.id})" title="Retry downloading video and analyzing with Gemini">🔄 Re-run</button>
           </div>
         `;
       }
@@ -2092,8 +2099,14 @@ function openCaptureDetailModal(captureId) {
           chips.push({ label: 'Media', val: '🎬 Video & Audio Analyzed' });
         } else if (c.mediaStatus === 'audio_extracted') {
           chips.push({ label: 'Media', val: '🎙️ Voiceover Verified' });
+        } else if (c.mediaStatus === 'text_images') {
+          chips.push({ label: 'Format', val: '📚 Text & Images' });
         } else if (c.mediaStatus === 'fallback_text') {
-          chips.push({ label: 'Extraction', val: '⚠️ Text & Web Fallback' });
+          chips.push({
+            label: 'Extraction',
+            val: '⚠️ Fallback Used',
+            htmlVal: `⚠️ Fallback Used <button type="button" class="btn-badge-rerun" onclick="retryCaptureExtraction(${c.id}); closeModal('capture-detail-modal');" title="Re-run cloud media extraction">🔄 Re-run</button>`
+          });
         }
       }
       if (p.platform) chips.push({ label: 'Platform', val: p.platform });
@@ -2111,7 +2124,7 @@ function openCaptureDetailModal(captureId) {
             ${chips.map(chip => `
               <div class="payload-chip">
                 <span class="payload-chip-label">${escapeHtml(chip.label)}:</span>
-                <span>${escapeHtml(chip.val)}</span>
+                <span>${chip.htmlVal || escapeHtml(chip.val)}</span>
               </div>
             `).join('')}
           </div>
@@ -2564,6 +2577,28 @@ function deleteCapture(id) {
   showToast('Item removed from stream', '🗑️');
   flushDirtySync(); // Push deletion to GitHub immediately in background if connected
 }
+
+function retryCaptureExtraction(id) {
+  if (!Array.isArray(state.captures)) return;
+  const idx = state.captures.findIndex(c => c.id === id);
+  if (idx === -1) return;
+
+  const item = state.captures[idx];
+  item.status = 'pending';
+  item.domain = null;
+  item.topic = null;
+  item.summary = null;
+  item.payload = null;
+  item.mediaStatus = null;
+
+  saveState();
+  renderCaptures();
+  markDirty('captures.json');
+  showToast('Re-run queued! Cloud agent will re-analyze media...', '🎬');
+  flushDirtySync(true); // Push pending capture to GitHub immediately to wake cloud runner
+}
+
+window.retryCaptureExtraction = retryCaptureExtraction;
 
 function openBrainDumpModal() {
   renderCaptures();
