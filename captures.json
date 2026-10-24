@@ -1,26 +1,18 @@
 [
   {
     "id": 1792842574998,
-    "domain": "tech",
-    "topic": "Cloud Computing",
+    "domain": null,
+    "topic": null,
     "title": "Setting Up Free Oracle Cloud Servers and Databases with Claude",
-    "summary": "Oracle Cloud Free Tier provides free-forever virtual servers, autonomous databases, and 10 TB of monthly bandwidth that can be configured with Claude to run 24/7 AI agents, bots, and hosted websites.",
+    "summary": null,
     "creator": "Rick (@rick.automates)",
     "sourceUrl": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
     "blogUrl": null,
     "time": "Oct 24",
-    "status": "processed",
-    "mediaStatus": "fallback_text",
+    "status": "pending",
+    "mediaStatus": null,
     "rawText": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
-    "payload": {
-      "title": "Setting Up Free Oracle Cloud Servers and Databases with Claude",
-      "summary": "Oracle Cloud Free Tier provides free-forever virtual servers, autonomous databases, and 10 TB of monthly bandwidth that can be configured with Claude to run 24/7 AI agents, bots, and hosted websites.",
-      "keyTakeaways": [
-        "Oracle Cloud Free Tier offers an Ampere ARM instance (up to 2 CPUs / 12 GB RAM) plus two x86 micro compute instances free forever.",
-        "Includes two managed databases (20 GB each) and 10 TB of monthly outbound data transfer at no cost.",
-        "Claude can be used as an AI assistant to walk through command-line configuration, hosting setups, and 24/7 background agent workflows."
-      ]
-    }
+    "payload": null
   },
   {
     "id": 1792735684073,
@@ -146,6 +138,25 @@
     "mediaStatus": "video_extracted"
   },
   {
+    "id": 1792582196403,
+    "domain": "tech",
+    "topic": "Web Scraping",
+    "title": "Extracting Media with Playwright MCP",
+    "summary": "Exploring whether the Playwright Model Context Protocol (MCP) server can be leveraged to extract video and audio streams from URLs.",
+    "creator": null,
+    "sourceUrl": null,
+    "blogUrl": null,
+    "time": "Oct 21",
+    "status": "processed",
+    "rawText": "Can I use the playwright mcp to get the video and audio from links",
+    "payload": {
+      "checklist": [
+        "Check Playwright MCP documentation for media capture capabilities",
+        "Test media stream extraction using Playwright MCP on sample links"
+      ]
+    }
+  },
+  {
     "id": 1792558243177,
     "domain": "tech",
     "topic": "3D Printing",
@@ -154,7 +165,6 @@
     "sourceUrl": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
     "time": "Oct 21",
     "status": "processed",
-    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
     "payload": {
       "keyTakeaways": [
@@ -175,7 +185,6 @@
     "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
     "time": "Oct 21",
     "status": "processed",
-    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
     "payload": {
       "keyTakeaways": [
@@ -185,7 +194,8 @@
       ]
     },
     "creator": "Press Print (@pressprint__)",
-    "blogUrl": "https://pressprintlab.com/designs"
+    "blogUrl": "https://pressprintlab.com/designs",
+    "mediaStatus": "video_extracted"
   },
   {
     "id": 1792558099016,
@@ -258,12 +268,9 @@
     "topic": "LitRPG",
     "title": "5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
     "summary": "A curated reading list of five captivating LitRPG series recommended by Adam Michael to read while waiting for the next Dungeon Crawler Carl book.",
-    "creator": "Adam Michael (@weread4xp)",
     "sourceUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
-    "blogUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
     "time": "Oct 21",
     "status": "processed",
-    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
     "payload": {
       "title": "5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
@@ -313,7 +320,10 @@
           "highlight": "High-concept tech-dystopia premise featuring high-stakes survival and round-winning rule alterations."
         }
       ]
-    }
+    },
+    "creator": "Adam Michael (@weread4xp)",
+    "blogUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
+    "mediaStatus": "video_extracted"
   },
   {
     "id": 1792557991993,
