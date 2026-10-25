@@ -1,15 +1,26 @@
 [
   {
     "id": 1792895770404,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/De3D_zeMifo/?cplk=MXA4azk1cnY4NW9ubg==",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Windows Optimization",
+    "title": "TBOK Win11Optimizer: Windows Debloat & Performance Optimization Script",
+    "summary": "A comprehensive Windows batch script created to safely debloat Windows 10/11, disable telemetry and background bloat, optimize memory, and enable peak gaming performance.",
+    "creator": "TheBeardOfKnowledge (@thebeardofknowledge_it)",
     "sourceUrl": "https://www.instagram.com/reel/De3D_zeMifo/?cplk=MXA4azk1cnY4NW9ubg==",
+    "blogUrl": "https://github.com/TheBeardofknowledge/TBOK-Win11Optimizer",
     "time": "Oct 24",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/De3D_zeMifo/?cplk=MXA4azk1cnY4NW9ubg==",
-    "payload": null
+    "payload": {
+      "title": "TBOK-Win11Optimizer",
+      "githubUrl": "https://github.com/TheBeardofknowledge/TBOK-Win11Optimizer",
+      "keyTakeaways": [
+        "Automatically creates a System Restore point prior to executing changes to ensure safe rollback.",
+        "Removes system bloatware and telemetry, including Microsoft Copilot, Bing Search, lock screen/menu ads, and background Edge processes.",
+        "Boosts gaming responsiveness by enabling Hardware Accelerated GPU Scheduling (HAGS), setting the Ultimate Performance power plan, and tuning pagefile virtual memory."
+      ]
+    }
   },
   {
     "id": 1792879634195,
