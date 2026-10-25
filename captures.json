@@ -1,16 +1,25 @@
 [
   {
+    "id": 1792941933312,
+    "domain": null,
+    "topic": null,
+    "title": "https://www.instagram.com/reel/De6jTsiMCtT/?exln=MWFvaG9jOXljbmNhZA==",
+    "summary": null,
+    "sourceUrl": "https://www.instagram.com/reel/De6jTsiMCtT/?exln=MWFvaG9jOXljbmNhZA==",
+    "time": "Oct 25",
+    "status": "pending",
+    "rawText": "https://www.instagram.com/reel/De6jTsiMCtT/?exln=MWFvaG9jOXljbmNhZA==",
+    "payload": null
+  },
+  {
     "id": 1792895770404,
     "domain": "tech",
     "topic": "Windows Optimization",
     "title": "TBOK Win11Optimizer: Windows Debloat & Performance Optimization Script",
     "summary": "A comprehensive Windows batch script created to safely debloat Windows 10/11, disable telemetry and background bloat, optimize memory, and enable peak gaming performance.",
-    "creator": "TheBeardOfKnowledge (@thebeardofknowledge_it)",
     "sourceUrl": "https://www.instagram.com/reel/De3D_zeMifo/?cplk=MXA4azk1cnY4NW9ubg==",
-    "blogUrl": "https://github.com/TheBeardofknowledge/TBOK-Win11Optimizer",
     "time": "Oct 24",
     "status": "processed",
-    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/De3D_zeMifo/?cplk=MXA4azk1cnY4NW9ubg==",
     "payload": {
       "title": "TBOK-Win11Optimizer",
@@ -20,7 +29,10 @@
         "Removes system bloatware and telemetry, including Microsoft Copilot, Bing Search, lock screen/menu ads, and background Edge processes.",
         "Boosts gaming responsiveness by enabling Hardware Accelerated GPU Scheduling (HAGS), setting the Ultimate Performance power plan, and tuning pagefile virtual memory."
       ]
-    }
+    },
+    "creator": "TheBeardOfKnowledge (@thebeardofknowledge_it)",
+    "blogUrl": "https://github.com/TheBeardofknowledge/TBOK-Win11Optimizer",
+    "mediaStatus": "video_extracted"
   },
   {
     "id": 1792879634195,
@@ -168,7 +180,7 @@
   {
     "id": 1792650746263,
     "domain": "tech",
-    "topic": "AI Coding",
+    "topic": "Claude Code",
     "title": "Karpathy Skills: Claude Code & Cursor Guidelines",
     "summary": "A zero-code GitHub repository providing a CLAUDE.md and Cursor rule configuration based on Andrej Karpathy's observations on common LLM coding pitfalls.",
     "sourceUrl": "https://www.instagram.com/reel/DewhNn1AZGQ/?rpxt=NXZybmR4Z2UzeTJ4",
