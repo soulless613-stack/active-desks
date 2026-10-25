@@ -1,15 +1,30 @@
 [
   {
     "id": 1792941933312,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/De6jTsiMCtT/?exln=MWFvaG9jOXljbmNhZA==",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Claude Code",
+    "title": "ayghri/i-have-adhd: ADHD-Friendly Output for AI Coding Agents",
+    "summary": "An open-source skill for Claude Code, Codex, and Copilot that eliminates conversational filler, preambles, and closing chatter, enforcing action-first answers with concise, numbered steps.",
+    "creator": "AI Money Plays (@aimoneypays)",
     "sourceUrl": "https://www.instagram.com/reel/De6jTsiMCtT/?exln=MWFvaG9jOXljbmNhZA==",
+    "blogUrl": "https://github.com/ayghri/i-have-adhd",
     "time": "Oct 25",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/De6jTsiMCtT/?exln=MWFvaG9jOXljbmNhZA==",
-    "payload": null
+    "payload": {
+      "repository": "ayghri/i-have-adhd",
+      "supportedPlatforms": [
+        "Claude Code",
+        "Codex",
+        "Copilot"
+      ],
+      "keyTakeaways": [
+        "Leads immediately with the actionable line or file modification rather than conversational preambles or explanations.",
+        "Breaks multi-step tasks into concise, numbered steps and always concludes with one single next action instead of overwhelming menus.",
+        "Installs directly in Claude Code via 'claude plugin marketplace add ayghri/i-have-adhd' and 'claude plugin install i-have-adhd@i-have-adhd'."
+      ]
+    }
   },
   {
     "id": 1792895770404,
@@ -157,7 +172,7 @@
   {
     "id": 1792668151645,
     "domain": "tech",
-    "topic": "AI Coding",
+    "topic": "Claude Code",
     "title": "10 Powerful GitHub Repos for Claude Code & Token Saver Analysis",
     "summary": "A curated breakdown of 10 high-impact GitHub repos and tools to expand Claude Code's capabilities, paired with real-world benchmark data testing popular token-saving extensions.",
     "sourceUrl": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
