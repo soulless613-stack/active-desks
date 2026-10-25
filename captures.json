@@ -1,15 +1,25 @@
 [
   {
     "id": 1792963881958,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DekNRqMJ4D6/?vrfl=YWJ1ZWxvNnEzMGdx",
-    "summary": null,
+    "domain": "game",
+    "topic": "Coding Game",
+    "title": "Windwright",
+    "summary": "A cozy browser-based educational game where players restore a garden by writing real Python code to control automatons and creatures.",
+    "creator": "Windwright (@windwright.dev)",
     "sourceUrl": "https://www.instagram.com/reel/DekNRqMJ4D6/?vrfl=YWJ1ZWxvNnEzMGdx",
+    "blogUrl": "https://windwright.dev",
     "time": "Oct 25",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DekNRqMJ4D6/?vrfl=YWJ1ZWxvNnEzMGdx",
-    "payload": null
+    "payload": {
+      "title": "Windwright",
+      "platform": "Web Browser (PC)",
+      "genre": "Cozy Coding Sim / Educational",
+      "developer": "William Hsu",
+      "summary": "Windwright teaches beginners real Python 3 by programming garden creatures—like clay golems, stone beetles, and copper birds—using authentic syntax, variables, coordinates, and conditionals to tend plants and harvest fruit.",
+      "questOrGoal": "Complete the introductory clearings by writing print statements, movement coordinates, and if-statements to automate watering and weeding."
+    }
   },
   {
     "id": 1792941933312,
