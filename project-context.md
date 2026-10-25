@@ -60,10 +60,8 @@
   * Date-aware: on startup (`fetchAnchorsFromRepo()`), if the remote record is from a previous calendar day, the local midnight reset is preserved.
 
 ### 2. Reading Nook Desk & Cross-Device Sync (`reading.json`)
-* **Current State**: Tracking *Dune Messiah* by Frank Herbert (Ch. 8 of 24, 33%).
 * **Gemini Vision Screenshot Parsing**:
-  * Uploading a screenshot of The StoryGraph or Kindle triggers client-side OCR via `gemini-3.6-flash:generateContent`.
-  * *Model Note*: Google AI Studio retired `gemini-2.5-flash` (returns 404). Always use `gemini-3.6-flash`.
+  * Uploading a screenshot of The StoryGraph or Kindle triggers client-side OCR via the latest Gemini Flash model (`generateContent`).
   * Prompts the model to return structured JSON: `{ title, author, current_progress, total_progress, unit, percentage }`.
 * **📚 Up Next / TBR Projection Tray (`#reading-tbr-tray`)**:
   * Dynamically filters `captures.json` where `domain === 'book'`.
