@@ -1,5 +1,27 @@
 [
   {
+    "id": "1792895773174dfl6",
+    "time": "2026-10-25T02:36:13.174Z",
+    "displayTime": "10:36:13 PM",
+    "device": "mobile",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (23 notes)",
+    "details": null
+  },
+  {
+    "id": "1792895771839w1qy",
+    "time": "2026-10-25T02:36:11.839Z",
+    "displayTime": "10:36:11 PM",
+    "device": "mobile",
+    "target": "recipe-inbox.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update recipe inbox (1 pending)",
+    "details": null
+  },
+  {
     "id": "1792879636797b9oe",
     "time": "2026-10-24T22:07:16.797Z",
     "displayTime": "06:07:16 PM",
@@ -599,28 +621,6 @@
     "action": "commit",
     "status": "success",
     "message": "Update reading progress: Rhythm of War (pages 709/1230)",
-    "details": null
-  },
-  {
-    "id": "1792107474026wjyn",
-    "time": "2026-10-15T23:37:54.026Z",
-    "displayTime": "07:37:54 PM",
-    "device": "mobile",
-    "target": "reading.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update reading progress: Rhythm of War (pages 690/1230)",
-    "details": null
-  },
-  {
-    "id": "1792033913163uef0",
-    "time": "2026-10-15T03:11:53.163Z",
-    "displayTime": "11:11:53 PM",
-    "device": "mobile",
-    "target": "reading.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update reading progress: Rhythm of War (pages 668/1230)",
     "details": null
   }
 ]
