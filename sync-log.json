@@ -1,5 +1,27 @@
 [
   {
+    "id": "1792941935906hq1c",
+    "time": "2026-10-25T15:25:35.906Z",
+    "displayTime": "11:25:35 AM",
+    "device": "mobile",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (24 notes)",
+    "details": null
+  },
+  {
+    "id": "17929419345791kt5",
+    "time": "2026-10-25T15:25:34.579Z",
+    "displayTime": "11:25:34 AM",
+    "device": "mobile",
+    "target": "recipe-inbox.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update recipe inbox (1 pending)",
+    "details": null
+  },
+  {
     "id": "17929166735537whw",
     "time": "2026-10-25T08:24:33.553Z",
     "displayTime": "04:24:33 AM",
@@ -595,32 +617,6 @@
     "action": "commit",
     "status": "success",
     "message": "Update daily anchors: 2026-10-20 (1/3)",
-    "details": null
-  },
-  {
-    "id": "1792380677041clgg",
-    "time": "2026-10-19T03:31:17.033Z",
-    "displayTime": "03:31:17 AM",
-    "device": "cloud-agent",
-    "target": "recipe-inbox.json",
-    "action": "auto-extract",
-    "status": "success",
-    "message": "Auto-extracted recipe: Slow Cooker Butter Chicken Mac N' Cheese",
-    "details": {
-      "slug": "slow-cooker-butter-chicken-mac-n-cheese",
-      "yield": "10 Servings (Meal Prep)",
-      "calories": "545 kcal"
-    }
-  },
-  {
-    "id": "17923720610155n9y",
-    "time": "2026-10-19T01:07:41.015Z",
-    "displayTime": "09:07:41 PM",
-    "device": "mobile",
-    "target": "recipe-inbox.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update recipe inbox (1 pending)",
     "details": null
   }
 ]
