@@ -129,7 +129,7 @@
 * **Cross-Device Repository Sync (`tech.json`)**:
   * Reads and commits tech workbench state directly to `tech.json` on GitHub via the unified sync engine.
 
-### 7. Dynamic Desk Concentration & Workbench Swapping Engine (`#swap-desk-modal` & `state.activeDeskIds`)
+### 7. Dynamic Desk Concentration & Workbench Swapping Engine (`#swap-desk-modal`, `desks.json`, & `state.activeDeskIds`)
 * **4-Workbench Concentration Rule**: The main dashboard enforces a strict focus cap of **4 active workbenches** in the 2×2 grid (`state.activeDeskIds`), preventing visual and cognitive clutter.
 * **Zero Data Loss Dormancy Architecture**:
   * When a workbench is swapped out into dormancy (e.g. swapping Fiber Arts out to activate Tech Workbench), its state, counters, reading progress, and backlogs are never wiped.
@@ -139,6 +139,9 @@
 * **1-Tap Swap Interaction**:
   * The modal displays the 4 currently active workbenches and all resting dormant workbenches.
   * Tapping **`Swap with [Desk] ➔`** rotates the workbenches in 1 tap, updates `state.activeDeskIds`, and persists to `localStorage`.
+* **Cross-Device Repository Sync (`desks.json`)**:
+  * Rotating or swapping active workbenches marks `desks.json` dirty and flushes to GitHub via `githubPut`.
+  * On app launch (`fetchDesksFromRepo()`), tab focus (`refreshActiveTab()`), and remote commit liveness checks (`checkRemoteCommitLiveness()`), the latest 4-desk selection is retrieved quietly via `githubGet` so desktop, mobile, and tablet layouts stay in lockstep without manual reconfiguration.
 * **Emergent Desk Evolution Integration**:
   * When 5+ items in an unassigned domain accumulate (e.g. 7 tech items), the Rule of 5 banner (`#desk-evolution-banner`) appears.
   * Tapping **"✨ Focus Desk Captures"** directly opens `#swap-desk-modal` with the emergent workbench pre-selected to swap into any active slot.

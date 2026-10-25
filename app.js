@@ -775,6 +775,15 @@ async function flushDirtySync(isManual = false) {
       } else if (file === 'recipe-inbox.json') {
         dataToCommit = state.recipeInbox;
         commitMessage = `Update recipe inbox (${dataToCommit.length} pending)`;
+      } else if (file === 'tech.json') {
+        dataToCommit = state.desks.tech || DEFAULT_STATE.desks.tech;
+        commitMessage = `Update tech project: ${dataToCommit.title || 'Parametric Boxes'}`;
+      } else if (file === 'desks.json') {
+        dataToCommit = {
+          activeDeskIds: state.activeDeskIds || ['reading', 'recipe', 'gaming', 'fiber'],
+          lastUpdated: new Date().toISOString()
+        };
+        commitMessage = `Update active desk concentration: [${dataToCommit.activeDeskIds.join(', ')}]`;
       }
 
       if (dataToCommit) {
@@ -889,6 +898,31 @@ async function refreshActiveTab() {
       if (Array.isArray(data) && JSON.stringify(data) !== JSON.stringify(state.recipeInbox)) {
         state.recipeInbox = data;
         changed = true;
+      }
+    } catch (e) {}
+  }
+
+  if (!pendingDirtyFiles.has('tech.json')) {
+    try {
+      const data = await githubGet('tech.json');
+      if (data && data.title && data.lastUpdated !== state.desks.tech?.lastUpdated) {
+        if (!state.desks.tech) state.desks.tech = {};
+        Object.assign(state.desks.tech, data);
+        changed = true;
+      }
+    } catch (e) {}
+  }
+
+  if (!pendingDirtyFiles.has('desks.json')) {
+    try {
+      const data = await githubGet('desks.json');
+      if (data && Array.isArray(data.activeDeskIds) && data.activeDeskIds.length === 4) {
+        const currentIds = state.activeDeskIds || [];
+        const isDifferent = data.activeDeskIds.some((id, idx) => id !== currentIds[idx]);
+        if (isDifferent) {
+          state.activeDeskIds = data.activeDeskIds;
+          changed = true;
+        }
       }
     } catch (e) {}
   }
@@ -2726,6 +2760,12 @@ function executeDeskSwap(oldDeskId, newDeskId) {
   saveState();
   closeModal('swap-desk-modal');
 
+  renderDesksVisibility();
+  renderDeskEvolutionBanner();
+
+  markDirty('desks.json');
+  flushDirtySync();
+
   const oldDesk = KNOWN_DESKS[oldDeskId] || { name: oldDeskId, icon: '📦' };
   const newDesk = KNOWN_DESKS[newDeskId] || { name: newDeskId, icon: '✨' };
 
@@ -2738,6 +2778,24 @@ window.executeDeskSwap = executeDeskSwap;
 window.openTechModal = openTechModal;
 window.handleTechSave = handleTechSave;
 window.setActiveTechFromCapture = setActiveTechFromCapture;
+
+async function fetchDesksFromRepo() {
+  try {
+    const data = await githubGet('desks.json');
+    if (data && Array.isArray(data.activeDeskIds) && data.activeDeskIds.length === 4) {
+      const currentIds = state.activeDeskIds || [];
+      const isDifferent = data.activeDeskIds.some((id, idx) => id !== currentIds[idx]);
+      if (isDifferent) {
+        state.activeDeskIds = data.activeDeskIds;
+        saveState();
+        renderDesksVisibility();
+        renderDeskEvolutionBanner();
+      }
+    }
+  } catch (e) {
+    console.log('Using local desks state (offline or local server)');
+  }
+}
 
 async function fetchDeskSuggestionsFromRepo() {
   try {
@@ -3350,6 +3408,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchAnchorsFromRepo();
   fetchSyncLogFromRepo();
   fetchDeskSuggestionsFromRepo();
+  fetchDesksFromRepo();
   checkDevicePairingHash();
   updateHeaderSyncStatus();
 
