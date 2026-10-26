@@ -195,7 +195,7 @@
   {
     "id": 1792735684073,
     "domain": "tech",
-    "topic": "AI Coding",
+    "topic": "Local AI",
     "title": "DeepSeek Harness: Open-Source Local Agent Harness",
     "summary": "DeepSeek Harness (dsh) is an open-source, plugin-based agent harness that runs coding agent workflows directly on your local machine as an alternative to proprietary tools like Claude Code.",
     "creator": "Connor (@cookin.code)",
