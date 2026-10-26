@@ -1,16 +1,25 @@
 [
   {
+    "id": 1793016430538,
+    "domain": null,
+    "topic": null,
+    "title": "https://www.instagram.com/reel/DdZS5zsAuCl/?cplk=eTIxNDl1c3d0NWcw",
+    "summary": null,
+    "sourceUrl": "https://www.instagram.com/reel/DdZS5zsAuCl/?cplk=eTIxNDl1c3d0NWcw",
+    "time": "Oct 26",
+    "status": "pending",
+    "rawText": "https://www.instagram.com/reel/DdZS5zsAuCl/?cplk=eTIxNDl1c3d0NWcw",
+    "payload": null
+  },
+  {
     "id": 1793015390078,
     "domain": "tech",
     "topic": "Local AI",
     "title": "Why You Should Use Local AI: Privacy, Cost, and Unrestricted Access",
     "summary": "An introduction to local, open-weight AI models explaining how they run completely offline on standard consumer hardware, offering full data privacy, zero recurring subscription costs, and permanent access without corporate gatekeeping.",
-    "creator": "Saria | AI Literacy (@thecorporateflamingo)",
     "sourceUrl": "https://www.instagram.com/reel/Dbavr1-IcdT/?vrfl=MW5uOHcza3A5MTFsbg==",
-    "blogUrl": "https://www.instagram.com/reel/Dbavr1-IcdT/",
     "time": "Oct 26",
     "status": "processed",
-    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/Dbavr1-IcdT/?vrfl=MW5uOHcza3A5MTFsbg==",
     "payload": {
       "title": "Why You Should Use Local AI: Privacy, Cost, and Unrestricted Access",
@@ -20,7 +29,10 @@
         "Data privacy is absolute because your prompts and documents never leave your machine, eliminating exposure to data breaches, government subpoena requests, or corporate model training.",
         "Local AI eliminates monthly subscription fees, arbitrary usage caps, and the risk of losing access due to sudden platform tier-locks or ID verification requirements."
       ]
-    }
+    },
+    "creator": "Saria | AI Literacy (@thecorporateflamingo)",
+    "blogUrl": "https://www.instagram.com/reel/Dbavr1-IcdT/",
+    "mediaStatus": "video_extracted"
   },
   {
     "id": 1793014689848,
