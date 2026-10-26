@@ -177,8 +177,9 @@
   * Automatically triggers the GitHub Actions cloud runner to re-attempt video download and Gemini multimodal analysis hands-free!
 * **Drawer Fallback Alert Banner (`#drawer-fallback-banner`)**:
   * Dismissible amber alert banner at the top of the Universal Captures Drawer displaying the count of any items that required text fallback due to video download blocks (`text_images` items never trigger this banner).
-* **Unified Capture Detail Modal (`#capture-detail-modal`)**:
+* **Unified Capture Detail Modal (`#capture-detail-modal`) & Actionable Destination Links**:
   * Clicking *any* card in the Universal Captures Drawer opens `#capture-detail-modal` with glassmorphic styling, media badge chip, metadata chips (Platform, Genre, Author, Series, Developer, Yield), ingredient checklists, takeaways, highlights, and multi-book carousels (`payload.books`).
+  * **Actionable Project & Blog Destinations (`blogUrl`)**: Both the card face footer and the detail modal footer feature dedicated, intelligent destination action buttons (`🐙 GitHub Repo`, `📖 Recipe Blog`, or `🌐 Project Website` resolved from `blogUrl`, `payload.githubUrl`, or `payload.linkUrl`), allowing instant 1-tap navigation to the actual project code, tool page, or food blog in addition to the original social `🔗 Source` link.
 * **Desk Assignment & Pinning Modal (`#pin-to-desk-modal`)**:
   * Tapping the pin icon on any capture in the drawer allows 1-tap reassignment to any desk/domain (`book`, `game`, `recipe`, `fiber`, `home`, `finance`, `writing`, `tech`, `thought`) and sets the Tier 2 topic tag.
 * **Adaptive Intelligence (Phase 3 Taxonomy)**:

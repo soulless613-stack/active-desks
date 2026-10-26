@@ -2238,9 +2238,22 @@ function renderCaptures() {
 
         <div class="capture-card-footer">
           <div class="capture-card-actions">
+            ${(() => {
+              const targetBlogUrl = c.blogUrl || c.payload?.githubUrl || c.payload?.linkUrl || c.payload?.blogUrl;
+              if (!targetBlogUrl) return '';
+              let label = '🌐 Web';
+              if (targetBlogUrl.includes('github.com')) label = '🐙 Repo';
+              else if ((c.domain || '').toLowerCase() === 'recipe') label = '📖 Blog';
+              else if ((c.domain || '').toLowerCase() === 'game') label = '🎮 Site';
+              return `
+                <a href="${escapeHtml(targetBlogUrl)}" target="_blank" rel="noopener noreferrer" class="capture-link-btn" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;" onclick="event.stopPropagation();">
+                  ${label}
+                </a>
+              `;
+            })()}
             ${c.sourceUrl ? `
               <a href="${escapeHtml(c.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="capture-link-btn" onclick="event.stopPropagation();">
-                🔗 Source Link
+                🔗 Source
               </a>
             ` : ''}
             <button type="button" class="capture-pin-btn" onclick="event.stopPropagation(); openPinToDeskModal(${c.id})" title="Assign to a desk or domain">
@@ -2266,6 +2279,7 @@ function openCaptureDetailModal(captureId) {
   const summaryEl = document.getElementById('capture-modal-summary');
   const payloadEl = document.getElementById('capture-modal-payload');
   const sourceBtn = document.getElementById('capture-modal-source-btn');
+  const blogBtn = document.getElementById('capture-modal-blog-btn');
   const pinBtn = document.getElementById('capture-modal-pin-btn');
 
   const domain = (c.domain || 'misc').toLowerCase();
@@ -2293,6 +2307,26 @@ function openCaptureDetailModal(captureId) {
 
   if (summaryEl) {
     summaryEl.textContent = c.summary && c.summary !== c.title ? c.summary : '';
+  }
+
+  // Blog / Destination Link button
+  const targetBlogUrl = c.blogUrl || c.payload?.githubUrl || c.payload?.linkUrl || c.payload?.blogUrl;
+  if (blogBtn) {
+    if (targetBlogUrl) {
+      blogBtn.href = targetBlogUrl;
+      blogBtn.style.display = 'inline-flex';
+      if (targetBlogUrl.includes('github.com')) {
+        blogBtn.innerHTML = '🐙 GitHub Repository';
+      } else if (domain === 'recipe') {
+        blogBtn.innerHTML = '📖 Food Blog / Recipe';
+      } else if (domain === 'game') {
+        blogBtn.innerHTML = '🎮 Game Website';
+      } else {
+        blogBtn.innerHTML = '🌐 Project / Website';
+      }
+    } else {
+      blogBtn.style.display = 'none';
+    }
   }
 
   // Source Link button
