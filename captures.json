@@ -1,15 +1,26 @@
 [
   {
     "id": 1793016430538,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DdZS5zsAuCl/?cplk=eTIxNDl1c3d0NWcw",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Local AI",
+    "title": "llmfit: Terminal Tool to Match Local AI Models to Your Hardware",
+    "summary": "llmfit is an open-source terminal utility that analyzes your system's CPU, GPU, and RAM to score and rank local LLMs by memory fit, speed, quality, and context capacity.",
+    "creator": "Denny Medina (@dennydigital_)",
     "sourceUrl": "https://www.instagram.com/reel/DdZS5zsAuCl/?cplk=eTIxNDl1c3d0NWcw",
+    "blogUrl": "https://github.com/AlexsJones/llmfit",
     "time": "Oct 26",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DdZS5zsAuCl/?cplk=eTIxNDl1c3d0NWcw",
-    "payload": null
+    "payload": {
+      "toolName": "llmfit",
+      "installCommand": "brew install AlexsJones/llmfit/llmfit",
+      "keyTakeaways": [
+        "Automatically audits system hardware (RAM, CPU, GPU/VRAM) and detects local LLM runtimes such as Ollama, MLX, and LM Studio.",
+        "Ranks and scores models across four metrics: memory fit, generation speed (tokens/sec), output quality, and available context size.",
+        "Features color-coded recommendations to prevent downloading oversized models and allows downloading compatible models directly within the terminal interface."
+      ]
+    }
   },
   {
     "id": 1793015390078,
