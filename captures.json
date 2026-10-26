@@ -1,15 +1,23 @@
 [
   {
     "id": 1793056385577,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/De7WIcEogeo/?mdxt=MWdwczV3cWptMWRqdw==",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Developer Tools",
+    "title": "GitHub URL Tricks: GitReverse and GitDiagram",
+    "summary": "Quick URL swaps on any GitHub repository to instantly generate AI reverse-engineering prompts or full architectural diagrams without opening a single file.",
+    "creator": "Louis Raillé (@louis_rlee)",
     "sourceUrl": "https://www.instagram.com/reel/De7WIcEogeo/?mdxt=MWdwczV3cWptMWRqdw==",
+    "blogUrl": null,
     "time": "Oct 26",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/De7WIcEogeo/?mdxt=MWdwczV3cWptMWRqdw==",
-    "payload": null
+    "payload": {
+      "keyTakeaways": [
+        "Replace 'github' with 'gitreverse' in any repository URL (gitreverse.com/...) to extract a clean, reverse-engineered prompt detailing the repository's architecture and features for use in AI coding assistants like Claude Code.",
+        "Replace 'hub' with 'diagram' in any repository URL (gitdiagram.com/...) to automatically generate an interactive visual map of the repository's component architecture and connections."
+      ]
+    }
   },
   {
     "id": 1793037884587,
