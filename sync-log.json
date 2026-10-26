@@ -1,5 +1,16 @@
 [
   {
+    "id": "1792981460319655h",
+    "time": "2026-10-26T02:24:20.319Z",
+    "displayTime": "10:24:20 PM",
+    "device": "desktop",
+    "target": "tech.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update tech project: Bot Crossing: Open-Source Game Workspace for AI Agents",
+    "details": null
+  },
+  {
     "id": "1792981354181tass",
     "time": "2026-10-26T02:22:34.181Z",
     "displayTime": "10:22:34 PM",
@@ -579,25 +590,6 @@
         "Rule of 5 Emergent Desk Evolution Nudge banner on dashboard",
         "Universal Drawer emergent cluster insight badges",
         "desk-suggestions.json integration with calm 1-tap focus or dismiss"
-      ]
-    }
-  },
-  {
-    "id": "1792550000000p2",
-    "time": "2026-10-21T02:35:00.000Z",
-    "displayTime": "10:35:00 PM",
-    "device": "desktop-ide",
-    "target": "reactive-desks-cqrs",
-    "action": "phase2-desk-projections-and-pin-modal",
-    "status": "success",
-    "message": "Activated Reactive Desk Projections (Reading Nook TBR & Gaming Rig Backlog) and Desk Quick-Attach Modal",
-    "details": {
-      "version": "active-desks-v27",
-      "features": [
-        "Reading Nook Up Next / TBR projection tray with 1-tap activation",
-        "Gaming Rig Backlog / Watchlist projection tray with 1-tap activation",
-        "Universal Pin-to-Desk Modal for 1-tap domain & topic reassignment",
-        "Seeded high-value book and game captures in master stream"
       ]
     }
   }
