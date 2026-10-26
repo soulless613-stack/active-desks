@@ -1,15 +1,26 @@
 [
   {
     "id": 1792989181242,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DclKZARteCP/?cplk=MXl4MW5zY3U3N2N3",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Claude Code",
+    "title": "Self-Correcting Simplified Technical English (STE) for Claude Code",
+    "summary": "A benchmark and setup guide replacing viral one-line prompts and static skills with a two-hook architecture in Claude Code that deterministically enforces ASD-STE100 and self-corrects drift.",
+    "creator": "Kem | Glitch Cat Club (@kem_glitch)",
     "sourceUrl": "https://www.instagram.com/reel/DclKZARteCP/?cplk=MXl4MW5zY3U3N2N3",
+    "blogUrl": "https://www.instagram.com/reel/DclKZARteCP/?cplk=MXl4MW5zY3U3N2N3",
     "time": "Oct 26",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DclKZARteCP/?cplk=MXl4MW5zY3U3N2N3",
-    "payload": null
+    "payload": {
+      "title": "Self-Correcting Simplified Technical English (STE) for Claude Code",
+      "summary": "A benchmark and setup guide replacing viral one-line prompts and static skills with a two-hook architecture in Claude Code that deterministically enforces ASD-STE100 and self-corrects drift.",
+      "keyTakeaways": [
+        "Static lines in CLAUDE.md or Claude skills degrade over extended conversation turns due to context rot and lack of automated verification.",
+        "A dual-hook setup in Claude Code attaches rule constraints to every user prompt and evaluates the output with a deterministic linter.",
+        "Feeding output linter scores into the subsequent prompt enables continuous self-correction, reducing output reading volume by up to 68%."
+      ]
+    }
   },
   {
     "id": 1792963881958,
