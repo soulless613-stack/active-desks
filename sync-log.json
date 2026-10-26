@@ -1,5 +1,16 @@
 [
   {
+    "id": "1792981354181tass",
+    "time": "2026-10-26T02:22:34.181Z",
+    "displayTime": "10:22:34 PM",
+    "device": "desktop",
+    "target": "tech.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update tech project: ayghri/i-have-adhd: ADHD-Friendly Output for AI Coding Agents",
+    "details": null
+  },
+  {
     "id": "17929638847795rvv",
     "time": "2026-10-25T21:31:24.779Z",
     "displayTime": "05:31:24 PM",
@@ -587,26 +598,6 @@
         "Gaming Rig Backlog / Watchlist projection tray with 1-tap activation",
         "Universal Pin-to-Desk Modal for 1-tap domain & topic reassignment",
         "Seeded high-value book and game captures in master stream"
-      ]
-    }
-  },
-  {
-    "id": "1792548000000ui",
-    "time": "2026-10-21T02:13:00.000Z",
-    "displayTime": "10:13:00 PM",
-    "device": "desktop-ide",
-    "target": "styles.css",
-    "action": "ui-polish-filter-pills",
-    "status": "success",
-    "message": "Overhauled Universal Capture filter pills with flex-wrap, sticky header, and distinct count badges",
-    "details": {
-      "version": "active-desks-v26",
-      "enhancements": [
-        "flex-wrap wrapping",
-        "flex-shrink: 0",
-        "sticky top toolbar",
-        "dedicated pill counters",
-        "high-contrast badge pop"
       ]
     }
   }
