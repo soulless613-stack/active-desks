@@ -1,15 +1,26 @@
 [
   {
     "id": 1793015390078,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/Dbavr1-IcdT/?vrfl=MW5uOHcza3A5MTFsbg==",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Local AI",
+    "title": "Why You Should Use Local AI: Privacy, Cost, and Unrestricted Access",
+    "summary": "An introduction to local, open-weight AI models explaining how they run completely offline on standard consumer hardware, offering full data privacy, zero recurring subscription costs, and permanent access without corporate gatekeeping.",
+    "creator": "Saria | AI Literacy (@thecorporateflamingo)",
     "sourceUrl": "https://www.instagram.com/reel/Dbavr1-IcdT/?vrfl=MW5uOHcza3A5MTFsbg==",
+    "blogUrl": "https://www.instagram.com/reel/Dbavr1-IcdT/",
     "time": "Oct 26",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/Dbavr1-IcdT/?vrfl=MW5uOHcza3A5MTFsbg==",
-    "payload": null
+    "payload": {
+      "title": "Why You Should Use Local AI: Privacy, Cost, and Unrestricted Access",
+      "summary": "Local, open-weight models (like Llama, Gemma, Qwen, and Mistral) can run offline on regular laptops and gaming PCs using simple apps like LM Studio, protecting users from subscription fees, data breaches, and gatekeeping.",
+      "keyTakeaways": [
+        "No specialized enterprise hardware is required for everyday tasks: small open-weight models run offline on standard laptops using beginner-friendly tools like LM Studio with zero coding.",
+        "Data privacy is absolute because your prompts and documents never leave your machine, eliminating exposure to data breaches, government subpoena requests, or corporate model training.",
+        "Local AI eliminates monthly subscription fees, arbitrary usage caps, and the risk of losing access due to sudden platform tier-locks or ID verification requirements."
+      ]
+    }
   },
   {
     "id": 1793014689848,
