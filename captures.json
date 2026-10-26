@@ -1,15 +1,26 @@
 [
   {
     "id": 1793037884587,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DbhVvfAhmOv/?cplk=MWkzbGg2Znozc2xyeg==",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Gaming Peripherals",
+    "title": "OpenMouse: Browser-Based Control Panel for Gaming Mice",
+    "summary": "OpenMouse is an open-source, web-based utility created by snekxs that lets you configure gaming mouse settings directly in your browser without downloading bloated proprietary software.",
+    "creator": "Zack Shutt (@zackshutt)",
     "sourceUrl": "https://www.instagram.com/reel/DbhVvfAhmOv/?cplk=MWkzbGg2Znozc2xyeg==",
+    "blogUrl": "https://openmouse.app",
     "time": "Oct 26",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DbhVvfAhmOv/?cplk=MWkzbGg2Znozc2xyeg==",
-    "payload": null
+    "payload": {
+      "title": "OpenMouse: Browser-Based Control Panel for Gaming Mice",
+      "summary": "OpenMouse provides an open-source alternative to bulky manufacturer software (like Razer Synapse and Logitech G HUB), enabling direct peripheral configuration through a browser.",
+      "keyTakeaways": [
+        "Operates directly in Chromium-based browsers (Chrome, Edge) using WebHID without requiring background services, software installation, or user accounts [00:16, 00:41].",
+        "Allows full configuration of hardware settings including DPI stages, polling report rates, lift-off distance, and motion sync [00:33].",
+        "Created by developer snekxs with multi-brand support (Logitech, Endgame Gear, and others); available to preview at openmouse.app [00:07, 00:14, 00:47]."
+      ]
+    }
   },
   {
     "id": 1793016430538,
