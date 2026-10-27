@@ -1,15 +1,26 @@
 [
   {
     "id": 1793138773482,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DePJAUftlJD/?dlrf=c28zY2NodTcwMHgx",
-    "summary": null,
+    "domain": "tech",
+    "topic": "AI Coding",
+    "title": "Glitch Walk: Visualizing Vibe Coded Architecture",
+    "summary": "Glitch Walk is a developer skill designed to help programmers understand and visually map out how their vibe-coded applications, backend routines, and APIs actually execute step-by-step.",
+    "creator": "Kem (@kem_glitch)",
     "sourceUrl": "https://www.instagram.com/reel/DePJAUftlJD/?dlrf=c28zY2NodTcwMHgx",
+    "blogUrl": "https://github.com/Glitch-Cat-Club/glitch-skills",
     "time": "Oct 27",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DePJAUftlJD/?dlrf=c28zY2NodTcwMHgx",
-    "payload": null
+    "payload": {
+      "title": "Glitch Walk: Visualizing Vibe Coded Architecture",
+      "summary": "An open-source AI agent skill that translates opaque codebases into interactive visual walkthroughs, connecting UI screens directly to sequential server execution steps and specific source code files.",
+      "keyTakeaways": [
+        "Eliminates the 'black box' problem in vibe coding by visually rendering how the UI, backend handlers, and APIs coordinate.",
+        "Breaks down complex requests sequentially into user-facing actions, out-of-sight background tasks, and source file locations.",
+        "Open-source and accessible via GitHub at github.com/Glitch-Cat-Club/glitch-skills."
+      ]
+    }
   },
   {
     "id": 1793101166661,
