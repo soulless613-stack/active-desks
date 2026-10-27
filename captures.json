@@ -1,15 +1,24 @@
 [
   {
     "id": 1793101166661,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DdhqRGlj-m4/?rpxt=ZXR4MXI5YzU3a3V1",
-    "summary": null,
+    "domain": "tech",
+    "topic": "AI Productivity",
+    "title": "Gamified 'Task Tinder' AI Prompt for Overwhelm & ADHD",
+    "summary": "A gamified productivity workflow and interactive Claude/ChatGPT artifact that turns a quick verbal brain dump into a swipeable task deck with micro-steps, timers, and reward mechanics.",
+    "creator": "Logan Currie (@loganinthefuture)",
     "sourceUrl": "https://www.instagram.com/reel/DdhqRGlj-m4/?rpxt=ZXR4MXI5YzU3a3V1",
+    "blogUrl": null,
     "time": "Oct 27",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DdhqRGlj-m4/?rpxt=ZXR4MXI5YzU3a3V1",
-    "payload": null
+    "payload": {
+      "keyTakeaways": [
+        "Do a 2 to 5-minute verbal or typed brain dump of all pending mental tasks directly into Claude or ChatGPT.",
+        "The tool generates an interactive deck where you swipe left to defer or swipe right to immediately launch into a task.",
+        "Each card provides an ultra-low-friction 'first move', adjustable timers (5, 10, or 25 minutes), an intrusive thought parking lot, and dopamine-boosting confetti/XP rewards."
+      ]
+    }
   },
   {
     "id": 1793100736278,
