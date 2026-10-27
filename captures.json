@@ -1,15 +1,26 @@
 [
   {
     "id": 1793072834650,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/DcHG2kPtZZG/?psln=MXFmeG0xYXZtYWxxcw==",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Knowledge Graphs",
+    "title": "Tier 1 Knowledge Graph Memory for AI Assistants",
+    "summary": "A lightweight, push-based Tier 1 knowledge graph using three SQLite tables and prompt hooks to pre-traverse multi-hop relational data in ~2ms, enabling small models like Claude Haiku to accurately answer complex trap questions without tool calls.",
+    "creator": "Kem @ Glitch Cat Club (@kem_glitch)",
     "sourceUrl": "https://www.instagram.com/reel/DcHG2kPtZZG/?psln=MXFmeG0xYXZtYWxxcw==",
+    "blogUrl": "https://github.com/Glitch-Cat-Club/graph-memory-starter",
     "time": "Oct 26",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DcHG2kPtZZG/?psln=MXFmeG0xYXZtYWxxcw==",
-    "payload": null
+    "payload": {
+      "title": "Tier 1 Knowledge Graph Memory for AI Assistants",
+      "summary": "A lightweight, push-based Tier 1 knowledge graph using three SQLite tables and prompt hooks to pre-traverse multi-hop relational data in ~2ms, enabling small models like Claude Haiku to accurately answer complex trap questions without tool calls.",
+      "keyTakeaways": [
+        "Push vs. Pull Retrieval: Instead of forcing LLMs to search and read through tool calls during generation, the traversal query walks the graph ahead of time and injects deterministic facts via a UserPromptSubmit hook.",
+        "Minimalist Tier 1 Stack: Built with 3 SQLite tables (entities, relations, aliases), 1 recursive traversal query, and ~250 lines of code—requiring zero external frameworks, API keys, or dedicated graph servers.",
+        "Parity for Lightweight Models: Bypassing fuzzy keyword search and document scanning keeps context fixed (~400 tokens) and allows small models like Haiku to solve multi-hop multi-file traps in ~2ms."
+      ]
+    }
   },
   {
     "id": 1793056385577,
