@@ -1,0 +1,22 @@
+{
+  "name": "Active Desks v2.0",
+  "short_name": "ActiveDesks",
+  "description": "Intentional personal launchpad and mobile-first workbench manager.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#080c14",
+  "theme_color": "#080c14",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

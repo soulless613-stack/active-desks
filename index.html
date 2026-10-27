@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#080c14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Active Desks">
+  <title>Active Desks v2.0 - Intentional Workbenches</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="app-container">
+
+    <!-- Top Header -->
+    <header class="header-bar">
+      <div class="brand-section">
+        <span class="brand-icon">✨</span>
+        <div>
+          <h1 class="brand-title">Active Desks</h1>
+          <div id="current-date" class="brand-date">Today</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="btn-icon" id="btn-open-drawer" title="View Captures Stream">
+          <span>🧠</span>
+        </button>
+        <div class="sync-badge" id="header-sync-badge" title="Device Sync Status">
+          <span class="sync-dot" id="header-sync-dot"></span>
+          <span id="header-sync-text">Local</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Daily 3 Anchors Banner -->
+    <section class="bucket-banner" aria-label="Today's 3 Anchors">
+      <div class="bucket-header">
+        <div class="bucket-title-wrap">
+          <span>⚖️</span>
+          <span>Today's 3 Anchors</span>
+        </div>
+        <span id="bucket-status-tag" class="bucket-status-tag">0/3 Done</span>
+      </div>
+
+      <div class="bucket-grid">
+        <!-- Home Anchor -->
+        <div id="bucket-home" class="bucket-card" role="button" tabindex="0">
+          <span class="bucket-check-indicator" id="check-home"></span>
+          <span class="bucket-icon">🏠</span>
+          <span class="bucket-name">Home Anchor</span>
+          <span class="bucket-sub">Family & Chores</span>
+        </div>
+
+        <!-- Body Anchor -->
+        <div id="bucket-body" class="bucket-card" role="button" tabindex="0">
+          <span class="bucket-check-indicator" id="check-body"></span>
+          <span class="bucket-icon">💪</span>
+          <span class="bucket-name">Body Anchor</span>
+          <span class="bucket-sub">Movement & Health</span>
+        </div>
+
+        <!-- Spark Anchor -->
+        <div id="bucket-spark" class="bucket-card" role="button" tabindex="0">
+          <span class="bucket-check-indicator" id="check-spark"></span>
+          <span class="bucket-icon">✨</span>
+          <span class="bucket-name">Spark Anchor</span>
+          <span class="bucket-sub">Hobbies & Reading</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Desks Section Header & Swapping Trigger -->
+    <div class="desks-section-header">
+      <span class="desks-section-title">Active Workbenches (4 Max)</span>
+      <button type="button" class="btn-swap-desks" id="btn-swap-desks" title="Rotate active workbenches">
+        <span>⚙️ Swap Desks</span>
+      </button>
+    </div>
+
+    <!-- The 4-Workbench Grid (Dynamic Rendering) -->
+    <main class="desks-grid" id="desks-grid">
+      <!-- Populated dynamically by desk-manager.js -->
+    </main>
+
+  </div> <!-- End App Container -->
+
+  <!-- Sticky Bottom Quick-Capture Dock -->
+  <div class="quick-capture-wrapper">
+    <form class="quick-capture-box" id="quick-capture-form">
+      <button type="button" class="btn-icon" id="dock-stream-btn" style="padding: 4px 8px; border: none; background: transparent;" title="View capture stream">
+        <span>⚡</span>
+      </button>
+      <input type="text" id="quick-capture-input" class="quick-capture-input" placeholder="Drop a link (book, game, recipe, tech) or type a thought..." autocomplete="off">
+      <button type="submit" class="quick-capture-btn">Save</button>
+    </form>
+  </div>
+
+  <!-- Modal: 4-Workbench Swapping & Concentration -->
+  <div id="swap-desk-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Rotate Active Workbenches</h3>
+        <button type="button" class="modal-close-btn" data-close="swap-desk-modal">✕</button>
+      </div>
+
+      <div class="swap-list-section">
+        <div class="swap-section-label">Active Workbenches (4 of 4)</div>
+        <div id="swap-active-list">
+          <!-- Populated by desk-manager.js -->
+        </div>
+      </div>
+
+      <div class="swap-list-section">
+        <div class="swap-section-label">Resting Workbenches (Zero Data Loss Dormancy)</div>
+        <div id="swap-dormant-list">
+          <!-- Populated by desk-manager.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Entry Point (Native ES Module) -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
