@@ -1,5 +1,27 @@
 [
   {
+    "id": "1793101169583mp6u",
+    "time": "2026-10-27T11:39:29.583Z",
+    "displayTime": "07:39:29 AM",
+    "device": "mobile",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (37 notes)",
+    "details": null
+  },
+  {
+    "id": "1793101168029fucp",
+    "time": "2026-10-27T11:39:28.029Z",
+    "displayTime": "07:39:28 AM",
+    "device": "mobile",
+    "target": "recipe-inbox.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update recipe inbox (1 pending)",
+    "details": null
+  },
+  {
     "id": "1793100739117poes",
     "time": "2026-10-27T11:32:19.117Z",
     "displayTime": "07:32:19 AM",
@@ -531,32 +553,5 @@
       "title": "PressPrint Lab Hinged Box Generator",
       "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds"
     }
-  },
-  {
-    "id": "17926475271915a2p",
-    "time": "2026-10-22T05:38:47.183Z",
-    "displayTime": "05:38:47 AM",
-    "device": "cloud-agent",
-    "target": "captures.json",
-    "action": "universal-extract-and-classify",
-    "status": "success",
-    "message": "Classified [book] · LitRPG: 5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
-    "details": {
-      "domain": "book",
-      "topic": "LitRPG",
-      "title": "5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
-      "sourceUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0"
-    }
-  },
-  {
-    "id": "17925821982515fkk",
-    "time": "2026-10-21T11:29:58.251Z",
-    "displayTime": "07:29:58 AM",
-    "device": "mobile",
-    "target": "captures.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update captured thoughts (17 notes)",
-    "details": null
   }
 ]
