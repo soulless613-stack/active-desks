@@ -1,16 +1,25 @@
 [
   {
+    "id": 1793098666161,
+    "domain": null,
+    "topic": null,
+    "title": "Use the agent behind this to find the insta handle of the guy making the microscope debloater to install win 11 on the stevens laptop it's you should be good for a local AI model to use and run for me. Then I won't have to pay Google for Gemini keys.",
+    "summary": null,
+    "sourceUrl": null,
+    "time": "Oct 27",
+    "status": "pending",
+    "rawText": "Use the agent behind this to find the insta handle of the guy making the microscope debloater to install win 11 on the stevens laptop it's you should be good for a local AI model to use and run for me. Then I won't have to pay Google for Gemini keys.",
+    "payload": null
+  },
+  {
     "id": 1793072834650,
     "domain": "tech",
     "topic": "Knowledge Graphs",
     "title": "Tier 1 Knowledge Graph Memory for AI Assistants",
     "summary": "A lightweight, push-based Tier 1 knowledge graph using three SQLite tables and prompt hooks to pre-traverse multi-hop relational data in ~2ms, enabling small models like Claude Haiku to accurately answer complex trap questions without tool calls.",
-    "creator": "Kem @ Glitch Cat Club (@kem_glitch)",
     "sourceUrl": "https://www.instagram.com/reel/DcHG2kPtZZG/?psln=MXFmeG0xYXZtYWxxcw==",
-    "blogUrl": "https://github.com/Glitch-Cat-Club/graph-memory-starter",
     "time": "Oct 26",
     "status": "processed",
-    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/DcHG2kPtZZG/?psln=MXFmeG0xYXZtYWxxcw==",
     "payload": {
       "title": "Tier 1 Knowledge Graph Memory for AI Assistants",
@@ -20,7 +29,10 @@
         "Minimalist Tier 1 Stack: Built with 3 SQLite tables (entities, relations, aliases), 1 recursive traversal query, and ~250 lines of code—requiring zero external frameworks, API keys, or dedicated graph servers.",
         "Parity for Lightweight Models: Bypassing fuzzy keyword search and document scanning keeps context fixed (~400 tokens) and allows small models like Haiku to solve multi-hop multi-file traps in ~2ms."
       ]
-    }
+    },
+    "creator": "Kem @ Glitch Cat Club (@kem_glitch)",
+    "blogUrl": "https://github.com/Glitch-Cat-Club/graph-memory-starter",
+    "mediaStatus": "video_extracted"
   },
   {
     "id": 1793056385577,
