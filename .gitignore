@@ -1,0 +1,13 @@
+# Operating System & IDE Artifacts
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Editor directories
+.vscode/
+.idea/
+
+# Local Dev Artifacts
+/temp/
+/scratch/
