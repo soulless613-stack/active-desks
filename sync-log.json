@@ -1,5 +1,27 @@
 [
   {
+    "id": "17930728373384b4j",
+    "time": "2026-10-27T03:47:17.338Z",
+    "displayTime": "11:47:17 PM",
+    "device": "mobile",
+    "target": "captures.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update captured thoughts (32 notes)",
+    "details": null
+  },
+  {
+    "id": "17930728359470yee",
+    "time": "2026-10-27T03:47:15.947Z",
+    "displayTime": "11:47:15 PM",
+    "device": "mobile",
+    "target": "recipe-inbox.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update recipe inbox (1 pending)",
+    "details": null
+  },
+  {
     "id": "1793056389110wwoy",
     "time": "2026-10-26T23:13:09.110Z",
     "displayTime": "07:13:09 PM",
@@ -543,28 +565,6 @@
     "action": "commit",
     "status": "success",
     "message": "Update captured thoughts (15 notes)",
-    "details": null
-  },
-  {
-    "id": "1792558179721o3g0",
-    "time": "2026-10-21T04:49:39.721Z",
-    "displayTime": "12:49:39 AM",
-    "device": "mobile",
-    "target": "recipe-inbox.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update recipe inbox (1 pending)",
-    "details": null
-  },
-  {
-    "id": "1792558101777dywl",
-    "time": "2026-10-21T04:48:21.777Z",
-    "displayTime": "12:48:21 AM",
-    "device": "mobile",
-    "target": "captures.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update captured thoughts (14 notes)",
     "details": null
   }
 ]
