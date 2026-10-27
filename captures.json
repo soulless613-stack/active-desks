@@ -1,5 +1,28 @@
 [
   {
+    "id": 1793099360378,
+    "domain": "tech",
+    "topic": "Claude Code",
+    "title": "Building a Second Brain for Claude Code with BASE",
+    "summary": "A breakdown of why the Obsidian and Graphify stack burns excessive tokens and requires manual curation for Claude Code, and how BASE (basemode) provides native, automated knowledge graphing and context injection.",
+    "creator": "Charles J Dove (@charlieautomates)",
+    "sourceUrl": "https://www.instagram.com/reel/De97J-dpOez/?vrfl=cWU3amRkdmUydDZo",
+    "blogUrl": "https://www.instagram.com/reel/De97J-dpOez/",
+    "time": "Oct 27",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
+    "rawText": "Universal capture URL",
+    "payload": {
+      "title": "Building a Second Brain for Claude Code with BASE",
+      "summary": "Why the Obsidian + Graphify stack burns tokens and requires manual effort for Claude Code, and how BASE (basemode) integrates directly into Claude Code's hook pipeline for automated, cost-effective context injection.",
+      "keyTakeaways": [
+        "Avoid the Obsidian + Graphify stack for Claude Code: Graphify scans your entire workspace file-by-file (consuming heavy token quotas), while Obsidian functions solely as a passive viewer requiring manual curation.",
+        "BASE integrates natively via Claude Code hooks: Using hooks like SessionStart, BASE automatically pulls open handoffs, active projects, and system health into Claude Code's awareness without manual input.",
+        "Selective domain routing saves tokens: Keyword matching maps specific domains and AST file paths to inject only the relevant rules and decisions for the current prompt, self-updating at the end of each session."
+      ]
+    }
+  },
+  {
     "id": 1793098666161,
     "domain": "tech",
     "topic": "Local AI",

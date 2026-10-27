@@ -1,5 +1,21 @@
 [
   {
+    "id": "1793099477270tbmx",
+    "time": "2026-10-27T11:11:17.269Z",
+    "displayTime": "11:11:17 AM",
+    "device": "cloud-agent",
+    "target": "captures.json",
+    "action": "universal-extract-and-classify",
+    "status": "success",
+    "message": "Classified [tech] · Claude Code: Building a Second Brain for Claude Code with BASE",
+    "details": {
+      "domain": "tech",
+      "topic": "Claude Code",
+      "title": "Building a Second Brain for Claude Code with BASE",
+      "sourceUrl": "https://www.instagram.com/reel/De97J-dpOez/?vrfl=cWU3amRkdmUydDZo"
+    }
+  },
+  {
     "id": "1793098667998rjy1",
     "time": "2026-10-27T10:57:47.998Z",
     "displayTime": "06:57:47 AM",
