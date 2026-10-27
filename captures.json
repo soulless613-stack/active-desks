@@ -19,9 +19,84 @@
     "summary": null,
     "sourceUrl": "https://www.instagram.com/reel/Dez84JyNc6I/?srtk=MTh3YmFsbXAzM296eA==",
     "time": "Oct 27",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
+    "rawText": "Universal capture URL",
+    "payload": {
+      "title": "Gamified 'Task Tinder' ADHD Productivity Tool for Claude & ChatGPT",
+      "summary": "A gamified productivity workflow built with Claude and ChatGPT designed to overcome ADHD task paralysis by converting verbal brain dumps into interactive, swipeable task cards with timers and XP rewards.",
+      "keyTakeaways": [
+        "Perform a 2–5 minute voice-to-text brain dump into Claude or ChatGPT to clear all mental open loops and overwhelm.",
+        "The prompt loads tasks into a swipeable card deck ('Task Tinder') that provides micro 'first moves' and removes decision fatigue.",
+        "Features interactive 5-, 10-, or 25-minute countdown timers, intrusive-thought parking spaces, XP points, and confetti rewards to boost dopamine."
+      ]
+    }
+  },
+  {
+    "id": 1793100736278,
+    "domain": "book",
+    "topic": "LitRPG",
+    "title": "What to Read After Dungeon Crawler Carl: 3 Hilarious Book Recommendations",
+    "summary": "Three witty LitRPG and sci-fi book recommendations featuring sarcastic system guides, game-breaking exploits, and chaotic humor to cure your Dungeon Crawler Carl reading slump.",
+    "creator": "Tales with Atticus (@tales.with.atticus)",
+    "sourceUrl": "https://www.instagram.com/reel/Dez84JyNc6I/?srtk=MTh3YmFsbXAzM296eA==",
+    "blogUrl": null,
+    "time": "Oct 27",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/Dez84JyNc6I/?srtk=MTh3YmFsbXAzM296eA==",
-    "payload": null
+    "payload": {
+      "title": "What to Read After Dungeon Crawler Carl",
+      "author": "Benjamin Kerei, Ryan Rimmel, Dennis E. Taylor",
+      "series": null,
+      "genre": "LitRPG / Progression Fantasy / Sci-Fi",
+      "summary": "A curated trio of hilarious, fast-paced speculative fiction books tailored for readers missing Dungeon Crawler Carl's chaotic humor, sarcastic system narration, and unhinged problem-solving.",
+      "highlight": "Captures the snarky AI narration, creative game mechanics exploitation, and brilliant comedic audiobook performances that make DCC so beloved.",
+      "linkUrl": "https://www.instagram.com/reel/Dez84JyNc6I/",
+      "books": [
+        {
+          "title": "Oh, Great! I Was Reincarnated as a Farmer",
+          "author": "Benjamin Kerei",
+          "series": "Unorthodox Farming (Book 1)",
+          "genre": "LitRPG / Progression Fantasy",
+          "formats": [
+            "Kindle Unlimited",
+            "Audiobook",
+            "Paperback",
+            "Hardback"
+          ],
+          "summary": "A gamer accidentally dies after a cleric botches his resurrection and awakens in a fantasy world trapped in the worst possible class: a farmer who earns zero experience points for killing monsters. The story centers on him finding ingenious loopholes to exploit the system.",
+          "highlight": "Ideal for fans of DCC's absurd, against-all-odds problem-solving and clever game-mechanic exploits."
+        },
+        {
+          "title": "The Mayor of Noobtown",
+          "author": "Ryan Rimmel",
+          "series": "Noobtown (Book 1)",
+          "genre": "LitRPG / Comedy Fantasy",
+          "formats": [
+            "Kindle Unlimited",
+            "Audiobook",
+            "Paperback"
+          ],
+          "summary": "A man wakes up in a video-game-like world and finds himself appointed the mayor of the saddest, most pitiful starter town imaginable, all while an abrasive, sarcastic system interface narrating his life continuously mocks him.",
+          "highlight": "The top pick if the sarcastic AI was your favorite part of Dungeon Crawler Carl."
+        },
+        {
+          "title": "We Are Legion (We Are Bob)",
+          "author": "Dennis E. Taylor",
+          "series": "Bobiverse (Book 1)",
+          "genre": "Sci-Fi / Space Opera / Comedy",
+          "formats": [
+            "Kindle Unlimited",
+            "Audiobook",
+            "Paperback",
+            "Hardback"
+          ],
+          "summary": "After being killed in a car accident, a man's consciousness is uploaded a century later as the software operating an interstellar von Neumann space probe. As he replicates himself, each clone develops a slightly different personality.",
+          "highlight": "Masterfully narrated by Ray Porter; the creator's most frequent recommendation to fill the post-DCC void."
+        }
+      ]
+    }
   },
   {
     "id": 1793099668233,
