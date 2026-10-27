@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Active Desks v2.0 — Database Engine Verification Harness</title>
+  <style>
+    body {
+      background: #0b0f19;
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    h1 { font-size: 1.4rem; color: #38bdf8; margin-bottom: 8px; }
+    .status-summary { font-size: 0.95rem; margin-bottom: 20px; color: #94a3b8; }
+    .test-suite { background: #131b2e; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .test-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .test-row:last-child { border-bottom: none; }
+    .test-name { font-weight: 500; font-size: 0.9rem; }
+    .pill { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .pill.pass { background: rgba(52, 211, 153, 0.2); color: #34d399; }
+    .pill.fail { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .pill.pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    pre { background: #080c14; padding: 12px; border-radius: 6px; font-size: 0.8rem; color: #93c5fd; overflow-x: auto; }
+  </style>
+</head>
+<body>
+
+  <h1>⚡ Active Desks v2.0 — Database Engine Verification</h1>
+  <div class="status-summary" id="overall-status">Initializing test runner...</div>
+
+  <div class="test-suite" id="suite-container">
+    <div class="test-row"><span class="test-name">Store Creation & Schema Initialization</span><span class="pill pending" id="pill-1">RUNNING</span></div>
+    <div class="test-row"><span class="test-name">CRUD Operations (Put, Get, Remove)</span><span class="pill pending" id="pill-2">PENDING</span></div>
+    <div class="test-row"><span class="test-name">Secondary Index Scanning (by_domain, by_domain_topic)</span><span class="pill pending" id="pill-3">PENDING</span></div>
+    <div class="test-row"><span class="test-name">Atomic Bulk Transactions (bulkPut)</span><span class="pill pending" id="pill-4">PENDING</span></div>
+    <div class="test-row"><span class="test-name">Legacy v1 Importer & Universal 3-Tier Normalization</span><span class="pill pending" id="pill-5">PENDING</span></div>
+  </div>
+
+  <h2>Diagnostic Log</h2>
+  <pre id="log-output"></pre>
+
+  <script type="module">
+    import * as db from '../js/db.js';
+    import { normalizeLegacyCapture, migrateFromV1 } from '../js/importer.js';
+
+    const logEl = document.getElementById('log-output');
+    function log(msg) {
+      logEl.textContent += `[${new Date().toISOString().substring(11, 19)}] ${msg}\n`;
+      console.log(msg);
+    }
+
+    function setPass(idx, label) {
+      const el = document.getElementById(`pill-${idx}`);
+      if (el) { el.className = 'pill pass'; el.textContent = 'PASS'; }
+      log(`✅ TEST ${idx} PASS: ${label}`);
+    }
+
+    function setFail(idx, label, err) {
+      const el = document.getElementById(`pill-${idx}`);
+      if (el) { el.className = 'pill fail'; el.textContent = 'FAIL'; }
+      log(`❌ TEST ${idx} FAIL: ${label} -> ${err.message || err}`);
+    }
+
+    async function runSuite() {
+      let passed = 0;
+      let total = 5;
+
+      try {
+        // Test 1: Store Creation & Schema Init
+        const conn = await db.openDB();
+        const storeNames = Array.from(conn.objectStoreNames);
+        const expectedStores = ['captures', 'desks', 'anchors', 'settings'];
+        const missing = expectedStores.filter(s => !storeNames.includes(s));
+
+        if (missing.length === 0) {
+          setPass(1, `All expected stores exist: [${storeNames.join(', ')}]`);
+          passed++;
+        } else {
+          throw new Error(`Missing stores: ${missing.join(', ')}`);
+        }
+
+        // Test 2: CRUD Operations
+        await db.clear('settings');
+        await db.put('settings', { key: 'test_token', value: 'secret123', updatedAt: new Date().toISOString() });
+        const retrieved = await db.get('settings', 'test_token');
+        if (!retrieved || retrieved.value !== 'secret123') throw new Error('Value mismatch on get');
+        await db.remove('settings', 'test_token');
+        const deleted = await db.get('settings', 'test_token');
+        if (deleted !== undefined) throw new Error('Record not deleted');
+        setPass(2, 'Put, Get, and Remove verified successfully');
+        passed++;
+
+        // Test 3: Secondary Index Scanning
+        await db.clear('captures');
+        const sampleCapture = {
+          id: 1001,
+          domain: 'book',
+          topic: 'LitRPG',
+          title: 'Dungeon Crawler Carl',
+          summary: 'LitRPG survival book series.',
+          creator: 'Matt Dinniman',
+          sourceUrl: 'https://example.com/dcc',
+          createdAt: new Date().toISOString(),
+          status: 'processed',
+          mediaStatus: 'text_images',
+          searchPerformed: true,
+          meta: [{ label: 'Genre', value: 'LitRPG' }],
+          body: { format: 'note', takeaways: ['Survival satire'] }
+        };
+        await db.put('captures', sampleCapture);
+        const byDomain = await db.getAll('captures', 'by_domain', 'book');
+        if (byDomain.length !== 1 || byDomain[0].id !== 1001) throw new Error('Index by_domain failed');
+        const byCompound = await db.getAll('captures', 'by_domain_topic', IDBKeyRange.only(['book', 'LitRPG']));
+        if (byCompound.length !== 1 || byCompound[0].id !== 1001) throw new Error('Compound index by_domain_topic failed');
+        setPass(3, 'Single & compound index queries return exact match slices');
+        passed++;
+
+        // Test 4: Atomic Bulk Transactions
+        const bulkItems = [
+          { id: 'reading', title: 'Oathbringer', currentPage: 1119, totalPages: 1243 },
+          { id: 'fiber', name: 'Autumn Cardigan', rows: 44, targetRows: 120 },
+          { id: 'gaming', title: 'Baldurs Gate 3', quest: 'Adamantine Forge' },
+          { id: 'tech', title: 'Parametric Boxes', stack: 'CAD & 3D Printing' }
+        ];
+        const writtenCount = await db.bulkPut('desks', bulkItems);
+        if (writtenCount !== 4) throw new Error(`bulkPut count mismatch: got ${writtenCount}, expected 4`);
+        const allDesks = await db.getAll('desks');
+        if (allDesks.length < 4) throw new Error('Stored desk count mismatch');
+        setPass(4, `bulkPut atomic transaction committed ${writtenCount} records`);
+        passed++;
+
+        // Test 5: Legacy Importer & Universal 3-Tier Normalization
+        const legacyCaptureRaw = {
+          id: 2001,
+          domain: 'tech',
+          topic: 'Developer Tools',
+          title: '10 GitHub Shortcuts',
+          text: 'Shortcuts to explore repos without cloning',
+          source: '@louis_rlee',
+          url: 'https://instagram.com/reel/De7WIcEogeo/',
+          payload: {
+            items: [
+              { name: 'GitReverse', transform: 'github -> gitreverse', purpose: 'AI prompt reconstruction' },
+              { name: 'GitDiagram', transform: 'hub -> diagram', purpose: 'Visual architecture map' }
+            ]
+          }
+        };
+
+        const normalized = normalizeLegacyCapture(legacyCaptureRaw);
+        if (normalized.body.format !== 'collection') throw new Error(`Expected format 'collection', got ${normalized.body.format}`);
+        if (normalized.body.items.length !== 2) throw new Error(`Collection items mismatch: expected 2, got ${normalized.body.items.length}`);
+        if (normalized.body.items[0].title !== 'GitReverse') throw new Error('Sub-item mapping failed');
+
+        // Test migration runner
+        const migrationResult = await migrateFromV1({
+          captures: [legacyCaptureRaw],
+          desks: {
+            reading: { title: 'Dune Messiah', currentPage: 120, totalPages: 300 }
+          },
+          buckets: {
+            home: { checked: true },
+            body: { checked: false },
+            spark: { checked: true }
+          }
+        });
+
+        if (migrationResult.capturesCount !== 1 || migrationResult.desksCount < 1 || migrationResult.anchorsCount !== 1) {
+          throw new Error('migrateFromV1 record count mismatch');
+        }
+
+        setPass(5, 'Normalized legacy payload into 3-Tier collection shape and migrated stores');
+        passed++;
+
+      } catch (err) {
+        log(`FATAL ERROR: ${err.message}`);
+        console.error(err);
+      }
+
+      const overall = document.getElementById('overall-status');
+      if (passed === total) {
+        overall.style.color = '#34d399';
+        overall.textContent = `All ${passed}/${total} verification tests passed! IndexedDB v2.0 engine is fully operational.`;
+      } else {
+        overall.style.color = '#f87171';
+        overall.textContent = `Verification halted: ${passed}/${total} tests passed. Check diagnostic log below.`;
+      }
+    }
+
+    runSuite();
+  </script>
+</body>
+</html>
