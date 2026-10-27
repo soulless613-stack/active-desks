@@ -1,15 +1,26 @@
 [
   {
     "id": 1793099668233,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/reel/De-emnOO4Ap/?srtk=NjAyZnptMnkwenBk",
-    "summary": null,
+    "domain": "misc",
+    "topic": "Donghua",
+    "title": "Spare Me, Great Lord! (Da Wang Rao Ming) Donghua Recommendation",
+    "summary": "A spotlight on the donghua series 'Spare Me, Great Lord!' (Da Wang Rao Ming), praising modern Chinese animation studios for their fast-paced, fluid, and easily readable fight choreography.",
+    "creator": "inevitably_dope (@inevitably_dope)",
     "sourceUrl": "https://www.instagram.com/reel/De-emnOO4Ap/?srtk=NjAyZnptMnkwenBk",
+    "blogUrl": "https://www.instagram.com/reel/De-emnOO4Ap/?srtk=NjAyZnptMnkwenBk",
     "time": "Oct 27",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "video_extracted",
     "rawText": "https://www.instagram.com/reel/De-emnOO4Ap/?srtk=NjAyZnptMnkwenBk",
-    "payload": null
+    "payload": {
+      "title": "Spare Me, Great Lord! (Da Wang Rao Ming) Donghua Recommendation",
+      "summary": "A spotlight on the donghua series 'Spare Me, Great Lord!' (Da Wang Rao Ming), praising modern Chinese animation studios for their fast-paced, fluid, and easily readable fight choreography.",
+      "keyTakeaways": [
+        "Recommends the Chinese animated series (donghua) 'Spare Me, Great Lord!' (Da Wang Rao Ming).",
+        "Highlights a standout train fight sequence showcasing high-speed, dynamic martial arts choreography and fluid sakuga.",
+        "Emphasizes how Chinese animation studios are producing world-class action scenes that remain clear and digestible despite ultra-fast pacing."
+      ]
+    }
   },
   {
     "id": 1793099360378,
