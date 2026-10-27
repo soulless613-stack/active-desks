@@ -1,15 +1,24 @@
 [
   {
     "id": 1793098666161,
-    "domain": null,
-    "topic": null,
-    "title": "Use the agent behind this to find the insta handle of the guy making the microscope debloater to install win 11 on the stevens laptop it's you should be good for a local AI model to use and run for me. Then I won't have to pay Google for Gemini keys.",
-    "summary": null,
+    "domain": "tech",
+    "topic": "Local AI",
+    "title": "Set Up Local AI on Stevens Laptop",
+    "summary": "Find the Windows 11 debloater developer's Instagram handle to install a lightweight OS on the Stevens laptop and run a local AI model to replace paid Gemini API keys.",
+    "creator": null,
     "sourceUrl": null,
+    "blogUrl": null,
     "time": "Oct 27",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "none",
     "rawText": "Use the agent behind this to find the insta handle of the guy making the microscope debloater to install win 11 on the stevens laptop it's you should be good for a local AI model to use and run for me. Then I won't have to pay Google for Gemini keys.",
-    "payload": null
+    "payload": {
+      "checklist": [
+        "Find the Instagram handle of the developer behind the Windows debloater tool",
+        "Install debloated Windows 11 on the Stevens laptop",
+        "Configure and run a local AI model to replace Gemini API usage"
+      ]
+    }
   },
   {
     "id": 1793072834650,
