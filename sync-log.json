@@ -1,19 +1,36 @@
 [
   {
-    "id": "1793099477270tbmx",
-    "time": "2026-10-27T11:11:17.269Z",
-    "displayTime": "11:11:17 AM",
-    "device": "cloud-agent",
+    "id": "1793099674406aovc",
+    "time": "2026-10-27T11:14:34.406Z",
+    "displayTime": "07:14:34 AM",
+    "device": "mobile",
     "target": "captures.json",
-    "action": "universal-extract-and-classify",
+    "action": "commit",
     "status": "success",
-    "message": "Classified [tech] · Claude Code: Building a Second Brain for Claude Code with BASE",
-    "details": {
-      "domain": "tech",
-      "topic": "Claude Code",
-      "title": "Building a Second Brain for Claude Code with BASE",
-      "sourceUrl": "https://www.instagram.com/reel/De97J-dpOez/?vrfl=cWU3amRkdmUydDZo"
-    }
+    "message": "Update captured thoughts (35 notes)",
+    "details": null
+  },
+  {
+    "id": "1793099671951ng9z",
+    "time": "2026-10-27T11:14:31.951Z",
+    "displayTime": "07:14:31 AM",
+    "device": "mobile",
+    "target": "recipe-inbox.json",
+    "action": "commit",
+    "status": "success",
+    "message": "Update recipe inbox (1 pending)",
+    "details": null
+  },
+  {
+    "id": "1793099361312uuuo",
+    "time": "2026-10-27T11:09:21.312Z",
+    "displayTime": "07:09:21 AM",
+    "device": "mobile",
+    "target": "recipe-inbox.json",
+    "action": "commit",
+    "status": "error",
+    "message": "Failed to commit recipe-inbox.json",
+    "details": "Failed to fetch"
   },
   {
     "id": "1793098667998rjy1",
@@ -540,47 +557,6 @@
     "action": "commit",
     "status": "success",
     "message": "Update captured thoughts (17 notes)",
-    "details": null
-  },
-  {
-    "id": "1792561000000mod",
-    "time": "2026-10-21T05:20:00.000Z",
-    "displayTime": "1:20:00 AM",
-    "device": "desktop-ide",
-    "target": "ui-and-sync-guard",
-    "action": "stale-tab-guard-and-capture-detail-modal",
-    "status": "success",
-    "message": "Activated Stale Tab Guard (visibilitychange & pre-write SHA check) and progressive Capture Detail Modal",
-    "details": {
-      "version": "active-desks-v36",
-      "features": [
-        "Capture Detail Modal reveals rich payload (key takeaways, author, platform, genre, goals) on card click",
-        "Drawer cards stay compact and calm on mobile",
-        "Stale Tab Guard checks remote /commits/main before writing and on tab focus",
-        "Removed automatic markDirty in mergeCaptures to prevent zombie capture resurrections"
-      ]
-    }
-  },
-  {
-    "id": "1792558449952zpta",
-    "time": "2026-10-21T04:54:09.952Z",
-    "displayTime": "12:54:09 AM",
-    "device": "desktop",
-    "target": "captures.json",
-    "action": "commit",
-    "status": "error",
-    "message": "Failed to commit captures.json",
-    "details": "Failed to fetch"
-  },
-  {
-    "id": "1792558246518wyrt",
-    "time": "2026-10-21T04:50:46.518Z",
-    "displayTime": "12:50:46 AM",
-    "device": "mobile",
-    "target": "captures.json",
-    "action": "commit",
-    "status": "success",
-    "message": "Update captured thoughts (16 notes)",
     "details": null
   }
 ]
