@@ -3,8 +3,8 @@
  * @description Settings, API Keys & Multi-Tier Device Sync Modal controller.
  */
 
-import * as db from '../db.js';
-import { state } from '../state.js';
+import * as db from './db.js';
+import { state } from './state.js';
 import { exportFullBackup, importFullBackup } from './sync/export-provider.js';
 import { createP2POffer } from './sync/p2p-provider.js';
 import { setSyncBadge } from './sync/sync-manager.js';
