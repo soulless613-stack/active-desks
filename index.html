@@ -183,6 +183,106 @@
     </div>
   </div>
 
+  <!-- Modal: Settings, Gemini Keys & Multi-Tier Sync -->
+  <div id="settings-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙️ Settings &amp; Device Sync</h3>
+        <button type="button" class="modal-close-btn" data-close="settings-modal">✕</button>
+      </div>
+
+      <!-- Sync Method Section -->
+      <div class="swap-list-section">
+        <div class="swap-section-label">Device Synchronization Method</div>
+        
+        <label class="sync-provider-card">
+          <input type="radio" name="sync_provider" value="drive">
+          <div>
+            <div style="font-weight: 700; font-size: 0.9rem; color: #38bdf8;">Google Drive Sync (Recommended)</div>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+              Syncs across phone and PC anytime via your personal Google account. Zero server hosting.
+            </div>
+          </div>
+        </label>
+
+        <label class="sync-provider-card" style="margin-top: 8px;">
+          <input type="radio" name="sync_provider" value="p2p">
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; font-size: 0.9rem; color: #c084fc;">Private Local Sync (Peer-to-Peer)</span>
+              <button type="button" class="desk-action-btn" id="btn-show-p2p-qr" style="font-size: 0.72rem;">Pair via QR Code</button>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+              Zero cloud. Direct encrypted WebRTC sync over local Wi-Fi.
+            </div>
+          </div>
+        </label>
+
+        <label class="sync-provider-card" style="margin-top: 8px;">
+          <input type="radio" name="sync_provider" value="offline">
+          <div>
+            <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary);">Offline Only</div>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+              Keep all data strictly inside this device's IndexedDB.
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Gemini AI Settings Section -->
+      <div class="swap-list-section" style="margin-top: 20px;">
+        <div class="swap-section-label">Gemini AI Intelligence (BYOK)</div>
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <input type="password" id="settings-gemini-key" class="quick-capture-input" placeholder="Paste Gemini API Key (AI Studio)..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;">
+          <button type="button" class="quick-capture-btn" id="btn-save-gemini-key" style="border-radius: var(--radius-sm); padding: 8px 14px;">Save Key</button>
+        </div>
+
+        <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+          <input type="checkbox" id="settings-grounding-checkbox" style="margin-top: 3px;">
+          <div>
+            <span style="font-weight: 700; color: var(--text-primary);">Enable Live Web Search Grounding</span><br>
+            <span style="font-size: 0.74rem; color: var(--text-muted); line-height: 1.3; display: inline-block; margin-top: 2px;">
+              Allows Gemini to inspect books, Steam games, CAD specs, and creator recipes from web links. (Requires a Gemini API key with billing linked; first 5,000 searches/mo are free).
+            </span>
+          </div>
+        </label>
+      </div>
+
+      <!-- Manual Backup Section -->
+      <div class="swap-list-section" style="margin-top: 20px; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+        <div class="swap-section-label">Offline Backup &amp; Recovery</div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-icon" id="btn-export-backup" style="flex: 1; justify-content: center;">📥 Export JSON Backup</button>
+          <button type="button" class="btn-icon" id="btn-import-backup" style="flex: 1; justify-content: center;">📤 Import JSON Backup</button>
+          <input type="file" id="settings-import-file" accept=".json" style="display: none;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: P2P QR Code Pairing Overlay -->
+  <div id="qr-pair-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 440px; text-align: center;">
+      <div class="modal-header">
+        <h3 class="modal-title">📡 Peer-to-Peer Pairing</h3>
+        <button type="button" class="modal-close-btn" data-close="qr-pair-modal">✕</button>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+        Scan this invitation with your other device to establish an encrypted direct link.
+      </div>
+      <div style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); word-break: break-all; font-family: monospace; font-size: 0.72rem; color: #38bdf8; max-height: 140px; overflow-y: auto;" id="qr-invitation-text">
+        Generating invitation...
+      </div>
+      <div style="margin-top: 16px;">
+        <button type="button" class="desk-action-btn" data-close="qr-pair-modal">Done</button>
+      </div>
+    </div>
+  </div>
+        <button type="button" class="desk-action-btn" data-close="capture-detail-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Entry Point (Native ES Module) -->
   <script type="module" src="js/app.js"></script>
 </body>

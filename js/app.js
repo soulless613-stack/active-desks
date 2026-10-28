@@ -9,6 +9,8 @@ import { initAnchors, renderAnchors } from './desks/anchors.js';
 import { initDeskManager, renderActiveDesks } from './desks/desk-manager.js';
 import { initCaptureDock } from './captures/capture-dock.js';
 import { closeCapturesDrawer } from './captures/drawer.js';
+import { initSyncManager } from './sync/sync-manager.js';
+import { initSettingsModal } from './settings-modal.js';
 
 /**
  * Boots the application on DOM ready.
@@ -29,6 +31,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     initAnchors();
     initDeskManager();
     initCaptureDock();
+    initSyncManager();
+    initSettingsModal();
 
     // 4. Wire Reactive Subscriptions
     subscribe('anchors', () => renderAnchors());
