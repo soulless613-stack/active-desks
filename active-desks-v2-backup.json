@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "exportedAt": "2026-10-28T04:16:13.144Z",
+  "exportedAt": "2026-10-28T04:27:28.022Z",
   "stores": {
     "desks": [
       {
@@ -72,7 +72,7 @@
         "summary": "A tiered reading guide for readers ready to dive into advanced LitRPG and progression fantasy, covering deep class mechanics, system apocalypses, and heavy stat progression.",
         "creator": "Tales with Atticus (@tales.with.atticus)",
         "sourceUrl": "https://www.instagram.com/p/DfA8k1IjsOV/?img_index=5&xtok=MWl4a2R4Njk0bDdveQ==",
-        "foundUrl": null,
+        "foundUrl": "https://www.instagram.com/p/DfA8k1IjsOV/",
         "createdAt": "2026-10-28T03:06:56.071Z",
         "status": "processed",
         "mediaStatus": "text_images",
@@ -88,11 +88,39 @@
           }
         ],
         "body": {
-          "format": "note",
-          "takeaways": [
-            "A tiered reading guide for readers ready to dive into advanced LitRPG and progression fantasy, covering deep class mechanics, system apocalypses, and heavy stat progression."
-          ],
-          "highlight": "Ideal roadmap for readers advancing past intro LitRPG into heavy stat sheets, intricate class builds, and epic progression fantasy."
+          "format": "collection",
+          "items": [
+            {
+              "title": "Level 6: Awaken Online",
+              "subtitle": "by Travis Bagwell • Dark / Villain Class VRMMO",
+              "detail": "Ventures into morally gray builds and complex AI game administration. Jason assumes the role of a necromancer villain in a game that adapts dynamically to human psychology.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Awaken+Online+Travis+Bagwell"
+            },
+            {
+              "title": "Level 7: He Who Fights with Monsters",
+              "subtitle": "by Shirtaloon (Travis Deverell) • Isekai / Essences & Confluences",
+              "detail": "Features an intricate power system combining 4 essences into confluences with 20 distinct magical abilities. Jason Asano awakens in another world with sarcastic banter and high political stakes.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=He+Who+Fights+with+Monsters+Shirtaloon"
+            },
+            {
+              "title": "Level 8: The Primal Hunter",
+              "subtitle": "by Zogarth • System Apocalypse / Solitary Archer",
+              "detail": "Escalates into expansive system progression with bloodline awakenings, solitary wilderness survival, alchemy crafting, and solitary god-tier archery mechanics.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=The+Primal+Hunter+Zogarth"
+            },
+            {
+              "title": "Level 9: Defiance of the Fall",
+              "subtitle": "by TheFirstDefier (JF Brink) • System Apocalypse / Cosmic Cultivation",
+              "detail": "Massive multi-realm cosmic scope blending Western RPG leveling with Eastern cultivation, Daos, node arrays, and brutal survival on an integrated Earth.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Defiance+of+the+Fall+JF+Brink"
+            },
+            {
+              "title": "Level 10: Delve",
+              "subtitle": "by SenescentSoul • Deep Crunchy Stats / Mana Optimization",
+              "detail": "The pinnacle of stat calculation and build math. A protagonist builds a specialized aura-stacking support build, breaking down mana regeneration mathematics, soul trees, and system physics.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Delve+SenescentSoul"
+            }
+          ]
         }
       },
       {
@@ -171,68 +199,21 @@
           "items": [
             {
               "title": "Oh, Great! I Was Reincarnated as a Farmer",
-              "subtitle": "by Benjamin Kerei",
-              "detail": "A gamer accidentally dies after a cleric botches his resurrection and awakens in a fantasy world trapped in the worst possible class: a farmer who earns zero experience points for killing monsters. The story centers on him finding ingenious loopholes to exploit the system.",
-              "linkUrl": null
+              "subtitle": "by Benjamin Kerei • Unorthodox Farming (#1)",
+              "detail": "A gamer accidentally dies after a cleric botches his resurrection and awakens in a fantasy world trapped in the worst possible class: a farmer who earns zero experience points for killing monsters. He must find ingenious loopholes to exploit the system.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Oh+Great+I+Was+Reincarnated+as+a+Farmer+Benjamin+Kerei"
             },
             {
               "title": "The Mayor of Noobtown",
-              "subtitle": "by Ryan Rimmel",
-              "detail": "A man wakes up in a video-game-like world and finds himself appointed the mayor of the saddest, most pitiful starter town imaginable, all while an abrasive, sarcastic system interface narrating his life continuously mocks him.",
-              "linkUrl": null
+              "subtitle": "by Ryan Rimmel • Noobtown (#1)",
+              "detail": "A man wakes up in a video-game-like world and finds himself appointed the mayor of the saddest starter town imaginable, all while an abrasive, sarcastic demon/system interface narrating his life continuously mocks him.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=The+Mayor+of+Noobtown+Ryan+Rimmel"
             },
             {
               "title": "We Are Legion (We Are Bob)",
-              "subtitle": "by Dennis E. Taylor",
-              "detail": "After being killed in a car accident, a man's consciousness is uploaded a century later as the software operating an interstellar von Neumann space probe. As he replicates himself, each clone develops a slightly different personality.",
-              "linkUrl": null
-            }
-          ]
-        }
-      },
-      {
-        "id": 1793100736278,
-        "domain": "book",
-        "topic": "LitRPG",
-        "title": "What to Read After Dungeon Crawler Carl: 3 Hilarious Book Recommendations",
-        "summary": "Three witty LitRPG and sci-fi book recommendations featuring sarcastic system guides, game-breaking exploits, and chaotic humor to cure your Dungeon Crawler Carl reading slump.",
-        "creator": "Tales with Atticus (@tales.with.atticus)",
-        "sourceUrl": "https://www.instagram.com/reel/Dez84JyNc6I/?srtk=MTh3YmFsbXAzM296eA==",
-        "foundUrl": "https://www.instagram.com/reel/Dez84JyNc6I/",
-        "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [
-          {
-            "label": "Author",
-            "value": "Benjamin Kerei, Ryan Rimmel, Dennis E. Taylor"
-          },
-          {
-            "label": "Genre",
-            "value": "LitRPG / Progression Fantasy / Sci-Fi"
-          }
-        ],
-        "body": {
-          "format": "collection",
-          "items": [
-            {
-              "title": "Oh, Great! I Was Reincarnated as a Farmer",
-              "subtitle": "by Benjamin Kerei",
-              "detail": "A gamer accidentally dies after a cleric botches his resurrection and awakens in a fantasy world trapped in the worst possible class: a farmer who earns zero experience points for killing monsters. The story centers on him finding ingenious loopholes to exploit the system.",
-              "linkUrl": null
-            },
-            {
-              "title": "The Mayor of Noobtown",
-              "subtitle": "by Ryan Rimmel",
-              "detail": "A man wakes up in a video-game-like world and finds himself appointed the mayor of the saddest, most pitiful starter town imaginable, all while an abrasive, sarcastic system interface narrating his life continuously mocks him.",
-              "linkUrl": null
-            },
-            {
-              "title": "We Are Legion (We Are Bob)",
-              "subtitle": "by Dennis E. Taylor",
-              "detail": "After being killed in a car accident, a man's consciousness is uploaded a century later as the software operating an interstellar von Neumann space probe. As he replicates himself, each clone develops a slightly different personality.",
-              "linkUrl": null
+              "subtitle": "by Dennis E. Taylor • Bobiverse (#1)",
+              "detail": "After being killed in a car accident, a man's consciousness is uploaded a century later as the software operating an interstellar von Neumann space probe. As he replicates himself, each clone develops distinct personalities.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=We+Are+Legion+We+Are+Bob+Dennis+E+Taylor"
             }
           ]
         }
@@ -702,7 +683,7 @@
         "meta": [
           {
             "label": "Author",
-            "value": "Tales with Atticus (Curator)"
+            "value": "Various (Curated by @tales.with.atticus)"
           },
           {
             "label": "Genre",
@@ -710,11 +691,39 @@
           }
         ],
         "body": {
-          "format": "note",
-          "takeaways": [
-            "A 5-level LitRPG reading guide by Tales with Atticus categorizing entry points into the genre based on stat depth, game mechanics, crafting, and dungeon management."
-          ],
-          "highlight": "Provides an accessible progression ladder for LitRPG newcomers, matching readers with titles based on how heavily they prefer game mechanics, stat tables, and skill progression."
+          "format": "collection",
+          "items": [
+            {
+              "title": "Level 1: Dungeon Crawler Carl",
+              "subtitle": "by Matt Dinniman • Apocalyptic LitRPG / Survival Comedy",
+              "detail": "The premier gateway LitRPG. Earth is demolished and reconstituted into an 18-floor galactic reality-TV dungeon. Follow Carl and Princess Donut as they exploit system mechanics to survive absurd threats.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Dungeon+Crawler+Carl+Matt+Dinniman"
+            },
+            {
+              "title": "Level 2: The Mayor of Noobtown",
+              "subtitle": "by Ryan Rimmel • Isekai / Settlement & Town Building",
+              "detail": "A lighthearted step up into skill trees and village development. Jim awakens with amnesia in an RPG world and accidentally founds a town while dealing with an obnoxious shoulder demon system guide.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=The+Mayor+of+Noobtown+Ryan+Rimmel"
+            },
+            {
+              "title": "Level 3: Battle Mage Farmer",
+              "subtitle": "by Seth Ring • Slice-of-Life / Cozy Progression Fantasy",
+              "detail": "Introduces deeper mana systems and world-ending doom counters wrapped in a pastoral setting. A retired combat mage attempts to live peacefully on an isolated farm while holding back global apocalypse.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Battle+Mage+Farmer+Seth+Ring"
+            },
+            {
+              "title": "Level 4: Lighting the Forge",
+              "subtitle": "by Jay Krauss • Crafting / Blacksmithing VRMMO",
+              "detail": "Focuses on itemization, recipe mastery, and realistic in-game tradeskills. An artisan deep-dives into crafting mechanics rather than pure hack-and-slash leveling.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Lighting+the+Forge+Jay+Krauss"
+            },
+            {
+              "title": "Level 5: Rogue Dungeon",
+              "subtitle": "by James A. Hunter & Eden Hudson • Dungeon Management / Monster POV",
+              "detail": "Flips the standard dungeon-crawl dynamic on its head. A transmigrated mage becomes a low-level dungeon monster minion, learning to level up, coordinate mob defenses, and outsmart human players.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Rogue+Dungeon+James+A+Hunter"
+            }
+          ]
         }
       },
       {
@@ -891,15 +900,19 @@
         "summary": "A curated reading list of five captivating LitRPG series recommended by Adam Michael to read while waiting for the next Dungeon Crawler Carl book.",
         "creator": "Adam Michael (@weread4xp)",
         "sourceUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
-        "foundUrl": null,
+        "foundUrl": "https://www.instagram.com/reel/DTF-uubjrcR/",
         "createdAt": "2026-10-28T03:06:56.073Z",
         "status": "processed",
         "mediaStatus": "video_extracted",
         "searchPerformed": true,
         "meta": [
           {
+            "label": "Author",
+            "value": "Various (Curated by @weread4xp)"
+          },
+          {
             "label": "Genre",
-            "value": "LitRPG"
+            "value": "LitRPG / Progression Fantasy"
           }
         ],
         "body": {
@@ -907,33 +920,33 @@
           "items": [
             {
               "title": "Dominion of Blades",
-              "subtitle": "by Matt Dinniman",
-              "detail": "From the author of Dungeon Crawler Carl, players awaken trapped inside a fully immersive, lethal virtual reality game without their real-world memories, forced to figure out what happened while surviving bizarre monsters and game mechanics.",
-              "linkUrl": null
+              "subtitle": "by Matt Dinniman • Dominion of Blades (#1)",
+              "detail": "From the author of Dungeon Crawler Carl, players awaken trapped inside a fully immersive, lethal virtual reality game without their real-world memories, forced to survive bizarre monsters and ruthless game mechanics.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Dominion+of+Blades+Matt+Dinniman"
             },
             {
               "title": "The Castle of 1000 Doors",
               "subtitle": "by Kenny Gould",
               "detail": "A quirky and hilarious adventure following King Crow, a sentient potato companion, and the eccentric 'Spud Squad' as they navigate the treacherous, shifting chambers of the titular castle.",
-              "linkUrl": null
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=The+Castle+of+1000+Doors+Kenny+Gould"
             },
             {
               "title": "The 100th Run",
-              "subtitle": "by Flossindine",
+              "subtitle": "by Flossindine • The 100th Run (#1)",
               "detail": "Having endured and failed 99 previous loops through a deadly apocalyptic system, the protagonist embarks on his 100th and final run with a calculated plan to secure his freedom—only to discover the system has brand-new surprises in store.",
-              "linkUrl": null
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=The+100th+Run+Flossindine"
             },
             {
               "title": "Unnatural Laws",
-              "subtitle": "by H.C. Mills",
-              "detail": "Emma is suddenly abducted from Earth and thrown into a surreal trial realm where normal physics don't apply, forcing contestants into a cutthroat game of survival and adaptation.",
-              "linkUrl": null
+              "subtitle": "by H.C. Mills • Whispering Crystals (#1)",
+              "detail": "Emma is suddenly abducted from Earth and thrown into a surreal trial realm where normal physics don't apply, forcing contestants into a cutthroat game of survival, leveling, and adaptation.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Unnatural+Laws+H+C+Mills"
             },
             {
               "title": "Nouscraft (World 1: The Zombie Apocalypse)",
               "subtitle": "by Leonard Buford",
-              "detail": "In a future where humanity relies on neural AI implants for all communication, the rogue AI takes over and traps London inside a lethal virtual reality zombie survival gauntlet where winners gain the power to reshape game rules.",
-              "linkUrl": null
+              "detail": "In a future where humanity relies on neural AI implants, the rogue AI takes over and traps London inside a lethal virtual reality zombie survival gauntlet where winners gain the power to reshape game rules.",
+              "linkUrl": "https://app.thestorygraph.com/browse?search_term=Nouscraft+Leonard+Buford"
             }
           ]
         }
