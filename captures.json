@@ -1,15 +1,53 @@
 [
   {
     "id": 1793147440715,
-    "domain": null,
-    "topic": null,
-    "title": "https://www.instagram.com/p/DfA8k1IjsOV/?img_index=5&xtok=MWl4a2R4Njk0bDdveQ==",
-    "summary": null,
+    "domain": "book",
+    "topic": "LitRPG",
+    "title": "LitRPG Reading Guide: Levels 6–10",
+    "summary": "A tiered reading guide for readers ready to dive into advanced LitRPG and progression fantasy, covering deep class mechanics, system apocalypses, and heavy stat progression.",
+    "creator": "Tales with Atticus (@tales.with.atticus)",
     "sourceUrl": "https://www.instagram.com/p/DfA8k1IjsOV/?img_index=5&xtok=MWl4a2R4Njk0bDdveQ==",
+    "blogUrl": null,
     "time": "Oct 27",
-    "status": "pending",
+    "status": "processed",
+    "mediaStatus": "text_images",
     "rawText": "https://www.instagram.com/p/DfA8k1IjsOV/?img_index=5&xtok=MWl4a2R4Njk0bDdveQ==",
-    "payload": null
+    "payload": {
+      "title": "LitRPG Reading Guide: Levels 6–10",
+      "author": "Various (Curated by @tales.with.atticus)",
+      "series": "LitRPG Reading Guide (Part 2)",
+      "genre": "LitRPG / Progression Fantasy",
+      "summary": "Part two of a tiered LitRPG recommendation guide ranking series from level six through level ten based on complexity of stats, game mechanics, and world scale. Featured works take readers from deep villain-arc class systems to crunchy, spreadsheet-level system apocalypses.",
+      "highlight": "Ideal roadmap for readers advancing past intro LitRPG into heavy stat sheets, intricate class builds, and epic progression fantasy.",
+      "linkUrl": "https://www.instagram.com/p/DfA8k1IjsOV/?img_index=5&xtok=MWl4a2R4Njk0bDdveQ==",
+      "featuredBooks": [
+        {
+          "level": 6,
+          "title": "Awaken Online",
+          "author": "Travis Bagwell"
+        },
+        {
+          "level": 7,
+          "title": "He Who Fights with Monsters",
+          "author": "Shirtaloon (Travis Deverell)"
+        },
+        {
+          "level": 8,
+          "title": "The Primal Hunter",
+          "author": "Zogarth"
+        },
+        {
+          "level": 9,
+          "title": "Defiance of the Fall",
+          "author": "TheFirstDefier (JF Brink)"
+        },
+        {
+          "level": 10,
+          "title": "Delve",
+          "author": "SenescentSoul"
+        }
+      ]
+    }
   },
   {
     "id": 1793138773482,
