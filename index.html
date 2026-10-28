@@ -124,6 +124,65 @@
     </div>
   </div>
 
+  <!-- Slide-Over Drawer: Universal Captures Stream -->
+  <div id="captures-drawer" class="drawer-overlay" role="dialog" aria-modal="true">
+    <div class="drawer-content">
+      <div class="drawer-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">🧠</span>
+          <h2 style="font-size: 1.1rem; font-weight: 700;">Captures Stream</h2>
+        </div>
+        <button type="button" class="modal-close-btn" data-close="captures-drawer">✕</button>
+      </div>
+
+      <!-- Domain Filter Pill Bar -->
+      <div class="drawer-filter-bar" id="drawer-filter-bar">
+        <!-- Populated by drawer.js -->
+      </div>
+
+      <!-- Captures List Container -->
+      <div class="drawer-captures-list" id="drawer-captures-list">
+        <!-- Populated by drawer.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 3-Tier Capture Detail Viewer -->
+  <div id="capture-detail-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <span id="modal-capture-domain-badge" class="desk-badge misc">[Domain] · Topic</span>
+        <button type="button" class="modal-close-btn" data-close="capture-detail-modal">✕</button>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <h2 id="modal-capture-title" class="desk-title" style="font-size: 1.25rem;">Capture Title</h2>
+        <div id="modal-capture-creator" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;"></div>
+      </div>
+
+      <div id="modal-capture-summary" style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.4;">
+        Summary
+      </div>
+
+      <!-- Tier 2 Meta Badges Container -->
+      <div id="modal-capture-meta-chips" class="meta-chips-container" style="margin-bottom: 16px;">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Tier 3 Adaptive Body Container (collection vs guide vs note) -->
+      <div id="modal-capture-body-content" class="modal-body-container">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="desk-footer" style="margin-top: 20px;">
+        <a id="modal-capture-link-btn" href="#" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: #38bdf8;">
+          <span>Open Source Link</span> ↗
+        </a>
+        <button type="button" class="desk-action-btn" data-close="capture-detail-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Entry Point (Native ES Module) -->
   <script type="module" src="js/app.js"></script>
 </body>
