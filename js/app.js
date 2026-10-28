@@ -58,6 +58,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
+    // 6. Register Service Worker for Offline PWA Support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then((registration) => {
+          console.log('📦 Service Worker registered successfully:', registration.scope);
+        })
+        .catch((err) => {
+          console.warn('⚠️ Service Worker registration failed:', err);
+        });
+    }
+
     console.log('✨ Active Desks v2.0 booted cleanly (IndexedDB + Native ES Modules).');
 
   } catch (err) {

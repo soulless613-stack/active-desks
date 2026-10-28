@@ -4,11 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#080c14">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Active Desks">
   <title>Active Desks v2.0 - Intentional Workbenches</title>
   
+  <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -232,10 +235,11 @@
       <!-- Gemini AI Settings Section -->
       <div class="swap-list-section" style="margin-top: 20px;">
         <div class="swap-section-label">Gemini AI Intelligence (BYOK)</div>
-        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-          <input type="password" id="settings-gemini-key" class="quick-capture-input" placeholder="Paste Gemini API Key (AI Studio)..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;">
-          <button type="button" class="quick-capture-btn" id="btn-save-gemini-key" style="border-radius: var(--radius-sm); padding: 8px 14px;">Save Key</button>
-        </div>
+        <form onsubmit="return false;" style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <input type="text" name="username" autocomplete="username" style="display: none;" tabindex="-1" aria-hidden="true">
+          <input type="password" id="settings-gemini-key" class="quick-capture-input" placeholder="Paste Gemini API Key (AI Studio)..." autocomplete="current-password" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;">
+          <button type="submit" class="quick-capture-btn" id="btn-save-gemini-key" style="border-radius: var(--radius-sm); padding: 8px 14px;">Save Key</button>
+        </form>
 
         <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
           <input type="checkbox" id="settings-grounding-checkbox" style="margin-top: 3px;">
