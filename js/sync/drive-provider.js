@@ -12,6 +12,75 @@ const STATE_FILE_NAME = 'active-desks-v2-state.json';
 let accessToken = null;
 let tokenClient = null;
 let connectedUserEmail = null;
+let authRetryCount = 0;
+const MAX_AUTH_RETRIES = 3;
+let onAuthExpiredCallback = null;
+
+/**
+ * Registers a callback invoked when 401 re-authorization fails 3 times.
+ * @param {Function} cb
+ */
+export function setOnAuthExpiredCallback(cb) {
+  onAuthExpiredCallback = cb;
+}
+
+/**
+ * Restores a cached OAuth session from localStorage if still valid,
+ * or triggers silent background refresh if expired.
+ * 
+ * @outputs {boolean} True if active valid token was restored immediately.
+ */
+export function restoreDriveSession() {
+  try {
+    const cachedToken = localStorage.getItem('active_desks_drive_token');
+    const expiresAt = parseInt(localStorage.getItem('active_desks_drive_token_expires') || '0', 10);
+    const cachedEmail = localStorage.getItem('active_desks_drive_email');
+
+    // Buffer 60 seconds before expiration
+    if (cachedToken && Date.now() < (expiresAt - 60000)) {
+      accessToken = cachedToken;
+      connectedUserEmail = cachedEmail || 'Google Account';
+      authRetryCount = 0;
+      return true;
+    } else if (tokenClient && cachedToken) {
+      // Trigger silent background refresh
+      tokenClient.requestAccessToken({ prompt: '' });
+    }
+  } catch (e) {
+    console.warn('Could not restore cached Drive session:', e);
+  }
+  return false;
+}
+
+/**
+ * Handles HTTP 401 responses on Drive REST calls with a 3-try limit.
+ * @returns {Promise<boolean>} True if retry should be attempted.
+ */
+async function handle401Unauthorized() {
+  authRetryCount++;
+  console.warn(`Drive REST returned 401 Unauthorized (attempt ${authRetryCount}/${MAX_AUTH_RETRIES})`);
+
+  accessToken = null;
+  localStorage.removeItem('active_desks_drive_token');
+  localStorage.removeItem('active_desks_drive_token_expires');
+
+  if (authRetryCount <= MAX_AUTH_RETRIES && tokenClient) {
+    return new Promise((resolve) => {
+      try {
+        tokenClient.requestAccessToken({ prompt: '' });
+        setTimeout(() => {
+          resolve(!!accessToken);
+        }, 1200);
+      } catch (err) {
+        resolve(false);
+      }
+    });
+  } else {
+    console.warn('Exceeded 3 401 unauthorized retries. Switching status to amber.');
+    if (onAuthExpiredCallback) onAuthExpiredCallback();
+    return false;
+  }
+}
 
 /**
  * Initializes the Google Identity Services token client.
@@ -43,6 +112,7 @@ export function initDriveTokenClient(clientId, onTokenCallback) {
       }
 
       accessToken = tokenResponse.access_token;
+      authRetryCount = 0; // Reset retry counter on successful token receipt
 
       // Retrieve user email to display connection status
       try {
@@ -55,6 +125,16 @@ export function initDriveTokenClient(clientId, onTokenCallback) {
         }
       } catch (e) {
         connectedUserEmail = 'Google Account';
+      }
+
+      // Persist to localStorage for mobile PWA session persistence
+      try {
+        const expiresInSec = tokenResponse.expires_in || 3600;
+        localStorage.setItem('active_desks_drive_token', accessToken);
+        localStorage.setItem('active_desks_drive_token_expires', String(Date.now() + expiresInSec * 1000));
+        localStorage.setItem('active_desks_drive_email', connectedUserEmail || 'Google Account');
+      } catch (e) {
+        console.warn('Could not cache token in localStorage:', e);
       }
 
       if (onTokenCallback) {
@@ -121,9 +201,18 @@ async function findAppDataFileId() {
   if (!accessToken) return null;
 
   const url = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${STATE_FILE_NAME}' and trashed=false&fields=files(id, name, modifiedTime)`;
-  const res = await fetch(url, {
+  let res = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
+
+  if (res.status === 401) {
+    const recovered = await handle401Unauthorized();
+    if (recovered && accessToken) {
+      res = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+    }
+  }
 
   if (!res.ok) return null;
   const data = await res.json();
@@ -139,6 +228,9 @@ async function findAppDataFileId() {
  */
 export async function uploadToDrive(payload) {
   if (!accessToken) {
+    restoreDriveSession();
+  }
+  if (!accessToken) {
     throw new Error('Google Drive is not connected (no access token)');
   }
 
@@ -148,7 +240,7 @@ export async function uploadToDrive(payload) {
   if (fileId) {
     // Update existing file (PATCH)
     const updateUrl = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`;
-    const res = await fetch(updateUrl, {
+    let res = await fetch(updateUrl, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -156,6 +248,20 @@ export async function uploadToDrive(payload) {
       },
       body: fileContent
     });
+
+    if (res.status === 401) {
+      const recovered = await handle401Unauthorized();
+      if (recovered && accessToken) {
+        res = await fetch(updateUrl, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: fileContent
+        });
+      }
+    }
 
     if (!res.ok) throw new Error(`Drive update failed: HTTP ${res.status}`);
     return { status: 'updated', fileId };
@@ -180,7 +286,7 @@ export async function uploadToDrive(payload) {
       closeDelimiter;
 
     const createUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-    const res = await fetch(createUrl, {
+    let res = await fetch(createUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -188,6 +294,20 @@ export async function uploadToDrive(payload) {
       },
       body: multipartBody
     });
+
+    if (res.status === 401) {
+      const recovered = await handle401Unauthorized();
+      if (recovered && accessToken) {
+        res = await fetch(createUrl, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`
+          },
+          body: multipartBody
+        });
+      }
+    }
 
     if (!res.ok) throw new Error(`Drive create failed: HTTP ${res.status}`);
     const data = await res.json();
@@ -202,15 +322,27 @@ export async function uploadToDrive(payload) {
  * @outputs {Promise<object | null>} Remote state snapshot or null if no file exists.
  */
 export async function fetchFromDrive() {
+  if (!accessToken) {
+    restoreDriveSession();
+  }
   if (!accessToken) return null;
 
   const fileId = await findAppDataFileId();
   if (!fileId) return null;
 
   const downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
-  const res = await fetch(downloadUrl, {
+  let res = await fetch(downloadUrl, {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
+
+  if (res.status === 401) {
+    const recovered = await handle401Unauthorized();
+    if (recovered && accessToken) {
+      res = await fetch(downloadUrl, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+    }
+  }
 
   if (!res.ok) return null;
   return await res.json();

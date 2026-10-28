@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "exportedAt": "2026-10-28T04:27:28.022Z",
+  "exportedAt": "2026-10-28T12:05:23.464Z",
   "stores": {
     "desks": [
       {
@@ -126,23 +126,30 @@
       {
         "id": 1793138773482,
         "domain": "tech",
-        "topic": "AI Coding",
+        "topic": "Link",
         "title": "Glitch Walk: Visualizing Vibe Coded Architecture",
-        "summary": "Glitch Walk is a developer skill designed to help programmers understand and visually map out how their vibe-coded applications, backend routines, and APIs actually execute step-by-step.",
+        "summary": "This link was not searched against.",
         "creator": "Kem (@kem_glitch)",
         "sourceUrl": "https://www.instagram.com/reel/DePJAUftlJD/?dlrf=c28zY2NodTcwMHgx",
         "foundUrl": "https://github.com/Glitch-Cat-Club/glitch-skills",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Eliminates the 'black box' problem in vibe coding by visually rendering how the UI, backend handlers, and APIs coordinate.",
-            "Breaks down complex requests sequentially into user-facing actions, out-of-sight background tasks, and source file locations.",
-            "Open-source and accessible via GitHub at github.com/Glitch-Cat-Club/glitch-skills."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -150,23 +157,30 @@
       {
         "id": 1793101166661,
         "domain": "tech",
-        "topic": "AI Productivity",
+        "topic": "Link",
         "title": "Gamified 'Task Tinder' AI Prompt for Overwhelm & ADHD",
-        "summary": "A gamified productivity workflow and interactive Claude/ChatGPT artifact that turns a quick verbal brain dump into a swipeable task deck with micro-steps, timers, and reward mechanics.",
+        "summary": "This link was not searched against.",
         "creator": "Logan Currie (@loganinthefuture)",
         "sourceUrl": "https://www.instagram.com/reel/DdhqRGlj-m4/?rpxt=ZXR4MXI5YzU3a3V1",
         "foundUrl": null,
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Do a 2 to 5-minute verbal or typed brain dump of all pending mental tasks directly into Claude or ChatGPT.",
-            "The tool generates an interactive deck where you swipe left to defer or swipe right to immediately launch into a task.",
-            "Each card provides an ultra-low-friction 'first move', adjustable timers (5, 10, or 25 minutes), an intrusive thought parking lot, and dopamine-boosting confetti/XP rewards."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -245,23 +259,30 @@
       {
         "id": 1793099360378,
         "domain": "tech",
-        "topic": "Claude Code",
+        "topic": "Link",
         "title": "Building a Second Brain for Claude Code with BASE",
-        "summary": "A breakdown of why the Obsidian and Graphify stack burns excessive tokens and requires manual curation for Claude Code, and how BASE (basemode) provides native, automated knowledge graphing and context injection.",
+        "summary": "This link was not searched against.",
         "creator": "Charles J Dove (@charlieautomates)",
         "sourceUrl": "https://www.instagram.com/reel/De97J-dpOez/?vrfl=cWU3amRkdmUydDZo",
         "foundUrl": "https://www.instagram.com/reel/De97J-dpOez/",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Avoid the Obsidian + Graphify stack for Claude Code: Graphify scans your entire workspace file-by-file (consuming heavy token quotas), while Obsidian functions solely as a passive viewer requiring manual curation.",
-            "BASE integrates natively via Claude Code hooks: Using hooks like SessionStart, BASE automatically pulls open handoffs, active projects, and system health into Claude Code's awareness without manual input.",
-            "Selective domain routing saves tokens: Keyword matching maps specific domains and AST file paths to inject only the relevant rules and decisions for the current prompt, self-updating at the end of each session."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -269,21 +290,30 @@
       {
         "id": 1793098666161,
         "domain": "tech",
-        "topic": "Local AI",
+        "topic": "Link",
         "title": "Set Up Local AI on Stevens Laptop",
-        "summary": "Find the Windows 11 debloater developer's Instagram handle to install a lightweight OS on the Stevens laptop and run a local AI model to replace paid Gemini API keys.",
+        "summary": "This link was not searched against.",
         "creator": null,
         "sourceUrl": null,
         "foundUrl": null,
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "none",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Find the Windows 11 debloater developer's Instagram handle to install a lightweight OS on the Stevens laptop and run a local AI model to replace paid Gemini API keys."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -291,23 +321,30 @@
       {
         "id": 1793072834650,
         "domain": "tech",
-        "topic": "Knowledge Graphs",
+        "topic": "Link",
         "title": "Tier 1 Knowledge Graph Memory for AI Assistants",
-        "summary": "A lightweight, push-based Tier 1 knowledge graph using three SQLite tables and prompt hooks to pre-traverse multi-hop relational data in ~2ms, enabling small models like Claude Haiku to accurately answer complex trap questions without tool calls.",
+        "summary": "This link was not searched against.",
         "creator": "Kem @ Glitch Cat Club (@kem_glitch)",
         "sourceUrl": "https://www.instagram.com/reel/DcHG2kPtZZG/?psln=MXFmeG0xYXZtYWxxcw==",
         "foundUrl": "https://github.com/Glitch-Cat-Club/graph-memory-starter",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Push vs. Pull Retrieval: Instead of forcing LLMs to search and read through tool calls during generation, the traversal query walks the graph ahead of time and injects deterministic facts via a UserPromptSubmit hook.",
-            "Minimalist Tier 1 Stack: Built with 3 SQLite tables (entities, relations, aliases), 1 recursive traversal query, and ~250 lines of code—requiring zero external frameworks, API keys, or dedicated graph servers.",
-            "Parity for Lightweight Models: Bypassing fuzzy keyword search and document scanning keeps context fixed (~400 tokens) and allows small models like Haiku to solve multi-hop multi-file traps in ~2ms."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -315,22 +352,30 @@
       {
         "id": 1793056385577,
         "domain": "tech",
-        "topic": "Developer Tools",
+        "topic": "Link",
         "title": "GitHub URL Tricks: GitReverse and GitDiagram",
-        "summary": "Quick URL swaps on any GitHub repository to instantly generate AI reverse-engineering prompts or full architectural diagrams without opening a single file.",
+        "summary": "This link was not searched against.",
         "creator": "Louis Raillé (@louis_rlee)",
         "sourceUrl": "https://www.instagram.com/reel/De7WIcEogeo/?mdxt=MWdwczV3cWptMWRqdw==",
         "foundUrl": null,
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Replace 'github' with 'gitreverse' in any repository URL (gitreverse.com/...) to extract a clean, reverse-engineered prompt detailing the repository's architecture and features for use in AI coding assistants like Claude Code.",
-            "Replace 'hub' with 'diagram' in any repository URL (gitdiagram.com/...) to automatically generate an interactive visual map of the repository's component architecture and connections."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -338,23 +383,30 @@
       {
         "id": 1793037884587,
         "domain": "tech",
-        "topic": "Gaming Peripherals",
+        "topic": "Link",
         "title": "OpenMouse: Browser-Based Control Panel for Gaming Mice",
-        "summary": "OpenMouse is an open-source, web-based utility created by snekxs that lets you configure gaming mouse settings directly in your browser without downloading bloated proprietary software.",
+        "summary": "This link was not searched against.",
         "creator": "Zack Shutt (@zackshutt)",
         "sourceUrl": "https://www.instagram.com/reel/DbhVvfAhmOv/?cplk=MWkzbGg2Znozc2xyeg==",
         "foundUrl": "https://openmouse.app",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Operates directly in Chromium-based browsers (Chrome, Edge) using WebHID without requiring background services, software installation, or user accounts [00:16, 00:41].",
-            "Allows full configuration of hardware settings including DPI stages, polling report rates, lift-off distance, and motion sync [00:33].",
-            "Created by developer snekxs with multi-brand support (Logitech, Endgame Gear, and others); available to preview at openmouse.app [00:07, 00:14, 00:47]."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -362,23 +414,30 @@
       {
         "id": 1793016430538,
         "domain": "tech",
-        "topic": "Local AI",
+        "topic": "Link",
         "title": "llmfit: Terminal Tool to Match Local AI Models to Your Hardware",
-        "summary": "llmfit is an open-source terminal utility that analyzes your system's CPU, GPU, and RAM to score and rank local LLMs by memory fit, speed, quality, and context capacity.",
+        "summary": "This link was not searched against.",
         "creator": "Denny Medina (@dennydigital_)",
         "sourceUrl": "https://www.instagram.com/reel/DdZS5zsAuCl/?cplk=eTIxNDl1c3d0NWcw",
         "foundUrl": "https://github.com/AlexsJones/llmfit",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Automatically audits system hardware (RAM, CPU, GPU/VRAM) and detects local LLM runtimes such as Ollama, MLX, and LM Studio.",
-            "Ranks and scores models across four metrics: memory fit, generation speed (tokens/sec), output quality, and available context size.",
-            "Features color-coded recommendations to prevent downloading oversized models and allows downloading compatible models directly within the terminal interface."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -386,23 +445,30 @@
       {
         "id": 1793015390078,
         "domain": "tech",
-        "topic": "Local AI",
+        "topic": "Link",
         "title": "Why You Should Use Local AI: Privacy, Cost, and Unrestricted Access",
-        "summary": "An introduction to local, open-weight AI models explaining how they run completely offline on standard consumer hardware, offering full data privacy, zero recurring subscription costs, and permanent access without corporate gatekeeping.",
+        "summary": "This link was not searched against.",
         "creator": "Saria | AI Literacy (@thecorporateflamingo)",
         "sourceUrl": "https://www.instagram.com/reel/Dbavr1-IcdT/?vrfl=MW5uOHcza3A5MTFsbg==",
         "foundUrl": "https://www.instagram.com/reel/Dbavr1-IcdT/",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "No specialized enterprise hardware is required for everyday tasks: small open-weight models run offline on standard laptops using beginner-friendly tools like LM Studio with zero coding.",
-            "Data privacy is absolute because your prompts and documents never leave your machine, eliminating exposure to data breaches, government subpoena requests, or corporate model training.",
-            "Local AI eliminates monthly subscription fees, arbitrary usage caps, and the risk of losing access due to sudden platform tier-locks or ID verification requirements."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -434,23 +500,30 @@
       {
         "id": 1792989181242,
         "domain": "tech",
-        "topic": "Claude Code",
+        "topic": "Link",
         "title": "Self-Correcting Simplified Technical English (STE) for Claude Code",
-        "summary": "A benchmark and setup guide replacing viral one-line prompts and static skills with a two-hook architecture in Claude Code that deterministically enforces ASD-STE100 and self-corrects drift.",
+        "summary": "This link was not searched against.",
         "creator": "Kem | Glitch Cat Club (@kem_glitch)",
         "sourceUrl": "https://www.instagram.com/reel/DclKZARteCP/?cplk=MXl4MW5zY3U3N2N3",
         "foundUrl": null,
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Static lines in CLAUDE.md or Claude skills degrade over extended conversation turns due to context rot and lack of automated verification.",
-            "A dual-hook setup in Claude Code attaches rule constraints to every user prompt and evaluates the output with a deterministic linter.",
-            "Feeding output linter scores into the subsequent prompt enables continuous self-correction, reducing output reading volume by up to 68%."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -550,23 +623,30 @@
       {
         "id": 1792941933312,
         "domain": "tech",
-        "topic": "Claude Code",
+        "topic": "Link",
         "title": "ayghri/i-have-adhd: ADHD-Friendly Output for AI Coding Agents",
-        "summary": "An open-source skill for Claude Code, Codex, and Copilot that eliminates conversational filler, preambles, and closing chatter, enforcing action-first answers with concise, numbered steps.",
+        "summary": "This link was not searched against.",
         "creator": "AI Money Plays (@aimoneypays)",
         "sourceUrl": "https://www.instagram.com/reel/De6jTsiMCtT/?exln=MWFvaG9jOXljbmNhZA==",
         "foundUrl": "https://github.com/ayghri/i-have-adhd",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Leads immediately with the actionable line or file modification rather than conversational preambles or explanations.",
-            "Breaks multi-step tasks into concise, numbered steps and always concludes with one single next action instead of overwhelming menus.",
-            "Installs directly in Claude Code via 'claude plugin marketplace add ayghri/i-have-adhd' and 'claude plugin install i-have-adhd@i-have-adhd'."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -574,23 +654,30 @@
       {
         "id": 1792895770404,
         "domain": "tech",
-        "topic": "Windows Optimization",
+        "topic": "Link",
         "title": "TBOK Win11Optimizer: Windows Debloat & Performance Optimization Script",
-        "summary": "A comprehensive Windows batch script created to safely debloat Windows 10/11, disable telemetry and background bloat, optimize memory, and enable peak gaming performance.",
+        "summary": "This link was not searched against.",
         "creator": "TheBeardOfKnowledge (@thebeardofknowledge_it)",
         "sourceUrl": "https://www.instagram.com/reel/De3D_zeMifo/?cplk=MXA4azk1cnY4NW9ubg==",
         "foundUrl": "https://github.com/TheBeardofknowledge/TBOK-Win11Optimizer",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Automatically creates a System Restore point prior to executing changes to ensure safe rollback.",
-            "Removes system bloatware and telemetry, including Microsoft Copilot, Bing Search, lock screen/menu ads, and background Edge processes.",
-            "Boosts gaming responsiveness by enabling Hardware Accelerated GPU Scheduling (HAGS), setting the Ultimate Performance power plan, and tuning pagefile virtual memory."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -598,23 +685,30 @@
       {
         "id": 1792879634195,
         "domain": "tech",
-        "topic": "AI Agents",
+        "topic": "Link",
         "title": "Bot Crossing: Open-Source Game Workspace for AI Agents",
-        "summary": "Bot Crossing transforms active AI coding agent threads into a colony simulation on a hex-grid planet, where agents visually wave their hands whenever they encounter an issue and need human input.",
+        "summary": "This link was not searched against.",
         "creator": "Jarren Rocks (@jarrenrocks)",
         "sourceUrl": "https://www.instagram.com/reel/DczR-QlSMdK/?rpxt=MXB5MzZwYmZpZmt1cg==",
         "foundUrl": "https://botcrossing.com",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Visualizes coding agent threads as interactive astronauts living in a colony on your machine.",
-            "Agents wave their hands when waiting on human input, allowing you to click directly on them to inspect needs and resolve blockers.",
-            "Fully open-source and detailed in a full walkthrough on the Jarren Rocks YouTube channel."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -622,23 +716,30 @@
       {
         "id": 1792842574998,
         "domain": "tech",
-        "topic": "Cloud Hosting",
+        "topic": "Link",
         "title": "Oracle Always Free Tier Setup for AI Agents and Hosting",
-        "summary": "Oracle Cloud provides a lifetime free tier featuring up to three virtual servers, two 20 GB managed databases, and 10 TB of monthly outbound traffic. The resources can be configured using Claude to run 24/7 autonomous agents, self-hosted AI models, and client websites.",
+        "summary": "This link was not searched against.",
         "creator": "rick (@rick.automates)",
         "sourceUrl": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
         "foundUrl": null,
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Oracle's Always Free tier offers an ARM instance configured with 2 CPUs and 12 GB RAM, two AMD micro instances, two 20 GB databases, and 10 TB monthly outbound traffic.",
-            "The larger ARM instance has sufficient capacity to run local AI models or host continuous Claude agents around the clock without keeping a personal laptop running.",
-            "Claude can be used to automate server setup, manage configuration scripts, and deploy websites or bots for personal use or client hosting."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -646,23 +747,30 @@
       {
         "id": 1792735684073,
         "domain": "tech",
-        "topic": "Local AI",
+        "topic": "Link",
         "title": "DeepSeek Harness: Open-Source Local Agent Harness",
-        "summary": "DeepSeek Harness (dsh) is an open-source, plugin-based agent harness that runs coding agent workflows directly on your local machine as an alternative to proprietary tools like Claude Code.",
+        "summary": "This link was not searched against.",
         "creator": "Connor (@cookin.code)",
         "sourceUrl": "https://www.instagram.com/reel/Desq5O9i_4P/?xtok=NG11amZqczhncDhn",
         "foundUrl": "https://github.com/deepseek-ai/deepseek-harness",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Operates locally on your own machine via a local web interface (localhost:3080) or desktop app, avoiding Anthropic Pro subscription fees.",
-            "Built on a modular Cordis architecture where all tools, models, and interface elements function as interchangeable plugins.",
-            "Serves as an open-source, self-hosted alternative to proprietary developer assistants like Claude Code."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -729,23 +837,30 @@
       {
         "id": 1792668151645,
         "domain": "tech",
-        "topic": "Claude Code",
+        "topic": "Link",
         "title": "10 Powerful GitHub Repos for Claude Code & Token Saver Analysis",
-        "summary": "A curated breakdown of 10 high-impact GitHub repos and tools to expand Claude Code's capabilities, paired with real-world benchmark data testing popular token-saving extensions.",
+        "summary": "This link was not searched against.",
         "creator": "Dripthecup (@dripthecup)",
         "sourceUrl": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
         "foundUrl": "https://dripthecup.com/links",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Top 10 recommended repos/skills: heygen-com/hyperframes (video rendering), blader/humanizer (de-hyping copy), googleworkspace/cli (Google CLI integration), Apify's MCP server (web scraping), addyosmani/agent-skills (spec/plan persistence), Expo skills (native app rules), Supabase + Stripe skills (RLS & webhook security), Microsoft's playwright-cli (browser automation), and Anthropic's claude-security plugin.",
-            "JetBrains benchmark tests showed hyped 'token savers' often fall short: rtk-ai/rtk actually increased cost by +7.6%, caveman saved only 8.5% (advertised 65%), and ponytail saved 10.3% (half of its 20% claim).",
-            "Actionable tips: inspect Claude AI spend with 'npx codeburn', and turn off default anonymous telemetry in claude-mem using 'npx claude-mem telemetry disable'."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -753,23 +868,30 @@
       {
         "id": 1792650746263,
         "domain": "tech",
-        "topic": "Claude Code",
+        "topic": "Link",
         "title": "Karpathy Skills: Claude Code & Cursor Guidelines",
-        "summary": "A zero-code GitHub repository providing a CLAUDE.md and Cursor rule configuration based on Andrej Karpathy's observations on common LLM coding pitfalls.",
+        "summary": "This link was not searched against.",
         "creator": "Prince Gupta (@princegupta.ai)",
         "sourceUrl": "https://www.instagram.com/reel/DewhNn1AZGQ/?rpxt=NXZybmR4Z2UzeTJ4",
         "foundUrl": "https://github.com/multica-ai/andrej-karpathy-skills",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Encodes 4 Core Principles: Think Before Coding (ask clarifying questions rather than guessing), Simplicity First (write minimal code without speculative bloat), Surgical Changes (touch only targeted code and clean up your own diffs), and Goal-Driven Execution (define success criteria and loop until verified).",
-            "Solves Primary LLM Pitfalls: Prevents agents from silently making wrong assumptions, creating massive 1000-line rewrites when 50 lines suffice, and introducing orthogonal edits into untouched files.",
-            "Multi-Tool Support: Installs directly as a Claude Code plugin (`/plugin marketplace add forrestchang/andrej-karpathy-skills`), a local `CLAUDE.md` project file, or a Cursor rule (`.cursor/rules/karpathy-guidelines.mdc`)."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -777,23 +899,30 @@
       {
         "id": 1792558243177,
         "domain": "tech",
-        "topic": "3D Printing",
+        "topic": "Link",
         "title": "Wing Folding Fan 3D Print Design",
-        "summary": "A creative 3D-printed articulated folding fan inspired by bird wings that smoothly expands and collapses. It highlights functional print design and mechanical joint movement for everyday handheld use.",
+        "summary": "This link was not searched against.",
         "creator": "By Asli 3D (@byasli3d)",
         "sourceUrl": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
         "foundUrl": "https://www.instagram.com/reel/DZufqGutK9E/",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Showcases an articulated, multi-segment wing mechanism that opens and closes smoothly like a traditional folding fan.",
-            "Demonstrates practical mechanical design and print-in-place tolerances in desktop 3D printing.",
-            "Serves as a lightweight, portable aesthetic print that doubles as a functional cooling fan."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }
@@ -801,23 +930,30 @@
       {
         "id": 1792558176000,
         "domain": "tech",
-        "topic": "3D Printing",
+        "topic": "Link",
         "title": "PressPrint Lab Hinged Box Generator",
-        "summary": "PressPrint Lab offers a browser-based hinged box generator that lets makers create fully customizable, print-in-place hinged boxes without any CAD modeling experience.",
+        "summary": "This link was not searched against.",
         "creator": "Press Print (@pressprint__)",
         "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
         "foundUrl": "https://pressprintlab.com/designs",
         "createdAt": "2026-10-28T03:06:56.072Z",
-        "status": "processed",
-        "mediaStatus": "video_extracted",
-        "searchPerformed": true,
-        "meta": [],
+        "status": "pending",
+        "mediaStatus": "fallback_link",
+        "searchPerformed": false,
+        "meta": [
+          {
+            "label": "Domain",
+            "value": "TECH"
+          },
+          {
+            "label": "Status",
+            "value": "Unsearched Link"
+          }
+        ],
         "body": {
           "format": "note",
           "takeaways": [
-            "Quickly generate custom parametric hinged boxes ready for print-in-place 3D printing without needing CAD skills.",
-            "Allows direct configuration of box dimensions, wall thickness, internal compartment grids (rows/columns), and lid opening angles.",
-            "Supports adding custom embossed or cut-in lid text and cut-out surface patterns before exporting directly to 3MF."
+            "Link captured offline. Deep web extraction was not performed."
           ],
           "highlight": null
         }

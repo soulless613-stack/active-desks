@@ -56,11 +56,12 @@ export function sanitizeUrl(urlString) {
  * @purpose Deterministic 0ms local capture processing with strict 'No Assumed Topics' rule.
  * @inputs {string} rawInput - User input text.
  * @inputs {string | null} foundUrl - Extracted URL or null.
+ * @inputs {number | null} existingId - Optional existing ID to update in-place.
  * @outputs {object} UniversalCapture compliant record.
  */
-function processStage3Offline(rawInput, foundUrl) {
+function processStage3Offline(rawInput, foundUrl, existingId = null) {
   const now = new Date().toISOString();
-  const id = Date.now();
+  const id = existingId ? existingId : Date.now();
 
   // Scenario A: Raw Linkless Thought
   if (!foundUrl) {
@@ -128,10 +129,11 @@ function processStage3Offline(rawInput, foundUrl) {
  * 
  * @purpose Ingests user input, evaluates active credentials and grounding settings, and routes to appropriate stage.
  * @inputs {string} rawInput - Input string from the capture dock or mobile share sheet.
+ * @inputs {number | null} existingId - Optional existing ID to update in-place rather than generating a new record.
  * @outputs {Promise<object>} Resolves with the saved UniversalCapture record.
  * @sideEffects Writes the record directly into IndexedDB 'captures' store.
  */
-export async function processCaptureIntake(rawInput) {
+export async function processCaptureIntake(rawInput, existingId = null) {
   const text = (rawInput || '').trim();
   if (!text) {
     throw new Error('Input text is empty');
@@ -147,7 +149,7 @@ export async function processCaptureIntake(rawInput) {
   if (apiKey && groundingEnabled && foundUrl) {
     // Stage 1: Grounded Gemini extraction
     try {
-      captureRecord = await runStage1Grounded(text, foundUrl, apiKey);
+      captureRecord = await runStage1Grounded(text, foundUrl, apiKey, existingId);
     } catch (err) {
       console.warn('Stage 1 Grounded extraction failed, falling back to Stage 2:', err);
     }
@@ -156,7 +158,7 @@ export async function processCaptureIntake(rawInput) {
   if (!captureRecord && apiKey && foundUrl) {
     // Stage 2: Standard Gemini non-grounded (Strict anti-hallucination)
     try {
-      captureRecord = await runStage2Ungrounded(text, foundUrl, apiKey);
+      captureRecord = await runStage2Ungrounded(text, foundUrl, apiKey, existingId);
     } catch (err) {
       console.warn('Stage 2 Ungrounded extraction failed, falling back to Stage 3:', err);
     }
@@ -164,7 +166,7 @@ export async function processCaptureIntake(rawInput) {
 
   if (!captureRecord) {
     // Stage 3: Offline deterministic fallback
-    captureRecord = processStage3Offline(text, foundUrl);
+    captureRecord = processStage3Offline(text, foundUrl, existingId);
   }
 
   // Persist record to IndexedDB
@@ -236,7 +238,7 @@ async function callGemini(promptText, useSearch, apiKey) {
 /**
  * Stage 1: Grounded Gemini Multimodal API Runner.
  */
-async function runStage1Grounded(rawText, foundUrl, apiKey) {
+async function runStage1Grounded(rawText, foundUrl, apiKey, existingId = null) {
   const cleanUrl = sanitizeUrl(foundUrl);
   const prompt = `You are the content analyzer for Active Desks.
 Extract structured metadata from this link using Google Search Grounding:
@@ -266,7 +268,7 @@ Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
   const parsed = JSON.parse(rawResponseText.replace(/```json\n?|```/g, '').trim());
 
   return {
-    id: Date.now(),
+    id: existingId ? existingId : Date.now(),
     domain: (parsed.domain || 'tech').toLowerCase(),
     topic: parsed.topic || 'General',
     title: parsed.title || cleanUrl,
@@ -285,7 +287,7 @@ Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
 /**
  * Stage 2: Ungrounded Gemini Runner with Strict Anti-Hallucination Scope.
  */
-async function runStage2Ungrounded(rawText, foundUrl, apiKey) {
+async function runStage2Ungrounded(rawText, foundUrl, apiKey, existingId = null) {
   const cleanUrl = sanitizeUrl(foundUrl);
   const prompt = `Analyze this link without web searching:
 URL: ${cleanUrl}
@@ -308,7 +310,7 @@ Return strictly raw JSON:
   const parsed = JSON.parse(rawResponseText.replace(/```json\n?|```/g, '').trim());
 
   return {
-    id: Date.now(),
+    id: existingId ? existingId : Date.now(),
     domain: (parsed.domain || 'link').toLowerCase(),
     topic: 'Link',
     title: parsed.title || cleanUrl,

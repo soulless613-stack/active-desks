@@ -8,7 +8,14 @@ import { state } from './state.js';
 import { exportFullBackup, importFullBackup } from './sync/export-provider.js';
 import { createP2POffer } from './sync/p2p-provider.js';
 import { setSyncBadge, performSync } from './sync/sync-manager.js';
-import { initDriveTokenClient, requestDriveAuth, isDriveConnected, getDriveUserEmail, syncWithDrive } from './sync/drive-provider.js';
+import {
+  initDriveTokenClient,
+  requestDriveAuth,
+  isDriveConnected,
+  getDriveUserEmail,
+  syncWithDrive,
+  restoreDriveSession
+} from './sync/drive-provider.js';
 
 /**
  * Updates the persistent Gemini API key status indicator in Settings.
@@ -324,9 +331,18 @@ function updateDriveStatusUI() {
     if (connectBtn) connectBtn.textContent = '🔄 Re-authorize';
     if (syncNowBtn) syncNowBtn.style.display = 'inline-flex';
   } else {
-    dot.style.background = '#64748b';
-    text.style.color = 'var(--text-muted)';
-    text.textContent = 'Not Connected';
+    // Check if re-authorization is needed
+    const hadToken = !!localStorage.getItem('active_desks_drive_token_expires');
+    const clientId = state.settings?.drive_client_id;
+    if (hadToken && clientId) {
+      dot.style.background = '#fbbf24';
+      text.style.color = '#fbbf24';
+      text.textContent = '⚠️ Re-authorization required. Tap to reconnect.';
+    } else {
+      dot.style.background = '#64748b';
+      text.style.color = 'var(--text-muted)';
+      text.textContent = 'Not Connected';
+    }
     if (connectBtn) connectBtn.textContent = '🔗 Connect Google Account';
     if (syncNowBtn) syncNowBtn.style.display = 'none';
   }
@@ -350,6 +366,10 @@ export function openSettingsModal() {
   const currentProvider = state.settings?.sync_provider || 'offline';
   const targetRadio = document.querySelector(`input[name="sync_provider"][value="${currentProvider}"]`);
   if (targetRadio) targetRadio.checked = true;
+
+  if (currentProvider === 'drive' && !isDriveConnected()) {
+    restoreDriveSession();
+  }
 
   updateDriveConfigPanelVisibility();
   updateDriveStatusUI();

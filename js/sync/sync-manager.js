@@ -7,7 +7,15 @@
 
 import * as db from '../db.js';
 import { state } from '../state.js';
-import { uploadToDrive, fetchFromDrive, isDriveConnected, syncWithDrive } from './drive-provider.js';
+import {
+  uploadToDrive,
+  fetchFromDrive,
+  isDriveConnected,
+  syncWithDrive,
+  initDriveTokenClient,
+  restoreDriveSession,
+  setOnAuthExpiredCallback
+} from './drive-provider.js';
 
 let debounceTimer = null;
 const DEBOUNCE_DELAY_MS = 2500;
@@ -95,16 +103,40 @@ export function setSyncBadge(status, text) {
     dot.className = 'sync-dot';
 
     if (status === 'syncing') dot.style.background = '#38bdf8';
-    else if (status === 'pending') dot.style.background = '#fbbf24';
+    else if (status === 'pending' || status === 'amber') dot.style.background = '#fbbf24';
     else if (status === 'error') dot.style.background = '#f87171';
     else dot.style.background = '#34d399';
   }
 }
 
 /**
- * Initializes the sync manager listeners.
+ * Initializes the sync manager listeners and restores persistent sessions.
  */
 export function initSyncManager() {
   const provider = state.settings?.sync_provider || 'offline';
-  setSyncBadge('synced', provider === 'offline' ? 'Offline' : 'Local');
+  const driveClientId = state.settings?.drive_client_id?.trim();
+
+  // Register 401 max retries callback to surface amber status
+  setOnAuthExpiredCallback(() => {
+    setSyncBadge('amber', 'Re-auth Needed');
+  });
+
+  if (provider === 'drive' && driveClientId) {
+    // Attempt auto-initialization and session restoration on startup
+    const initialized = initDriveTokenClient(driveClientId, (tokenRes) => {
+      if (!tokenRes.error) {
+        setSyncBadge('synced', 'Drive');
+      }
+    });
+
+    if (initialized) {
+      const active = restoreDriveSession();
+      if (active) {
+        setSyncBadge('synced', 'Drive');
+        return;
+      }
+    }
+  }
+
+  setSyncBadge('synced', provider === 'offline' ? 'Offline' : (provider === 'drive' ? (isDriveConnected() ? 'Drive' : 'Local') : 'P2P'));
 }

@@ -148,7 +148,7 @@ function renderCaptureCards(captures) {
   listEl.innerHTML = filtered.map(c => {
     const domain = (c.domain || 'misc').toLowerCase();
     const topic = c.topic || 'General';
-    const isLinkOnly = topic.toLowerCase() === 'link' || domain === 'link';
+    const isLinkOnly = topic.toLowerCase() === 'link' || domain === 'link' || c.status === 'pending' || c.searchPerformed === false || c.mediaStatus === 'fallback_link';
     const showAnalyze = isLinkOnly && hasApiKey;
     const hasFoundUrl = c.foundUrl && c.foundUrl !== c.sourceUrl;
 
@@ -205,7 +205,7 @@ function renderCaptureCards(captures) {
 
       btn.textContent = '⏳ ...';
       try {
-        await processCaptureIntake(target.sourceUrl);
+        await processCaptureIntake(target.sourceUrl, target.id);
         await renderCapturesDrawer();
       } catch (err) {
         btn.textContent = '⚠️ Failed';
