@@ -6,9 +6,92 @@
  */
 
 import * as db from '../db.js';
+import { state, emit } from '../state.js';
 
 const STATE_FILE_NAME = 'active-desks-v2-state.json';
 let accessToken = null;
+let tokenClient = null;
+let connectedUserEmail = null;
+
+/**
+ * Initializes the Google Identity Services token client.
+ * 
+ * @purpose Prepares the OAuth 2.0 GIS client instance with restricted AppData scope.
+ * @inputs {string} clientId - Google OAuth 2.0 Web Client ID.
+ * @inputs {Function} onTokenCallback - Callback invoked when a token is issued or fails.
+ * @outputs {boolean} True if GIS SDK is loaded and initialized, false otherwise.
+ */
+export function initDriveTokenClient(clientId, onTokenCallback) {
+  if (!window.google?.accounts?.oauth2) {
+    console.warn('Google Identity Services SDK not loaded yet.');
+    return false;
+  }
+
+  if (!clientId || !clientId.trim()) {
+    console.warn('Cannot initialize Google Drive client without a valid Client ID.');
+    return false;
+  }
+
+  tokenClient = window.google.accounts.oauth2.initTokenClient({
+    client_id: clientId.trim(),
+    scope: 'https://www.googleapis.com/auth/drive.appdata email',
+    callback: async (tokenResponse) => {
+      if (tokenResponse.error) {
+        console.error('Google OAuth Token Error:', tokenResponse);
+        if (onTokenCallback) onTokenCallback({ error: tokenResponse.error });
+        return;
+      }
+
+      accessToken = tokenResponse.access_token;
+
+      // Retrieve user email to display connection status
+      try {
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (userInfoRes.ok) {
+          const info = await userInfoRes.json();
+          connectedUserEmail = info.email || 'Google Account';
+        }
+      } catch (e) {
+        connectedUserEmail = 'Google Account';
+      }
+
+      if (onTokenCallback) {
+        onTokenCallback({
+          token: accessToken,
+          email: connectedUserEmail,
+          expiresIn: tokenResponse.expires_in
+        });
+      }
+    }
+  });
+
+  return true;
+}
+
+/**
+ * Triggers the Google Sign-In / OAuth consent prompt.
+ * 
+ * @purpose Requests a fresh bearer token for Drive AppData access.
+ * @inputs None.
+ * @outputs {void}
+ */
+export function requestDriveAuth() {
+  if (!tokenClient) {
+    throw new Error('Google Drive Client ID is not initialized. Please save your Client ID in Settings.');
+  }
+  tokenClient.requestAccessToken({ prompt: '' });
+}
+
+/**
+ * Returns the email of the connected Google account.
+ * 
+ * @outputs {string | null}
+ */
+export function getDriveUserEmail() {
+  return connectedUserEmail;
+}
 
 /**
  * Sets the active Google OAuth access token.
@@ -131,4 +214,132 @@ export async function fetchFromDrive() {
 
   if (!res.ok) return null;
   return await res.json();
+}
+
+/**
+ * Performs full bidirectional reconciliation with Google Drive AppData.
+ * 
+ * @purpose Merges remote captures/desks into local IndexedDB and uploads local updates to Drive.
+ * @outputs {Promise<{ action: 'pulled' | 'pushed' | 'merged' | 'synced', details: string }>}
+ */
+export async function syncWithDrive() {
+  if (!accessToken) {
+    throw new Error('Google Drive is not authenticated');
+  }
+
+  const remoteData = await fetchFromDrive();
+  const [localDesks, localAnchors, localCaptures] = await Promise.all([
+    db.getAll('desks'),
+    db.getAll('anchors'),
+    db.getAll('captures')
+  ]);
+
+  // If no remote file exists yet, push full local state to Drive
+  if (!remoteData || !remoteData.stores) {
+    const initialPayload = {
+      version: '2.0',
+      syncedAt: new Date().toISOString(),
+      stores: {
+        desks: localDesks,
+        anchors: localAnchors,
+        captures: localCaptures
+      }
+    };
+    await uploadToDrive(initialPayload);
+    return { action: 'pushed', details: `Uploaded ${localCaptures.length} captures to private Google Drive.` };
+  }
+
+  // Remote file exists: merge captures
+  const remoteCaptures = Array.isArray(remoteData.stores.captures) ? remoteData.stores.captures : [];
+  const localCapturesMap = new Map(localCaptures.map(c => [c.id, c]));
+  let pulledCapturesCount = 0;
+  let hasLocalCapturesToPush = false;
+
+  for (const rCap of remoteCaptures) {
+    const localMatch = localCapturesMap.get(rCap.id);
+    if (!localMatch) {
+      await db.put('captures', rCap);
+      pulledCapturesCount++;
+    } else {
+      const rTime = new Date(rCap.updatedAt || rCap.createdAt || 0).getTime();
+      const lTime = new Date(localMatch.updatedAt || localMatch.createdAt || 0).getTime();
+      if (rTime > lTime) {
+        await db.put('captures', rCap);
+        pulledCapturesCount++;
+      }
+    }
+  }
+
+  const remoteCapturesMap = new Map(remoteCaptures.map(c => [c.id, c]));
+  for (const lCap of localCaptures) {
+    if (!remoteCapturesMap.has(lCap.id)) {
+      hasLocalCapturesToPush = true;
+    }
+  }
+
+  // Merge desks
+  const remoteDesks = Array.isArray(remoteData.stores.desks) ? remoteData.stores.desks : [];
+  let pulledDesksCount = 0;
+  let hasLocalDesksToPush = false;
+  const localDesksMap = new Map(localDesks.map(d => [d.id, d]));
+
+  for (const rDesk of remoteDesks) {
+    const lDesk = localDesksMap.get(rDesk.id);
+    if (!lDesk) {
+      await db.put('desks', rDesk);
+      state.desks[rDesk.id] = rDesk;
+      pulledDesksCount++;
+    } else {
+      const rTime = new Date(rDesk.lastUpdated || 0).getTime();
+      const lTime = new Date(lDesk.lastUpdated || 0).getTime();
+      if (rTime > lTime) {
+        await db.put('desks', rDesk);
+        state.desks[rDesk.id] = rDesk;
+        pulledDesksCount++;
+      }
+    }
+  }
+
+  for (const lDesk of localDesks) {
+    const rMatch = remoteDesks.find(d => d.id === lDesk.id);
+    if (!rMatch) {
+      hasLocalDesksToPush = true;
+    } else {
+      const lTime = new Date(lDesk.lastUpdated || 0).getTime();
+      const rTime = new Date(rMatch.lastUpdated || 0).getTime();
+      if (lTime > rTime) hasLocalDesksToPush = true;
+    }
+  }
+
+  if (pulledDesksCount > 0) {
+    emit('desks');
+    emit('activeDeskIds');
+  }
+
+  // If local updates existed or we pulled changes, save consolidated snapshot to Drive
+  if (hasLocalCapturesToPush || hasLocalDesksToPush || pulledCapturesCount > 0 || pulledDesksCount > 0) {
+    const [finalDesks, finalAnchors, finalCaptures] = await Promise.all([
+      db.getAll('desks'),
+      db.getAll('anchors'),
+      db.getAll('captures')
+    ]);
+
+    const consolidatedPayload = {
+      version: '2.0',
+      syncedAt: new Date().toISOString(),
+      stores: {
+        desks: finalDesks,
+        anchors: finalAnchors,
+        captures: finalCaptures
+      }
+    };
+    await uploadToDrive(consolidatedPayload);
+
+    return {
+      action: pulledCapturesCount > 0 ? 'merged' : 'pushed',
+      details: `Synced (${pulledCapturesCount} captures pulled, consolidated snapshot updated).`
+    };
+  }
+
+  return { action: 'synced', details: 'Local database and Google Drive are fully in sync.' };
 }

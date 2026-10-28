@@ -7,7 +7,8 @@ import * as db from './db.js';
 import { state } from './state.js';
 import { exportFullBackup, importFullBackup } from './sync/export-provider.js';
 import { createP2POffer } from './sync/p2p-provider.js';
-import { setSyncBadge } from './sync/sync-manager.js';
+import { setSyncBadge, performSync } from './sync/sync-manager.js';
+import { initDriveTokenClient, requestDriveAuth, isDriveConnected, getDriveUserEmail, syncWithDrive } from './sync/drive-provider.js';
 
 /**
  * Updates the persistent Gemini API key status indicator in Settings.
@@ -189,15 +190,110 @@ export function initSettingsModal() {
     });
   }
 
+  // Bind Drive Configuration controls
+  const driveClientIdInput = document.getElementById('input-drive-client-id');
+  const btnSaveDriveId = document.getElementById('btn-save-drive-client-id');
+  const btnConnectDrive = document.getElementById('btn-connect-drive');
+  const btnSyncDriveNow = document.getElementById('btn-sync-drive-now');
+
+  if (btnSaveDriveId && driveClientIdInput) {
+    btnSaveDriveId.addEventListener('click', async () => {
+      const clientId = driveClientIdInput.value.trim();
+      state.settings.drive_client_id = clientId;
+      await db.put('settings', { key: 'drive_client_id', value: clientId, updatedAt: new Date().toISOString() });
+      btnSaveDriveId.textContent = '✓ Saved';
+      setTimeout(() => { btnSaveDriveId.textContent = 'Save ID'; }, 1800);
+
+      if (clientId) {
+        initDriveTokenClient(clientId, handleDriveTokenReceived);
+      }
+    });
+  }
+
+  if (btnConnectDrive) {
+    btnConnectDrive.addEventListener('click', () => {
+      const clientId = driveClientIdInput?.value?.trim() || state.settings?.drive_client_id?.trim();
+      if (!clientId) {
+        alert('Please enter and save your Google OAuth 2.0 Web Client ID first.');
+        driveClientIdInput?.focus();
+        return;
+      }
+
+      initDriveTokenClient(clientId, handleDriveTokenReceived);
+      try {
+        requestDriveAuth();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
+  if (btnSyncDriveNow) {
+    btnSyncDriveNow.addEventListener('click', async () => {
+      btnSyncDriveNow.textContent = '⏳ Syncing...';
+      try {
+        const res = await syncWithDrive();
+        btnSyncDriveNow.textContent = '✓ Synced';
+        setSyncBadge('synced', 'Synced');
+        setTimeout(() => { btnSyncDriveNow.textContent = '⚡ Sync Now'; }, 2000);
+      } catch (err) {
+        btnSyncDriveNow.textContent = '⚠️ Failed';
+        setSyncBadge('error', 'Sync Error');
+        setTimeout(() => { btnSyncDriveNow.textContent = '⚡ Sync Now'; }, 2500);
+      }
+    });
+  }
+
   // Bind Provider radio changes
   document.querySelectorAll('input[name="sync_provider"]').forEach(radio => {
     radio.addEventListener('change', async (e) => {
       const provider = e.target.value;
       state.settings.sync_provider = provider;
       await db.put('settings', { key: 'sync_provider', value: provider, updatedAt: new Date().toISOString() });
-      setSyncBadge('synced', provider === 'offline' ? 'Offline' : (provider === 'drive' ? 'Drive' : 'P2P'));
+      updateDriveConfigPanelVisibility();
+      setSyncBadge('synced', provider === 'offline' ? 'Offline' : (provider === 'drive' ? (isDriveConnected() ? 'Drive' : 'Local') : 'P2P'));
     });
   });
+}
+
+function handleDriveTokenReceived(response) {
+  if (response.error) {
+    alert('Google authorization failed: ' + response.error);
+    return;
+  }
+  updateDriveStatusUI();
+  performSync();
+}
+
+function updateDriveConfigPanelVisibility() {
+  const panel = document.getElementById('drive-config-panel');
+  if (!panel) return;
+  const isDriveSelected = (state.settings?.sync_provider || 'offline') === 'drive';
+  panel.style.display = isDriveSelected ? 'block' : 'none';
+}
+
+function updateDriveStatusUI() {
+  const dot = document.getElementById('drive-auth-dot');
+  const text = document.getElementById('drive-auth-text');
+  const connectBtn = document.getElementById('btn-connect-drive');
+  const syncNowBtn = document.getElementById('btn-sync-drive-now');
+
+  if (!dot || !text) return;
+
+  if (isDriveConnected()) {
+    const email = getDriveUserEmail() || 'Google Account';
+    dot.style.background = '#34d399';
+    text.style.color = '#34d399';
+    text.textContent = `Connected: ${email}`;
+    if (connectBtn) connectBtn.textContent = '🔄 Re-authorize';
+    if (syncNowBtn) syncNowBtn.style.display = 'inline-flex';
+  } else {
+    dot.style.background = '#64748b';
+    text.style.color = 'var(--text-muted)';
+    text.textContent = 'Not Connected';
+    if (connectBtn) connectBtn.textContent = '🔗 Connect Google Account';
+    if (syncNowBtn) syncNowBtn.style.display = 'none';
+  }
 }
 
 /**
@@ -209,14 +305,18 @@ export function openSettingsModal() {
 
   const keyInput = document.getElementById('settings-gemini-key');
   const groundingCheckbox = document.getElementById('settings-grounding-checkbox');
+  const driveClientIdInput = document.getElementById('input-drive-client-id');
 
   if (keyInput) keyInput.value = state.settings?.gemini_api_key || '';
   if (groundingCheckbox) groundingCheckbox.checked = !!state.settings?.search_grounding_enabled;
+  if (driveClientIdInput) driveClientIdInput.value = state.settings?.drive_client_id || '';
 
   const currentProvider = state.settings?.sync_provider || 'offline';
   const targetRadio = document.querySelector(`input[name="sync_provider"][value="${currentProvider}"]`);
   if (targetRadio) targetRadio.checked = true;
 
+  updateDriveConfigPanelVisibility();
+  updateDriveStatusUI();
   updateGeminiStatusUI();
   modal.classList.add('active');
 }

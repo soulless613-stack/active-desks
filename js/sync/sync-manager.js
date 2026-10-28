@@ -7,7 +7,7 @@
 
 import * as db from '../db.js';
 import { state } from '../state.js';
-import { uploadToDrive, fetchFromDrive, isDriveConnected } from './drive-provider.js';
+import { uploadToDrive, fetchFromDrive, isDriveConnected, syncWithDrive } from './drive-provider.js';
 
 let debounceTimer = null;
 const DEBOUNCE_DELAY_MS = 2500;
@@ -50,8 +50,7 @@ export async function performSync() {
 
   try {
     if (provider === 'drive' && isDriveConnected()) {
-      const payload = await compileSyncPayload();
-      await uploadToDrive(payload);
+      await syncWithDrive();
       setSyncBadge('synced', 'Synced');
     } else {
       setSyncBadge('synced', 'Local');

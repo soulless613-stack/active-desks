@@ -6,7 +6,7 @@
  * online clients immediately receive fresh updates.
  */
 
-const CACHE_NAME = 'active-desks-v2-1.0.3';
+const CACHE_NAME = 'active-desks-v2-1.0.4';
 
 /**
  * Static assets pre-cached during service worker installation.
