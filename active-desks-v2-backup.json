@@ -1,0 +1,2027 @@
+{
+  "version": "2.0",
+  "exportedAt": "2026-10-28T03:06:56.076Z",
+  "stores": {
+    "desks": [
+      {
+        "id": "reading",
+        "title": "Rhythm of War",
+        "author": "Brandon Sanderson",
+        "currentPage": 852,
+        "totalPages": 1230,
+        "format": "Audiobook (Breakfast routine)",
+        "linkText": "Open Audiobook",
+        "linkUrl": "https://www.audible.com",
+        "storygraphUrl": "https://app.thestorygraph.com/profile/soulless613",
+        "lastUpdated": "2026-10-22T12:55:29.784Z"
+      },
+      {
+        "id": "fiber",
+        "name": "Autumn Cardigan",
+        "type": "Knitting WIP",
+        "specs": "US 7 (4.5mm) • DK Weight",
+        "rows": 44,
+        "targetRows": 120,
+        "linkText": "Open Ravelry",
+        "linkUrl": "https://www.ravelry.com",
+        "lastUpdated": "2026-09-20T22:25:00.000Z"
+      },
+      {
+        "id": "gaming",
+        "title": "Stardew Valley",
+        "platform": "PC / Steam",
+        "quest": "Get the mayor's shorts",
+        "linkText": "View Quest Wiki",
+        "linkUrl": "https://stardewvalleywiki.com/Stardew_Valley_Wiki",
+        "lastUpdated": "2026-10-06T13:30:11.840Z"
+      },
+      {
+        "id": "tech",
+        "title": "GitHub URL Tricks: GitReverse and GitDiagram",
+        "tool": "Developer Tools",
+        "focus": "Quick URL swaps on any GitHub repository to instantly generate AI reverse-engineering prompts or full architectural diagrams without opening a single file.",
+        "linkText": "Louis",
+        "linkUrl": "https://www.instagram.com/reel/De7WIcEogeo/?mdxt=MWdwczV3cWptMWRqdw==",
+        "lastUpdated": "2026-10-27T03:49:18.420Z"
+      },
+      {
+        "id": "kitchen",
+        "title": "Butter Chicken Mac N Cheese",
+        "servings": 4,
+        "prepTime": "25 mins",
+        "cookTime": "30 mins",
+        "lastUpdated": "2026-10-28T03:06:56.076Z"
+      }
+    ],
+    "anchors": [
+      {
+        "id": "today",
+        "date": "2026-10-21",
+        "home": false,
+        "body": true,
+        "spark": true,
+        "lastUpdated": "2026-10-21T04:44:26.994Z"
+      }
+    ],
+    "captures": [
+      {
+        "id": 1793147440715,
+        "domain": "book",
+        "topic": "LitRPG",
+        "title": "LitRPG Reading Guide: Levels 6–10",
+        "summary": "A tiered reading guide for readers ready to dive into advanced LitRPG and progression fantasy, covering deep class mechanics, system apocalypses, and heavy stat progression.",
+        "creator": "Tales with Atticus (@tales.with.atticus)",
+        "sourceUrl": "https://www.instagram.com/p/DfA8k1IjsOV/?img_index=5&xtok=MWl4a2R4Njk0bDdveQ==",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.071Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Author",
+            "value": "Various (Curated by @tales.with.atticus)"
+          },
+          {
+            "label": "Genre",
+            "value": "LitRPG / Progression Fantasy"
+          }
+        ],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "A tiered reading guide for readers ready to dive into advanced LitRPG and progression fantasy, covering deep class mechanics, system apocalypses, and heavy stat progression."
+          ],
+          "highlight": "Ideal roadmap for readers advancing past intro LitRPG into heavy stat sheets, intricate class builds, and epic progression fantasy."
+        }
+      },
+      {
+        "id": 1793138773482,
+        "domain": "tech",
+        "topic": "AI Coding",
+        "title": "Glitch Walk: Visualizing Vibe Coded Architecture",
+        "summary": "Glitch Walk is a developer skill designed to help programmers understand and visually map out how their vibe-coded applications, backend routines, and APIs actually execute step-by-step.",
+        "creator": "Kem (@kem_glitch)",
+        "sourceUrl": "https://www.instagram.com/reel/DePJAUftlJD/?dlrf=c28zY2NodTcwMHgx",
+        "foundUrl": "https://github.com/Glitch-Cat-Club/glitch-skills",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Eliminates the 'black box' problem in vibe coding by visually rendering how the UI, backend handlers, and APIs coordinate.",
+            "Breaks down complex requests sequentially into user-facing actions, out-of-sight background tasks, and source file locations.",
+            "Open-source and accessible via GitHub at github.com/Glitch-Cat-Club/glitch-skills."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793101166661,
+        "domain": "tech",
+        "topic": "AI Productivity",
+        "title": "Gamified 'Task Tinder' AI Prompt for Overwhelm & ADHD",
+        "summary": "A gamified productivity workflow and interactive Claude/ChatGPT artifact that turns a quick verbal brain dump into a swipeable task deck with micro-steps, timers, and reward mechanics.",
+        "creator": "Logan Currie (@loganinthefuture)",
+        "sourceUrl": "https://www.instagram.com/reel/DdhqRGlj-m4/?rpxt=ZXR4MXI5YzU3a3V1",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Do a 2 to 5-minute verbal or typed brain dump of all pending mental tasks directly into Claude or ChatGPT.",
+            "The tool generates an interactive deck where you swipe left to defer or swipe right to immediately launch into a task.",
+            "Each card provides an ultra-low-friction 'first move', adjustable timers (5, 10, or 25 minutes), an intrusive thought parking lot, and dopamine-boosting confetti/XP rewards."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793100736278,
+        "domain": "book",
+        "topic": "LitRPG",
+        "title": "What to Read After Dungeon Crawler Carl: 3 Hilarious Book Recommendations",
+        "summary": "Three witty LitRPG and sci-fi book recommendations featuring sarcastic system guides, game-breaking exploits, and chaotic humor to cure your Dungeon Crawler Carl reading slump.",
+        "creator": "Tales with Atticus (@tales.with.atticus)",
+        "sourceUrl": "https://www.instagram.com/reel/Dez84JyNc6I/?srtk=MTh3YmFsbXAzM296eA==",
+        "foundUrl": "https://www.instagram.com/reel/Dez84JyNc6I/",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Author",
+            "value": "Benjamin Kerei, Ryan Rimmel, Dennis E. Taylor"
+          },
+          {
+            "label": "Genre",
+            "value": "LitRPG / Progression Fantasy / Sci-Fi"
+          }
+        ],
+        "body": {
+          "format": "collection",
+          "items": [
+            {
+              "title": "Oh, Great! I Was Reincarnated as a Farmer",
+              "subtitle": "by Benjamin Kerei",
+              "detail": "A gamer accidentally dies after a cleric botches his resurrection and awakens in a fantasy world trapped in the worst possible class: a farmer who earns zero experience points for killing monsters. The story centers on him finding ingenious loopholes to exploit the system.",
+              "linkUrl": null
+            },
+            {
+              "title": "The Mayor of Noobtown",
+              "subtitle": "by Ryan Rimmel",
+              "detail": "A man wakes up in a video-game-like world and finds himself appointed the mayor of the saddest, most pitiful starter town imaginable, all while an abrasive, sarcastic system interface narrating his life continuously mocks him.",
+              "linkUrl": null
+            },
+            {
+              "title": "We Are Legion (We Are Bob)",
+              "subtitle": "by Dennis E. Taylor",
+              "detail": "After being killed in a car accident, a man's consciousness is uploaded a century later as the software operating an interstellar von Neumann space probe. As he replicates himself, each clone develops a slightly different personality.",
+              "linkUrl": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 1793100736278,
+        "domain": "book",
+        "topic": "LitRPG",
+        "title": "What to Read After Dungeon Crawler Carl: 3 Hilarious Book Recommendations",
+        "summary": "Three witty LitRPG and sci-fi book recommendations featuring sarcastic system guides, game-breaking exploits, and chaotic humor to cure your Dungeon Crawler Carl reading slump.",
+        "creator": "Tales with Atticus (@tales.with.atticus)",
+        "sourceUrl": "https://www.instagram.com/reel/Dez84JyNc6I/?srtk=MTh3YmFsbXAzM296eA==",
+        "foundUrl": "https://www.instagram.com/reel/Dez84JyNc6I/",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Author",
+            "value": "Benjamin Kerei, Ryan Rimmel, Dennis E. Taylor"
+          },
+          {
+            "label": "Genre",
+            "value": "LitRPG / Progression Fantasy / Sci-Fi"
+          }
+        ],
+        "body": {
+          "format": "collection",
+          "items": [
+            {
+              "title": "Oh, Great! I Was Reincarnated as a Farmer",
+              "subtitle": "by Benjamin Kerei",
+              "detail": "A gamer accidentally dies after a cleric botches his resurrection and awakens in a fantasy world trapped in the worst possible class: a farmer who earns zero experience points for killing monsters. The story centers on him finding ingenious loopholes to exploit the system.",
+              "linkUrl": null
+            },
+            {
+              "title": "The Mayor of Noobtown",
+              "subtitle": "by Ryan Rimmel",
+              "detail": "A man wakes up in a video-game-like world and finds himself appointed the mayor of the saddest, most pitiful starter town imaginable, all while an abrasive, sarcastic system interface narrating his life continuously mocks him.",
+              "linkUrl": null
+            },
+            {
+              "title": "We Are Legion (We Are Bob)",
+              "subtitle": "by Dennis E. Taylor",
+              "detail": "After being killed in a car accident, a man's consciousness is uploaded a century later as the software operating an interstellar von Neumann space probe. As he replicates himself, each clone develops a slightly different personality.",
+              "linkUrl": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 1793099668233,
+        "domain": "misc",
+        "topic": "Donghua",
+        "title": "Spare Me, Great Lord! (Da Wang Rao Ming) Donghua Recommendation",
+        "summary": "A spotlight on the donghua series 'Spare Me, Great Lord!' (Da Wang Rao Ming), praising modern Chinese animation studios for their fast-paced, fluid, and easily readable fight choreography.",
+        "creator": "inevitably_dope (@inevitably_dope)",
+        "sourceUrl": "https://www.instagram.com/reel/De-emnOO4Ap/?srtk=NjAyZnptMnkwenBk",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Recommends the Chinese animated series (donghua) 'Spare Me, Great Lord!' (Da Wang Rao Ming).",
+            "Highlights a standout train fight sequence showcasing high-speed, dynamic martial arts choreography and fluid sakuga.",
+            "Emphasizes how Chinese animation studios are producing world-class action scenes that remain clear and digestible despite ultra-fast pacing."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793099360378,
+        "domain": "tech",
+        "topic": "Claude Code",
+        "title": "Building a Second Brain for Claude Code with BASE",
+        "summary": "A breakdown of why the Obsidian and Graphify stack burns excessive tokens and requires manual curation for Claude Code, and how BASE (basemode) provides native, automated knowledge graphing and context injection.",
+        "creator": "Charles J Dove (@charlieautomates)",
+        "sourceUrl": "https://www.instagram.com/reel/De97J-dpOez/?vrfl=cWU3amRkdmUydDZo",
+        "foundUrl": "https://www.instagram.com/reel/De97J-dpOez/",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Avoid the Obsidian + Graphify stack for Claude Code: Graphify scans your entire workspace file-by-file (consuming heavy token quotas), while Obsidian functions solely as a passive viewer requiring manual curation.",
+            "BASE integrates natively via Claude Code hooks: Using hooks like SessionStart, BASE automatically pulls open handoffs, active projects, and system health into Claude Code's awareness without manual input.",
+            "Selective domain routing saves tokens: Keyword matching maps specific domains and AST file paths to inject only the relevant rules and decisions for the current prompt, self-updating at the end of each session."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793098666161,
+        "domain": "tech",
+        "topic": "Local AI",
+        "title": "Set Up Local AI on Stevens Laptop",
+        "summary": "Find the Windows 11 debloater developer's Instagram handle to install a lightweight OS on the Stevens laptop and run a local AI model to replace paid Gemini API keys.",
+        "creator": null,
+        "sourceUrl": null,
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "none",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Find the Windows 11 debloater developer's Instagram handle to install a lightweight OS on the Stevens laptop and run a local AI model to replace paid Gemini API keys."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793072834650,
+        "domain": "tech",
+        "topic": "Knowledge Graphs",
+        "title": "Tier 1 Knowledge Graph Memory for AI Assistants",
+        "summary": "A lightweight, push-based Tier 1 knowledge graph using three SQLite tables and prompt hooks to pre-traverse multi-hop relational data in ~2ms, enabling small models like Claude Haiku to accurately answer complex trap questions without tool calls.",
+        "creator": "Kem @ Glitch Cat Club (@kem_glitch)",
+        "sourceUrl": "https://www.instagram.com/reel/DcHG2kPtZZG/?psln=MXFmeG0xYXZtYWxxcw==",
+        "foundUrl": "https://github.com/Glitch-Cat-Club/graph-memory-starter",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Push vs. Pull Retrieval: Instead of forcing LLMs to search and read through tool calls during generation, the traversal query walks the graph ahead of time and injects deterministic facts via a UserPromptSubmit hook.",
+            "Minimalist Tier 1 Stack: Built with 3 SQLite tables (entities, relations, aliases), 1 recursive traversal query, and ~250 lines of code—requiring zero external frameworks, API keys, or dedicated graph servers.",
+            "Parity for Lightweight Models: Bypassing fuzzy keyword search and document scanning keeps context fixed (~400 tokens) and allows small models like Haiku to solve multi-hop multi-file traps in ~2ms."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793056385577,
+        "domain": "tech",
+        "topic": "Developer Tools",
+        "title": "GitHub URL Tricks: GitReverse and GitDiagram",
+        "summary": "Quick URL swaps on any GitHub repository to instantly generate AI reverse-engineering prompts or full architectural diagrams without opening a single file.",
+        "creator": "Louis Raillé (@louis_rlee)",
+        "sourceUrl": "https://www.instagram.com/reel/De7WIcEogeo/?mdxt=MWdwczV3cWptMWRqdw==",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Replace 'github' with 'gitreverse' in any repository URL (gitreverse.com/...) to extract a clean, reverse-engineered prompt detailing the repository's architecture and features for use in AI coding assistants like Claude Code.",
+            "Replace 'hub' with 'diagram' in any repository URL (gitdiagram.com/...) to automatically generate an interactive visual map of the repository's component architecture and connections."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793037884587,
+        "domain": "tech",
+        "topic": "Gaming Peripherals",
+        "title": "OpenMouse: Browser-Based Control Panel for Gaming Mice",
+        "summary": "OpenMouse is an open-source, web-based utility created by snekxs that lets you configure gaming mouse settings directly in your browser without downloading bloated proprietary software.",
+        "creator": "Zack Shutt (@zackshutt)",
+        "sourceUrl": "https://www.instagram.com/reel/DbhVvfAhmOv/?cplk=MWkzbGg2Znozc2xyeg==",
+        "foundUrl": "https://openmouse.app",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Operates directly in Chromium-based browsers (Chrome, Edge) using WebHID without requiring background services, software installation, or user accounts [00:16, 00:41].",
+            "Allows full configuration of hardware settings including DPI stages, polling report rates, lift-off distance, and motion sync [00:33].",
+            "Created by developer snekxs with multi-brand support (Logitech, Endgame Gear, and others); available to preview at openmouse.app [00:07, 00:14, 00:47]."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793016430538,
+        "domain": "tech",
+        "topic": "Local AI",
+        "title": "llmfit: Terminal Tool to Match Local AI Models to Your Hardware",
+        "summary": "llmfit is an open-source terminal utility that analyzes your system's CPU, GPU, and RAM to score and rank local LLMs by memory fit, speed, quality, and context capacity.",
+        "creator": "Denny Medina (@dennydigital_)",
+        "sourceUrl": "https://www.instagram.com/reel/DdZS5zsAuCl/?cplk=eTIxNDl1c3d0NWcw",
+        "foundUrl": "https://github.com/AlexsJones/llmfit",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Automatically audits system hardware (RAM, CPU, GPU/VRAM) and detects local LLM runtimes such as Ollama, MLX, and LM Studio.",
+            "Ranks and scores models across four metrics: memory fit, generation speed (tokens/sec), output quality, and available context size.",
+            "Features color-coded recommendations to prevent downloading oversized models and allows downloading compatible models directly within the terminal interface."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793015390078,
+        "domain": "tech",
+        "topic": "Local AI",
+        "title": "Why You Should Use Local AI: Privacy, Cost, and Unrestricted Access",
+        "summary": "An introduction to local, open-weight AI models explaining how they run completely offline on standard consumer hardware, offering full data privacy, zero recurring subscription costs, and permanent access without corporate gatekeeping.",
+        "creator": "Saria | AI Literacy (@thecorporateflamingo)",
+        "sourceUrl": "https://www.instagram.com/reel/Dbavr1-IcdT/?vrfl=MW5uOHcza3A5MTFsbg==",
+        "foundUrl": "https://www.instagram.com/reel/Dbavr1-IcdT/",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "No specialized enterprise hardware is required for everyday tasks: small open-weight models run offline on standard laptops using beginner-friendly tools like LM Studio with zero coding.",
+            "Data privacy is absolute because your prompts and documents never leave your machine, eliminating exposure to data breaches, government subpoena requests, or corporate model training.",
+            "Local AI eliminates monthly subscription fees, arbitrary usage caps, and the risk of losing access due to sudden platform tier-locks or ID verification requirements."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1793014689848,
+        "domain": "fiber",
+        "topic": "Crochet",
+        "title": "Knotly: 3D Crochet Simulator & Pattern Designer",
+        "summary": "Knotly is an interactive 3D crochet simulator and design tool that lets makers write patterns, experiment with colorways and stitch shaping, and visualize amigurumi and crochet projects in real time.",
+        "creator": "Knotly (@knotly.crochet)",
+        "sourceUrl": "https://www.instagram.com/knotly.crochet?cplk=MTQ0cmw5cGtpcjU4OA==",
+        "foundUrl": "https://www.knotly.com",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Real-time 3D visualization: Preview stitch definition, shaping, and color choices interactively before picking up a hook.",
+            "Digital prototyping: Write and refine amigurumi and crochet patterns digitally without wasting physical yarn.",
+            "Pattern notation support: Compatible with standard stitch notation and terminology for streamlined pattern drafting and testing."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792989181242,
+        "domain": "tech",
+        "topic": "Claude Code",
+        "title": "Self-Correcting Simplified Technical English (STE) for Claude Code",
+        "summary": "A benchmark and setup guide replacing viral one-line prompts and static skills with a two-hook architecture in Claude Code that deterministically enforces ASD-STE100 and self-corrects drift.",
+        "creator": "Kem | Glitch Cat Club (@kem_glitch)",
+        "sourceUrl": "https://www.instagram.com/reel/DclKZARteCP/?cplk=MXl4MW5zY3U3N2N3",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Static lines in CLAUDE.md or Claude skills degrade over extended conversation turns due to context rot and lack of automated verification.",
+            "A dual-hook setup in Claude Code attaches rule constraints to every user prompt and evaluates the output with a deterministic linter.",
+            "Feeding output linter scores into the subsequent prompt enables continuous self-correction, reducing output reading volume by up to 68%."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792963881958,
+        "domain": "game",
+        "topic": "Coding Game",
+        "title": "Windwright",
+        "summary": "A cozy browser-based educational game where players restore a garden by writing real Python code to control automatons and creatures.",
+        "creator": "Windwright (@windwright.dev)",
+        "sourceUrl": "https://www.instagram.com/reel/DekNRqMJ4D6/?vrfl=YWJ1ZWxvNnEzMGdx",
+        "foundUrl": "https://windwright.dev",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Platform",
+            "value": "Web Browser (PC)"
+          },
+          {
+            "label": "Genre",
+            "value": "Cozy Coding Sim / Educational"
+          }
+        ],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "A cozy browser-based educational game where players restore a garden by writing real Python code to control automatons and creatures."
+          ],
+          "highlight": "Complete the introductory clearings by writing print statements, movement coordinates, and if-statements to automate watering and weeding."
+        }
+      },
+      {
+        "id": 1792941933312,
+        "domain": "tech",
+        "topic": "Claude Code",
+        "title": "ayghri/i-have-adhd: ADHD-Friendly Output for AI Coding Agents",
+        "summary": "An open-source skill for Claude Code, Codex, and Copilot that eliminates conversational filler, preambles, and closing chatter, enforcing action-first answers with concise, numbered steps.",
+        "creator": "AI Money Plays (@aimoneypays)",
+        "sourceUrl": "https://www.instagram.com/reel/De6jTsiMCtT/?exln=MWFvaG9jOXljbmNhZA==",
+        "foundUrl": "https://github.com/ayghri/i-have-adhd",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Leads immediately with the actionable line or file modification rather than conversational preambles or explanations.",
+            "Breaks multi-step tasks into concise, numbered steps and always concludes with one single next action instead of overwhelming menus.",
+            "Installs directly in Claude Code via 'claude plugin marketplace add ayghri/i-have-adhd' and 'claude plugin install i-have-adhd@i-have-adhd'."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792895770404,
+        "domain": "tech",
+        "topic": "Windows Optimization",
+        "title": "TBOK Win11Optimizer: Windows Debloat & Performance Optimization Script",
+        "summary": "A comprehensive Windows batch script created to safely debloat Windows 10/11, disable telemetry and background bloat, optimize memory, and enable peak gaming performance.",
+        "creator": "TheBeardOfKnowledge (@thebeardofknowledge_it)",
+        "sourceUrl": "https://www.instagram.com/reel/De3D_zeMifo/?cplk=MXA4azk1cnY4NW9ubg==",
+        "foundUrl": "https://github.com/TheBeardofknowledge/TBOK-Win11Optimizer",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Automatically creates a System Restore point prior to executing changes to ensure safe rollback.",
+            "Removes system bloatware and telemetry, including Microsoft Copilot, Bing Search, lock screen/menu ads, and background Edge processes.",
+            "Boosts gaming responsiveness by enabling Hardware Accelerated GPU Scheduling (HAGS), setting the Ultimate Performance power plan, and tuning pagefile virtual memory."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792879634195,
+        "domain": "tech",
+        "topic": "AI Agents",
+        "title": "Bot Crossing: Open-Source Game Workspace for AI Agents",
+        "summary": "Bot Crossing transforms active AI coding agent threads into a colony simulation on a hex-grid planet, where agents visually wave their hands whenever they encounter an issue and need human input.",
+        "creator": "Jarren Rocks (@jarrenrocks)",
+        "sourceUrl": "https://www.instagram.com/reel/DczR-QlSMdK/?rpxt=MXB5MzZwYmZpZmt1cg==",
+        "foundUrl": "https://botcrossing.com",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Visualizes coding agent threads as interactive astronauts living in a colony on your machine.",
+            "Agents wave their hands when waiting on human input, allowing you to click directly on them to inspect needs and resolve blockers.",
+            "Fully open-source and detailed in a full walkthrough on the Jarren Rocks YouTube channel."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792842574998,
+        "domain": "tech",
+        "topic": "Cloud Hosting",
+        "title": "Oracle Always Free Tier Setup for AI Agents and Hosting",
+        "summary": "Oracle Cloud provides a lifetime free tier featuring up to three virtual servers, two 20 GB managed databases, and 10 TB of monthly outbound traffic. The resources can be configured using Claude to run 24/7 autonomous agents, self-hosted AI models, and client websites.",
+        "creator": "rick (@rick.automates)",
+        "sourceUrl": "https://www.instagram.com/reel/De2ww2HPYm8/?vrfl=YnM2MmZwZDUzemh1",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Oracle's Always Free tier offers an ARM instance configured with 2 CPUs and 12 GB RAM, two AMD micro instances, two 20 GB databases, and 10 TB monthly outbound traffic.",
+            "The larger ARM instance has sufficient capacity to run local AI models or host continuous Claude agents around the clock without keeping a personal laptop running.",
+            "Claude can be used to automate server setup, manage configuration scripts, and deploy websites or bots for personal use or client hosting."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792735684073,
+        "domain": "tech",
+        "topic": "Local AI",
+        "title": "DeepSeek Harness: Open-Source Local Agent Harness",
+        "summary": "DeepSeek Harness (dsh) is an open-source, plugin-based agent harness that runs coding agent workflows directly on your local machine as an alternative to proprietary tools like Claude Code.",
+        "creator": "Connor (@cookin.code)",
+        "sourceUrl": "https://www.instagram.com/reel/Desq5O9i_4P/?xtok=NG11amZqczhncDhn",
+        "foundUrl": "https://github.com/deepseek-ai/deepseek-harness",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Operates locally on your own machine via a local web interface (localhost:3080) or desktop app, avoiding Anthropic Pro subscription fees.",
+            "Built on a modular Cordis architecture where all tools, models, and interface elements function as interchangeable plugins.",
+            "Serves as an open-source, self-hosted alternative to proprietary developer assistants like Claude Code."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792735358371,
+        "domain": "book",
+        "topic": "LitRPG",
+        "title": "LitRPG Reading Guide: 5 Levels to Level Up Your TBR",
+        "summary": "A 5-level LitRPG reading guide by Tales with Atticus categorizing entry points into the genre based on stat depth, game mechanics, crafting, and dungeon management.",
+        "creator": "Tales with Atticus (@tales.with.atticus)",
+        "sourceUrl": "https://www.instagram.com/p/DeuNRYXlMJn/?img_index=6&exln=MnlidDFhejhqOW15",
+        "foundUrl": "https://www.instagram.com/p/DeuNRYXlMJn/",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Author",
+            "value": "Tales with Atticus (Curator)"
+          },
+          {
+            "label": "Genre",
+            "value": "LitRPG / Progression Fantasy"
+          }
+        ],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "A 5-level LitRPG reading guide by Tales with Atticus categorizing entry points into the genre based on stat depth, game mechanics, crafting, and dungeon management."
+          ],
+          "highlight": "Provides an accessible progression ladder for LitRPG newcomers, matching readers with titles based on how heavily they prefer game mechanics, stat tables, and skill progression."
+        }
+      },
+      {
+        "id": 1792668151645,
+        "domain": "tech",
+        "topic": "Claude Code",
+        "title": "10 Powerful GitHub Repos for Claude Code & Token Saver Analysis",
+        "summary": "A curated breakdown of 10 high-impact GitHub repos and tools to expand Claude Code's capabilities, paired with real-world benchmark data testing popular token-saving extensions.",
+        "creator": "Dripthecup (@dripthecup)",
+        "sourceUrl": "https://www.instagram.com/reel/DeithvDucpZ/?xtok=MWQ2bDY4Y3R1czc1bg==",
+        "foundUrl": "https://dripthecup.com/links",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Top 10 recommended repos/skills: heygen-com/hyperframes (video rendering), blader/humanizer (de-hyping copy), googleworkspace/cli (Google CLI integration), Apify's MCP server (web scraping), addyosmani/agent-skills (spec/plan persistence), Expo skills (native app rules), Supabase + Stripe skills (RLS & webhook security), Microsoft's playwright-cli (browser automation), and Anthropic's claude-security plugin.",
+            "JetBrains benchmark tests showed hyped 'token savers' often fall short: rtk-ai/rtk actually increased cost by +7.6%, caveman saved only 8.5% (advertised 65%), and ponytail saved 10.3% (half of its 20% claim).",
+            "Actionable tips: inspect Claude AI spend with 'npx codeburn', and turn off default anonymous telemetry in claude-mem using 'npx claude-mem telemetry disable'."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792650746263,
+        "domain": "tech",
+        "topic": "Claude Code",
+        "title": "Karpathy Skills: Claude Code & Cursor Guidelines",
+        "summary": "A zero-code GitHub repository providing a CLAUDE.md and Cursor rule configuration based on Andrej Karpathy's observations on common LLM coding pitfalls.",
+        "creator": "Prince Gupta (@princegupta.ai)",
+        "sourceUrl": "https://www.instagram.com/reel/DewhNn1AZGQ/?rpxt=NXZybmR4Z2UzeTJ4",
+        "foundUrl": "https://github.com/multica-ai/andrej-karpathy-skills",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Encodes 4 Core Principles: Think Before Coding (ask clarifying questions rather than guessing), Simplicity First (write minimal code without speculative bloat), Surgical Changes (touch only targeted code and clean up your own diffs), and Goal-Driven Execution (define success criteria and loop until verified).",
+            "Solves Primary LLM Pitfalls: Prevents agents from silently making wrong assumptions, creating massive 1000-line rewrites when 50 lines suffice, and introducing orthogonal edits into untouched files.",
+            "Multi-Tool Support: Installs directly as a Claude Code plugin (`/plugin marketplace add forrestchang/andrej-karpathy-skills`), a local `CLAUDE.md` project file, or a Cursor rule (`.cursor/rules/karpathy-guidelines.mdc`)."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792558243177,
+        "domain": "tech",
+        "topic": "3D Printing",
+        "title": "Wing Folding Fan 3D Print Design",
+        "summary": "A creative 3D-printed articulated folding fan inspired by bird wings that smoothly expands and collapses. It highlights functional print design and mechanical joint movement for everyday handheld use.",
+        "creator": "By Asli 3D (@byasli3d)",
+        "sourceUrl": "https://www.instagram.com/reel/DZufqGutK9E/?srtk=ZncwY2RlcjJrNWZj",
+        "foundUrl": "https://www.instagram.com/reel/DZufqGutK9E/",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Showcases an articulated, multi-segment wing mechanism that opens and closes smoothly like a traditional folding fan.",
+            "Demonstrates practical mechanical design and print-in-place tolerances in desktop 3D printing.",
+            "Serves as a lightweight, portable aesthetic print that doubles as a functional cooling fan."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792558176000,
+        "domain": "tech",
+        "topic": "3D Printing",
+        "title": "PressPrint Lab Hinged Box Generator",
+        "summary": "PressPrint Lab offers a browser-based hinged box generator that lets makers create fully customizable, print-in-place hinged boxes without any CAD modeling experience.",
+        "creator": "Press Print (@pressprint__)",
+        "sourceUrl": "https://www.instagram.com/reel/Dd5MIH-NwnF/?exln=dzR2MGRqM3JwaXds",
+        "foundUrl": "https://pressprintlab.com/designs",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "Quickly generate custom parametric hinged boxes ready for print-in-place 3D printing without needing CAD skills.",
+            "Allows direct configuration of box dimensions, wall thickness, internal compartment grids (rows/columns), and lid opening angles.",
+            "Supports adding custom embossed or cut-in lid text and cut-out surface patterns before exporting directly to 3MF."
+          ],
+          "highlight": null
+        }
+      },
+      {
+        "id": 1792558099016,
+        "domain": "recipe",
+        "topic": "Bread",
+        "title": "Crispy Overnight No-Knead Focaccia",
+        "summary": "A foolproof, high-hydration focaccia cold-fermented overnight in the fridge to develop deep flavor and a light, bubbly crumb beneath a golden, olive-oil-crisped crust.",
+        "creator": "Cowboy (@cowboy_cooks)",
+        "sourceUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/?rpxt=MW1vNGhwMG03djBpbg==",
+        "foundUrl": "https://www.instagram.com/reel/DGq7FwPSGIV/",
+        "createdAt": "2026-10-28T03:06:56.072Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "8-10 Servings (9x13-inch pan)"
+          },
+          {
+            "label": "Calories",
+            "value": "275"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "In a large mixing bowl, combine 500 g bread flour, 2 tsp kosher salt, 7 g instant yeast, 350 g warm water, and 2 tbsp olive oil."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Mix thoroughly with a spatula or wooden spoon until completely combined and a wet, sticky dough forms."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Cover the bowl tightly with plastic wrap and place in the refrigerator to cold ferment for 12 to 24 hours until doubled in size and visibly bubbly."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "The next day, preheat your oven to 450°F (232°C). Coat a 9x13-inch metal baking pan generously with olive oil along the bottom and sides to prevent sticking."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "Gently pour the chilled dough into the prepared pan and ease it outward toward the edges and corners until it mostly covers the bottom."
+            },
+            {
+              "stepNumber": 6,
+              "instruction": "Cover loosely and let proof at room temperature for 1 to 2 hours until puffed and billowy."
+            },
+            {
+              "stepNumber": 7,
+              "instruction": "Lightly wet your fingers with water to prevent sticking, then press firmly straight down into the dough with your thumbs, pointer, and middle fingers to create deep dimples throughout."
+            },
+            {
+              "stepNumber": 8,
+              "instruction": "Generously drizzle olive oil over the surface, ensuring oil pools into the dimples, and finish with a liberal sprinkle of flaky sea salt and any desired toppings."
+            },
+            {
+              "stepNumber": 9,
+              "instruction": "Bake at 450°F (232°C) for 20 to 25 minutes, or until the top and bottom are deep golden brown and crisp."
+            },
+            {
+              "stepNumber": 10,
+              "instruction": "Let cool in the pan on a wire rack for 10 to 20 minutes before slicing and serving."
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792558029337,
+        "domain": "book",
+        "topic": "LitRPG",
+        "title": "5 LitRPG Recommendations for Fans of Dungeon Crawler Carl",
+        "summary": "A curated reading list of five captivating LitRPG series recommended by Adam Michael to read while waiting for the next Dungeon Crawler Carl book.",
+        "creator": "Adam Michael (@weread4xp)",
+        "sourceUrl": "https://www.instagram.com/reel/DTF-uubjrcR/?psln=ODg0aDZsYThoODR0",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "video_extracted",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Genre",
+            "value": "LitRPG"
+          }
+        ],
+        "body": {
+          "format": "collection",
+          "items": [
+            {
+              "title": "Dominion of Blades",
+              "subtitle": "by Matt Dinniman",
+              "detail": "From the author of Dungeon Crawler Carl, players awaken trapped inside a fully immersive, lethal virtual reality game without their real-world memories, forced to figure out what happened while surviving bizarre monsters and game mechanics.",
+              "linkUrl": null
+            },
+            {
+              "title": "The Castle of 1000 Doors",
+              "subtitle": "by Kenny Gould",
+              "detail": "A quirky and hilarious adventure following King Crow, a sentient potato companion, and the eccentric 'Spud Squad' as they navigate the treacherous, shifting chambers of the titular castle.",
+              "linkUrl": null
+            },
+            {
+              "title": "The 100th Run",
+              "subtitle": "by Flossindine",
+              "detail": "Having endured and failed 99 previous loops through a deadly apocalyptic system, the protagonist embarks on his 100th and final run with a calculated plan to secure his freedom—only to discover the system has brand-new surprises in store.",
+              "linkUrl": null
+            },
+            {
+              "title": "Unnatural Laws",
+              "subtitle": "by H.C. Mills",
+              "detail": "Emma is suddenly abducted from Earth and thrown into a surreal trial realm where normal physics don't apply, forcing contestants into a cutthroat game of survival and adaptation.",
+              "linkUrl": null
+            },
+            {
+              "title": "Nouscraft (World 1: The Zombie Apocalypse)",
+              "subtitle": "by Leonard Buford",
+              "detail": "In a future where humanity relies on neural AI implants for all communication, the rogue AI takes over and traps London inside a lethal virtual reality zombie survival gauntlet where winners gain the power to reshape game rules.",
+              "linkUrl": null
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792557991993,
+        "domain": "game",
+        "topic": "Board Games",
+        "title": "Board Game Arena",
+        "summary": "An online tabletop platform letting you play hundreds of popular board games like Catan, Azul, and Wingspan directly in your browser without any setup or clean-up.",
+        "creator": "2 Kids With Adult Money (@2kidswithadultmoney)",
+        "sourceUrl": "https://www.instagram.com/reel/DdJd_qSzwtB/?rpxt=MWZkN2theHA2bHd3aQ==",
+        "foundUrl": "https://boardgamearena.com",
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Platform",
+            "value": "Web Browser / Mobile"
+          },
+          {
+            "label": "Genre",
+            "value": "Digital Tabletop / Board Games"
+          }
+        ],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "An online tabletop platform letting you play hundreds of popular board games like Catan, Azul, and Wingspan directly in your browser without any setup or clean-up."
+          ],
+          "highlight": "Create an account and host a cozy couple's game night session of Wingspan, Sky Team, or Azul."
+        }
+      },
+      {
+        "id": 1792557954978,
+        "domain": "game",
+        "topic": "Board Games",
+        "title": "Board Game Arena",
+        "summary": "An online gaming platform featuring hundreds of popular board games playable directly in your browser with instant matchmaking and zero setup.",
+        "creator": "Kyle Whitney (@techcommons)",
+        "sourceUrl": "https://www.instagram.com/reel/Dej_PxGlCfE/?srtk=cmg0dmJ2aHEycXNo",
+        "foundUrl": "https://boardgamearena.com",
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Platform",
+            "value": "Web Browser"
+          },
+          {
+            "label": "Genre",
+            "value": "Digital Board Games / Tabletop"
+          }
+        ],
+        "body": {
+          "format": "note",
+          "takeaways": [
+            "An online gaming platform featuring hundreds of popular board games playable directly in your browser with instant matchmaking and zero setup."
+          ],
+          "highlight": "Create an account and start a match of a favorite tabletop game or organize an online game night."
+        }
+      },
+      {
+        "id": 1792000009000,
+        "domain": "recipe",
+        "topic": "Meal Prep",
+        "title": "Butter Chicken Mac N’ Cheese",
+        "summary": "Slow cooker chicken base folded into high-protein Greek yogurt & cheddar mac.",
+        "creator": "Tom Walsh (@stealth_health_life)",
+        "sourceUrl": "https://www.instagram.com/reel/Da_Eq6axAzl/",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "10 Servings (Meal Prep)"
+          },
+          {
+            "label": "Calories",
+            "value": "545 kcal"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "900g (32 oz) chicken breast, diced",
+              "checked": false
+            },
+            {
+              "text": "2 yellow onions, diced & sautéed until browned",
+              "checked": false
+            },
+            {
+              "text": "30g (2 tbsp) butter",
+              "checked": false
+            },
+            {
+              "text": "30g (2 tbsp) tomato paste & 30g garlic paste",
+              "checked": false
+            },
+            {
+              "text": "15g (1 tbsp) ginger paste",
+              "checked": false
+            },
+            {
+              "text": "400g (14 oz) fire-roasted tomatoes (blended)",
+              "checked": false
+            },
+            {
+              "text": "15g (1 tbsp) sweetener / sugar",
+              "checked": false
+            },
+            {
+              "text": "Spice blend: 2 tbsp paprika, 1 tbsp chili powder, 1 tbsp curry, 2 tsp cumin, 1 tbsp salt",
+              "checked": false
+            },
+            {
+              "text": "672g shell pasta (boiled to 50% box time)",
+              "checked": false
+            },
+            {
+              "text": "1 cup reserved starchy pasta water",
+              "checked": false
+            },
+            {
+              "text": "400g plain 0% Greek yogurt (FAGE)",
+              "checked": false
+            },
+            {
+              "text": "120g 1/3-fat cream cheese",
+              "checked": false
+            },
+            {
+              "text": "227g extra sharp cheddar + 80g mozzarella",
+              "checked": false
+            },
+            {
+              "text": "1 tsp garam masala + fresh cilantro & green onions",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Sauté onions until browned, then add to slow cooker with chicken, butter, tomato paste, garlic, ginger, and blended fire-roasted tomatoes."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Stir in the spice blend. Cook on HIGH for 2–3 hours or LOW for 3–4 hours."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Boil pasta shells for only half of the package time; reserve 1 cup pasta water before draining."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Shred cooked chicken in the sauce. Stir in pasta water, Greek yogurt, cream cheese, cheddar, mozzarella, and garam masala until creamy."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "Fold in pasta and fresh herbs. Rest 10 minutes to absorb sauce, then divide into 10 containers!"
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792000008000,
+        "domain": "recipe",
+        "topic": "Appetizers",
+        "title": "Crispy Potato Meatballs (كرات البطاطا)",
+        "summary": "Turmeric potato dough stuffed with spiced ground beef and deep fried until golden.",
+        "creator": "Abir El Saghir (@abiresag)",
+        "sourceUrl": "https://www.instagram.com/reel/DbLqdYjI2-U/",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "Appetizer / Dinner"
+          },
+          {
+            "label": "Calories",
+            "value": "Crispy & Savory"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "3 large potatoes, boiled and mashed smooth",
+              "checked": false
+            },
+            {
+              "text": "1 cup cornstarch",
+              "checked": false
+            },
+            {
+              "text": "1 tbsp turmeric & 1 tsp garlic powder",
+              "checked": false
+            },
+            {
+              "text": "1 tbsp salt",
+              "checked": false
+            },
+            {
+              "text": "½ kg (~1.1 lbs) ground beef",
+              "checked": false
+            },
+            {
+              "text": "2 onions, finely chopped",
+              "checked": false
+            },
+            {
+              "text": "1 cup chopped fresh parsley",
+              "checked": false
+            },
+            {
+              "text": "1 tsp paprika, 1 tsp mixed 7-spices, 1 tsp cinnamon",
+              "checked": false
+            },
+            {
+              "text": "Cooking oil for sautéing & deep frying",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Sauté chopped onions and ground beef until browned. Season with salt, paprika, mixed spices, and cinnamon. Stir in fresh parsley and let cool."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Mash boiled potatoes thoroughly while warm. Knead in cornstarch, turmeric, garlic powder, and salt into a smooth dough."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Flatten a ball of potato dough in your palm, add a spoonful of spiced meat, and seal into a smooth ball."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Deep fry in hot oil (350°F / 175°C) for 4–5 minutes until golden and crackly crispy. Drain and serve hot!"
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792000007000,
+        "domain": "recipe",
+        "topic": "Bread",
+        "title": "Cheesy Garlic Sourdough Focaccia",
+        "summary": "Crispy, bubbly sourdough focaccia loaded with herb-tossed cheddar, mozzarella, jack, parmesan, and bubbling garlic butter.",
+        "creator": "Amy Coyne (@amybakesbread)",
+        "sourceUrl": "https://www.instagram.com/reel/DE23ak3pGsq/",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "16 Slices (9x13 Pan / 12\" Skillet)"
+          },
+          {
+            "label": "Calories",
+            "value": "349 kcal"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "100g bubbly active sourdough starter (or levain)",
+              "checked": false
+            },
+            {
+              "text": "425g warm water (approx. 1 ¾ cups)",
+              "checked": false
+            },
+            {
+              "text": "500g bread flour (approx. 3 ½ cups)",
+              "checked": false
+            },
+            {
+              "text": "13g fine salt (approx. 2 tsp)",
+              "checked": false
+            },
+            {
+              "text": "150g shredded mozzarella cheese (1 ½ cups)",
+              "checked": false
+            },
+            {
+              "text": "100g shredded sharp cheddar cheese (1 cup)",
+              "checked": false
+            },
+            {
+              "text": "100g shredded Monterey Jack cheese (1 cup)",
+              "checked": false
+            },
+            {
+              "text": "70g shredded parmesan cheese (½ cup)",
+              "checked": false
+            },
+            {
+              "text": "55g extra virgin olive oil (¼ cup)",
+              "checked": false
+            },
+            {
+              "text": "35g unsalted butter, melted (2 ½ tbsp)",
+              "checked": false
+            },
+            {
+              "text": "2 cloves fresh garlic, finely minced",
+              "checked": false
+            },
+            {
+              "text": "3g garlic powder (1 tsp) + 2g salt (¼ tsp)",
+              "checked": false
+            },
+            {
+              "text": "4g dried oregano (1 tbsp) + 4g dried basil (1 tbsp)",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Mix Levain & Dough: Whisk active sourdough starter, warm water, salt, and bread flour until a shaggy dough forms. Rest covered for 30 minutes."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Coil Fold #1: With wet hands, reach under dough, stretch upwards and fold under itself 4–6 times. Rest covered for 30 minutes."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Cheese Inclusions (Coil Folds #2–4): Toss cheeses with dried herbs. During Coil Fold #2, gently fold in half the cheese. Perform Coil Folds #3 & #4 at 30-minute intervals."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Bulk Ferment: Cover and rest at ~78°F for 1.5–2 hours until puffy, domed, and aerated (30–40% volume rise)."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "Garlic Herb Oil & Pan Prep: Whisk olive oil, melted butter, garlic powder, salt, and dried herbs. Coat bottom of a 9x13\" metal pan (or 12\" skillet) with half the garlic butter oil."
+            },
+            {
+              "stepNumber": 6,
+              "instruction": "Pan Stretch & Second Proof: Transfer dough into pan, gently stretch toward corners, and pour remaining garlic oil on top. Proof at 78–80°F for 3–5 hours until doubled, puffy, and jiggly."
+            },
+            {
+              "stepNumber": 7,
+              "instruction": "Dimple & Top: Preheat oven to 425°F. Scatter minced fresh garlic and reserved cheese over surface. Dimple deeply with oiled fingers all over."
+            },
+            {
+              "stepNumber": 8,
+              "instruction": "Bake: Bake at 425°F for 25–30 minutes until golden, crispy, and bubbling (internal temp 200°F). Cool 10 minutes, slice into 16 cheesy squares!"
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792000006000,
+        "domain": "recipe",
+        "topic": "Baking",
+        "title": "Chocolate Chip Cookie Donut Loaf",
+        "summary": "Old-fashioned cake donut loaf with soft vanilla crumb, mini chocolate chips, buttery cookie streusel, and crackly glaze.",
+        "creator": "Angela Heckler (@obsessedwithcashews)",
+        "sourceUrl": "https://www.instagram.com/reel/DcbhSQLNA4N/",
+        "foundUrl": "https://obsessedcakes.com/recipes/chocolate-chip-cookie-donut-loaf",
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "10 Slices (9x5\" Pan)"
+          },
+          {
+            "label": "Calories",
+            "value": "395 kcal"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "Streusel: 60g (1/2 cup) all-purpose flour",
+              "checked": false
+            },
+            {
+              "text": "Streusel: 32g (2 tbsp + 1 3/4 tsp) granulated sugar",
+              "checked": false
+            },
+            {
+              "text": "Streusel: 16g (1 tbsp + 1/2 tsp) light brown sugar",
+              "checked": false
+            },
+            {
+              "text": "Streusel: 1/4 tsp fine sea salt",
+              "checked": false
+            },
+            {
+              "text": "Streusel: 45g (3 tbsp + 1/2 tsp) cold butter, cubed",
+              "checked": false
+            },
+            {
+              "text": "Streusel: 1/4 tsp vanilla bean paste",
+              "checked": false
+            },
+            {
+              "text": "Streusel: 48g (1/4 cup) mini chocolate chips",
+              "checked": false
+            },
+            {
+              "text": "Optional: 1 tbsp coarse sanding sugar (for crunchy top)",
+              "checked": false
+            },
+            {
+              "text": "Batter: 208g (1 3/4 cups) all-purpose flour",
+              "checked": false
+            },
+            {
+              "text": "Batter: 12g (1 tbsp + 2 1/4 tsp) cornstarch",
+              "checked": false
+            },
+            {
+              "text": "Batter: 1 1/2 tsp baking powder & 1/4 tsp baking soda",
+              "checked": false
+            },
+            {
+              "text": "Batter: 3/4 tsp fine sea salt",
+              "checked": false
+            },
+            {
+              "text": "Donut Spice: 1/4 tsp freshly ground nutmeg",
+              "checked": false
+            },
+            {
+              "text": "Wet: 175g (7/8 cup) granulated sugar",
+              "checked": false
+            },
+            {
+              "text": "Wet: 96g (3/8 cup) neutral vegetable oil",
+              "checked": false
+            },
+            {
+              "text": "Wet: 160g (2/3 cup) plain unsweetened yogurt",
+              "checked": false
+            },
+            {
+              "text": "Wet: 108g (1/2 cup) whole milk, room temp",
+              "checked": false
+            },
+            {
+              "text": "Wet: 2 1/2 tsp vanilla bean paste",
+              "checked": false
+            },
+            {
+              "text": "Wet: 1/2 tsp apple cider vinegar",
+              "checked": false
+            },
+            {
+              "text": "Inclusions: 100g–120g mini semi-sweet chocolate chips",
+              "checked": false
+            },
+            {
+              "text": "Glaze: 250g (2 cups) powdered sugar, sifted",
+              "checked": false
+            },
+            {
+              "text": "Glaze: 60g (1/4 cup) whole milk, warm",
+              "checked": false
+            },
+            {
+              "text": "Glaze: 1 tsp vanilla bean paste & pinch of salt",
+              "checked": false
+            },
+            {
+              "text": "Finishing: Flaky Maldon sea salt",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Cut cold butter into flour, sugars, salt, and vanilla until clumpy pea-sized crumbs form. Stir in mini chips and refrigerate."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Whisk sugar, oil, yogurt, milk, vanilla, and cider vinegar until smooth and emulsified."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Sift in flour, cornstarch, baking powder, baking soda, salt, and nutmeg. Whisk gently just until combined, then fold in mini chocolate chips."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Pour into greased, parchment-lined 9x5\" loaf pan. Scatter chilled streusel on top (and coarse sugar if desired)."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "Bake at 350°F (175°C) for 50–65 mins (tent with foil at 45m). Loaf is done when skewer comes out clean (internal temp ~205°F)."
+            },
+            {
+              "stepNumber": 6,
+              "instruction": "Sprinkle with flaky sea salt immediately. Cool 25 mins in pan, then transfer to rack. Drizzle crackly vanilla glaze over warm loaf!"
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792000005000,
+        "domain": "recipe",
+        "topic": "Baking",
+        "title": "Savory Pizza Cinnamon Rolls",
+        "summary": "Fluffy yeast dough rolled with marinara, mozzarella, parmesan, and pepperoni, baked golden and brushed with garlic herb butter.",
+        "creator": "Lauren Ketterman (@barefoot.mimosas)",
+        "sourceUrl": "https://www.instagram.com/reel/DcjzA-vgND-/",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "12 Rolls (12\" Skillet / 9x13\" Pan)"
+          },
+          {
+            "label": "Calories",
+            "value": "285 kcal"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "Dough: 360g (3 cups) bread flour or all-purpose flour",
+              "checked": false
+            },
+            {
+              "text": "Dough: 7g (2 1/4 tsp / 1 packet) active dry or instant yeast",
+              "checked": false
+            },
+            {
+              "text": "Dough: 240ml (1 cup) warm whole milk (105°F–110°F)",
+              "checked": false
+            },
+            {
+              "text": "Dough: 25g (2 tbsp) olive oil or melted butter",
+              "checked": false
+            },
+            {
+              "text": "Dough: 15g (1 tbsp) sugar or honey",
+              "checked": false
+            },
+            {
+              "text": "Dough: 6g (1 tsp) fine sea salt",
+              "checked": false
+            },
+            {
+              "text": "Dough Seasoning: 1/2 tsp garlic powder",
+              "checked": false
+            },
+            {
+              "text": "Dough Seasoning: 1/2 tsp dried oregano",
+              "checked": false
+            },
+            {
+              "text": "Filling: 180g (3/4 cup) thick pizza sauce or crushed marinara",
+              "checked": false
+            },
+            {
+              "text": "Filling: 250g (2 1/2 cups) whole milk mozzarella, shredded",
+              "checked": false
+            },
+            {
+              "text": "Filling: 40g (1/2 cup) grated Parmesan or Romano cheese",
+              "checked": false
+            },
+            {
+              "text": "Filling: 120g (~40–50 slices) pepperoni, roughly chopped",
+              "checked": false
+            },
+            {
+              "text": "Filling: 1 tsp Italian herb seasoning",
+              "checked": false
+            },
+            {
+              "text": "Optional: 1/4 tsp crushed red pepper flakes",
+              "checked": false
+            },
+            {
+              "text": "Glaze: 30g (2 tbsp) unsalted butter, melted",
+              "checked": false
+            },
+            {
+              "text": "Glaze: 2 cloves fresh garlic, finely minced",
+              "checked": false
+            },
+            {
+              "text": "Glaze: 1 tbsp fresh parsley or Italian herbs, chopped",
+              "checked": false
+            },
+            {
+              "text": "Serving: Warm marinara sauce for dipping",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Mix warm milk, honey, and yeast until frothy. Knead in flour, oil, salt, garlic powder, and oregano into a smooth dough. Rise 60 mins until doubled."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Punch down and roll into a 12x18\" rectangle. Spread pizza sauce, then scatter mozzarella, parmesan, pepperoni, and Italian seasoning."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Roll up tightly into an 18-inch cylinder. Slice into 12 rolls using unflavored floss or a sharp knife."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Arrange in a greased 12\" skillet or 9x13\" pan. Rise 30 mins until puffy."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "Brush with garlic herb butter, top with extra mozzarella and pepperoni."
+            },
+            {
+              "stepNumber": 6,
+              "instruction": "Bake at 375°F (190°C) for 22–28 mins until bubbling and golden. Brush with remaining garlic butter and serve warm!"
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792000004000,
+        "domain": "recipe",
+        "topic": "Desserts",
+        "title": "Glazed Donut Bread Pudding",
+        "summary": "Dump-and-bake dessert layering glazed donut holes, evaporated & condensed milk, vanilla cake mix, cinnamon, and butter.",
+        "creator": "12 Tomatoes (@12_tomatoes)",
+        "sourceUrl": "https://www.instagram.com/reel/DdRs-Ofj5uI/",
+        "foundUrl": "https://12tomatoes.com/viral-donut-bread-pudding/",
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "12 Servings (9x13\" Dish)"
+          },
+          {
+            "label": "Calories",
+            "value": "455 kcal"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "24 glazed or old-fashioned donut holes",
+              "checked": false
+            },
+            {
+              "text": "1 can (12 oz / 354ml) evaporated milk",
+              "checked": false
+            },
+            {
+              "text": "1 can (14 oz / 396g) sweetened condensed milk",
+              "checked": false
+            },
+            {
+              "text": "1 box (13.25 oz / 375g) French vanilla cake mix (dry)",
+              "checked": false
+            },
+            {
+              "text": "2 tsp ground cinnamon",
+              "checked": false
+            },
+            {
+              "text": "1/2 cup (1 stick / 115g) unsalted butter, cubed into small pats",
+              "checked": false
+            },
+            {
+              "text": "Optional: Vanilla ice cream or whipped cream (for serving)",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Preheat oven to 350°F (175°C) and lightly grease a 9x13-inch baking dish."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Arrange all 24 donut holes in an even single layer across the bottom of the dish."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Pour the evaporated milk and sweetened condensed milk evenly over the donut holes."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Sprinkle dry French vanilla cake mix evenly across the top, followed by 2 tsp cinnamon."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "Distribute cubed butter pats evenly over the cake mix layer."
+            },
+            {
+              "stepNumber": 6,
+              "instruction": "Bake at 350°F (175°C) for 35–45 minutes until golden brown and bubbly. Rest 10 minutes and serve warm!"
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792000003000,
+        "domain": "recipe",
+        "topic": "Pasta",
+        "title": "15-Minute Creamy One-Pot Garlic Herb Pasta",
+        "summary": "Velvety, rich one-pot pasta where dry noodles cook directly in broth and cream with herbs and mozzarella for zero strainer cleanup.",
+        "creator": "Mariam (@baiti_ana)",
+        "sourceUrl": "https://www.instagram.com/reel/DdWrPaJA6Bb/",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "4 Servings (Quick Weeknight Meal)"
+          },
+          {
+            "label": "Calories",
+            "value": "670 kcal"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "250g (about 3 cups) dry pasta (penne, rotini, or rigatoni)",
+              "checked": false
+            },
+            {
+              "text": "360ml (1 1/2 cups) whipping cream (or heavy cream)",
+              "checked": false
+            },
+            {
+              "text": "360ml (1 1/2 cups) chicken broth (or water + 1 chicken bouillon cube)",
+              "checked": false
+            },
+            {
+              "text": "16g (1 tbsp) tomato paste",
+              "checked": false
+            },
+            {
+              "text": "60g (1/4 cup) garlic & herbs cream cheese (or grated Parmesan)",
+              "checked": false
+            },
+            {
+              "text": "28g (2 tbsp) butter (or olive oil)",
+              "checked": false
+            },
+            {
+              "text": "1/2 tsp fine sea salt",
+              "checked": false
+            },
+            {
+              "text": "1/4 tsp black pepper",
+              "checked": false
+            },
+            {
+              "text": "1/4 tsp chili flakes (to taste)",
+              "checked": false
+            },
+            {
+              "text": "1 tsp dried oregano",
+              "checked": false
+            },
+            {
+              "text": "1 tsp garlic powder",
+              "checked": false
+            },
+            {
+              "text": "60g (1/2 cup) shredded mozzarella cheese",
+              "checked": false
+            },
+            {
+              "text": "2 tbsp fresh parsley, chopped",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Add dry pasta, butter, tomato paste, garlic & herb cream cheese, salt, pepper, chili flakes, oregano, garlic powder, broth, and cream into a single pot. Ensure pasta is submerged."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Cover with lid and bring to a bubble over medium-high heat. Reduce to low and simmer covered for ~15 mins until pasta is tender and sauce is rich."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Stir thoroughly, top evenly with mozzarella and parsley, cover for 2–3 mins until cheese melts, and serve warm!"
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792000002000,
+        "domain": "recipe",
+        "topic": "Bread",
+        "title": "Viral Korean Salt Bread (Sogeum-ppang)",
+        "summary": "Crispy and buttery golden bottom, pillowy soft crumb, and a signature hollow buttery center rolled with cold salted butter.",
+        "creator": "Erin's Cozy Kitchen (@erins_cozykitchen)",
+        "sourceUrl": "https://www.instagram.com/reel/DQRzg3MDnma/?vrfl=M25meXIxYjk2dzY4",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "12 Rolls"
+          },
+          {
+            "label": "Calories",
+            "value": "245 kcal"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "400g (3 1/3 cups) bread flour",
+              "checked": false
+            },
+            {
+              "text": "120g (1 cup) cake flour",
+              "checked": false
+            },
+            {
+              "text": "365ml (1 1/2 cups + 1 tbsp) cold water",
+              "checked": false
+            },
+            {
+              "text": "25g (2 tbsp) granulated sugar",
+              "checked": false
+            },
+            {
+              "text": "10g (1 3/4 tsp) fine sea salt",
+              "checked": false
+            },
+            {
+              "text": "25g (1/4 cup) nonfat dry milk powder",
+              "checked": false
+            },
+            {
+              "text": "40g (3 tbsp) cold unsalted butter",
+              "checked": false
+            },
+            {
+              "text": "7g (2 1/4 tsp) instant yeast",
+              "checked": false
+            },
+            {
+              "text": "12 pieces cold salted butter (about 14g / 1 tbsp each)",
+              "checked": false
+            },
+            {
+              "text": "1 tbsp coarse flaky sea salt (Maldon), for sprinkling",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Whisk bread flour, cake flour, sugar, salt, milk powder, and instant yeast in a bowl. Add cold water and mix into a dough."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Add cold unsalted butter and knead vigorously for 8–10 minutes until smooth, glossy, and elastic."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Cover and let rise in a warm spot until doubled in volume (approx. 60 minutes)."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Divide dough into 12 equal portions (~78g each), shape into balls, and rest covered for 15 minutes."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "Roll each portion into a tapered cone, then roll flat into a long 12-inch triangle."
+            },
+            {
+              "stepNumber": 6,
+              "instruction": "Place a piece of cold salted butter at the wide base and roll up tightly toward the narrow tip into a crescent roll."
+            },
+            {
+              "stepNumber": 7,
+              "instruction": "Place rolls seam-side down on a parchment-lined baking sheet and proof until puffy (45–60 minutes)."
+            },
+            {
+              "stepNumber": 8,
+              "instruction": "Preheat oven to 450°F (230°C). Mist rolls lightly with water and sprinkle flaky sea salt on top."
+            },
+            {
+              "stepNumber": 9,
+              "instruction": "Reduce oven immediately to 400°F (200°C) and bake for 12–15 minutes until tops are golden and the butter pools sizzle to fry the bottom crust."
+            },
+            {
+              "stepNumber": 10,
+              "instruction": "Rest 5 minutes on a wire rack and serve warm to experience the crispy bottom and buttery hollow center!"
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792000001000,
+        "domain": "recipe",
+        "topic": "Side Dishes",
+        "title": "Classic Syracuse Salt Potatoes",
+        "summary": "Boiled in a concentrated brine, whole baby potatoes develop an extraordinarily creamy interior encased in a paper-thin, delicate salt crust. Dipped directly into warm melted butter, they deliver an irresistible contrast of rich butterfat and earthy sweetness.",
+        "creator": "Home Cook (@instagram)",
+        "sourceUrl": "https://www.instagram.com/reel/DJ5DABYxHug/?obrf=cWpmaHFscnB4aGhp",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "6 Servings"
+          },
+          {
+            "label": "Calories",
+            "value": "250 kcal"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "907g (2 lbs) bite-sized baby potatoes (such as baby Yukon Gold or small red potatoes), unpeeled and whole",
+              "checked": false
+            },
+            {
+              "text": "290g (1 cup) fine sea salt",
+              "checked": false
+            },
+            {
+              "text": "1890ml (8 cups) water",
+              "checked": false
+            },
+            {
+              "text": "113g (1/2 cup) unsalted butter, melted",
+              "checked": false
+            },
+            {
+              "text": "2g (1 tbsp) fresh chives, finely chopped",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Rinse the baby potatoes thoroughly under cool running water, checking that their skins remain intact with no cuts or punctures so the interior stays creamy rather than overly salty."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "In a large pot, combine the water and the fine sea salt. Stir briefly until the salt begins to dissolve."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Add the whole potatoes into the salted water, making sure they are fully submerged."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Place the pot over high heat and bring the liquid to a rolling boil."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "Once boiling, reduce the heat slightly to medium-high to maintain a steady, active boil. Cook uncovered for 15 to 20 minutes, until a fork or skewer slides easily into the center of a potato without resistance."
+            },
+            {
+              "stepNumber": 6,
+              "instruction": "Carefully pour the potatoes into a colander to drain away all the cooking brine. Do not rinse the potatoes."
+            },
+            {
+              "stepNumber": 7,
+              "instruction": "Return the hot, drained potatoes to the empty pot or arrange them on a wire rack for 3 to 5 minutes; as steam and residual surface moisture evaporate, a characteristic light powdery salt crust will form over the skins."
+            },
+            {
+              "stepNumber": 8,
+              "instruction": "Transfer the hot salt potatoes to a warm serving bowl, scatter with chopped chives if desired, and serve immediately alongside small bowls of warm melted butter for generous dipping."
+            }
+          ]
+        }
+      },
+      {
+        "id": 1792000000000,
+        "domain": "recipe",
+        "topic": "Baking",
+        "title": "Homemade Cinnamon Gifflar",
+        "summary": "Soft, pillowy Swedish-style cinnamon mini-rolls layered with buttery spiced brown sugar, baked golden, and brushed with hot glossy sugar syrup.",
+        "creator": "Dee | Food for everyone (@mumsfoodies)",
+        "sourceUrl": "https://www.instagram.com/reel/DepW0lxIqW6/?vrfl=cXB3MGwwNDZtZnJx",
+        "foundUrl": null,
+        "createdAt": "2026-10-28T03:06:56.073Z",
+        "status": "processed",
+        "mediaStatus": "text_images",
+        "searchPerformed": true,
+        "meta": [
+          {
+            "label": "Yield",
+            "value": "36 Mini Rolls"
+          },
+          {
+            "label": "Calories",
+            "value": "135 kcal"
+          }
+        ],
+        "body": {
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "260ml (1 cup + 1 tbsp) lukewarm milk (38–40°C / 100–104°F)",
+              "checked": false
+            },
+            {
+              "text": "7g (2 1/4 tsp / 1 packet) instant yeast",
+              "checked": false
+            },
+            {
+              "text": "20g (1 1/2 tbsp) granulated sugar",
+              "checked": false
+            },
+            {
+              "text": "1 large egg (or substitute +50ml milk to skip egg)",
+              "checked": false
+            },
+            {
+              "text": "500g (4 cups) bread flour or all-purpose flour (min 12% protein)",
+              "checked": false
+            },
+            {
+              "text": "6g (1 tsp) fine salt",
+              "checked": false
+            },
+            {
+              "text": "100g (7 tbsp) unsalted butter, softened",
+              "checked": false
+            },
+            {
+              "text": "100g (1/2 cup packed) light brown sugar",
+              "checked": false
+            },
+            {
+              "text": "100g (7 tbsp) unsalted butter, softened (for filling)",
+              "checked": false
+            },
+            {
+              "text": "16g (2 tbsp) ground cinnamon",
+              "checked": false
+            },
+            {
+              "text": "1 egg yolk + 5ml (1 tsp) milk (for egg wash)",
+              "checked": false
+            },
+            {
+              "text": "60ml (1/4 cup) water (for sugar syrup)",
+              "checked": false
+            },
+            {
+              "text": "60g (1/4 cup + 1 tbsp) brown sugar (for sugar syrup)",
+              "checked": false
+            },
+            {
+              "text": "40g (3 tbsp) unsalted butter (for sugar syrup)",
+              "checked": false
+            }
+          ],
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Whisk lukewarm milk (38–40°C) and instant yeast in a bowl. Whisk in sugar and egg until frothy."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Add flour, salt, and softened butter. Mix thoroughly with a spatula or floured hands into a dough."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Fold the dough over itself in the bowl 10–20 times until smooth and elastic without lumps."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Cover and rest in a warm spot for 1 hour until doubled in volume."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "Cream together softened butter, brown sugar, and ground cinnamon until smooth."
+            },
+            {
+              "stepNumber": 6,
+              "instruction": "Roll risen dough on a floured surface into a large 12x18\" rectangle. Spread cinnamon filling evenly right to the edges."
+            },
+            {
+              "stepNumber": 7,
+              "instruction": "Slice width-wise into 3 long strips. Roll each strip tightly into a cylinder seam-side down, flatten slightly, and cut into 2-inch mini bun pieces."
+            },
+            {
+              "stepNumber": 8,
+              "instruction": "Arrange on 2 parchment-lined baking sheets, cover, and proof for 20 minutes."
+            },
+            {
+              "stepNumber": 9,
+              "instruction": "Preheat oven to 350°F (175°C). Brush buns with egg wash and bake for 12–15 minutes until golden brown."
+            },
+            {
+              "stepNumber": 10,
+              "instruction": "Boil water, brown sugar, and butter in a small pan into a glossy syrup. Brush generously over the hot buns straight out of the oven!"
+            }
+          ]
+        }
+      }
+    ],
+    "settings": []
+  }
+}

@@ -81,9 +81,31 @@ export function initSettingsModal() {
         return;
       }
 
-      testKeyBtn.textContent = 'Testing...';
+      testKeyBtn.textContent = 'Discovering...';
       try {
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(keyVal)}`, {
+        // 1. Query available models for this specific API key
+        const modelsResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(keyVal)}`);
+        const modelsData = await modelsResp.json();
+
+        if (!modelsResp.ok) {
+          throw new Error(`Google API ${modelsResp.status}: ${modelsData.error?.message || 'Unauthorized or invalid key'}`);
+        }
+
+        const modelsList = modelsData.models || [];
+        const candidates = modelsList.filter(m => {
+          const methods = m.supportedGenerationMethods || [];
+          return methods.includes('generateContent') && /flash/i.test(m.name);
+        });
+
+        candidates.sort((a, b) => b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' }));
+        const bestModel = candidates[0]?.name.replace('models/', '') || 'gemini-3.8-flash';
+
+        state.settings.gemini_model = bestModel;
+        await db.put('settings', { key: 'gemini_model', value: bestModel, updatedAt: new Date().toISOString() });
+
+        // 2. Perform verification ping with discovered model
+        testKeyBtn.textContent = 'Pinging...';
+        const pingResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${bestModel}:generateContent?key=${encodeURIComponent(keyVal)}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -91,29 +113,24 @@ export function initSettingsModal() {
           })
         });
 
-        const data = await resp.json();
-        if (resp.ok) {
+        if (pingResp.ok) {
           if (dot) dot.style.background = '#34d399';
           if (text) {
-            text.textContent = '✓ Verified! Gemini API connected & ready.';
+            text.textContent = `✓ Verified! Model: ${bestModel}`;
             text.style.color = '#34d399';
           }
           testKeyBtn.textContent = '✓ Verified';
         } else {
-          if (dot) dot.style.background = '#f87171';
-          if (text) {
-            text.textContent = `⚠️ Error ${resp.status}: ${data.error?.message || 'Invalid API key'}`;
-            text.style.color = '#f87171';
-          }
-          testKeyBtn.textContent = '⚠️ Invalid';
+          const pingErr = await pingResp.json();
+          throw new Error(`Ping failed (${pingResp.status}): ${pingErr.error?.message}`);
         }
       } catch (err) {
         if (dot) dot.style.background = '#f87171';
         if (text) {
-          text.textContent = `Network error: ${err.message}`;
+          text.textContent = `⚠️ ${err.message}`;
           text.style.color = '#f87171';
         }
-        testKeyBtn.textContent = '⚠️ Error';
+        testKeyBtn.textContent = '⚠️ Test Failed';
       }
 
       setTimeout(() => { testKeyBtn.textContent = '⚡ Test Key'; }, 3500);

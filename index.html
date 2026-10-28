@@ -175,6 +175,11 @@
         <!-- Populated by drawer.js -->
       </div>
 
+      <!-- Scoped Topic Filter Pill Bar -->
+      <div class="drawer-topic-bar" id="drawer-topic-filter-bar" style="display: none;">
+        <!-- Populated dynamically by drawer.js -->
+      </div>
+
       <!-- Captures List Container -->
       <div class="drawer-captures-list" id="drawer-captures-list">
         <!-- Populated by drawer.js -->
@@ -214,10 +219,15 @@
         <!-- Populated dynamically -->
       </div>
 
-      <div class="desk-footer" style="margin-top: 20px;">
-        <a id="modal-capture-link-btn" href="#" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: #38bdf8;">
-          <span>Open Source Link</span> ↗
-        </a>
+      <div class="desk-footer" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <a id="modal-capture-found-btn" href="#" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: #38bdf8; font-weight: 600; display: none;">
+            <span>🌐 Found Page / Blog</span> ↗
+          </a>
+          <a id="modal-capture-link-btn" href="#" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: var(--text-secondary); display: none;">
+            <span>🔗 Source Post</span> ↗
+          </a>
+        </div>
         <button type="button" class="desk-action-btn" data-close="capture-detail-modal">Close</button>
       </div>
     </div>

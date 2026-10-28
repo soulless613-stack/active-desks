@@ -4,7 +4,9 @@
  * Enforces the strict 4-desk display cap while supporting an unlimited registry of dormant desks.
  */
 
+import * as db from '../db.js';
 import { state, setActiveDeskIds, updateDesk } from '../state.js';
+import { openCaptureDetailModal } from '../captures/drawer.js';
 import { createReadingDeskElement } from './reading.js';
 import { createKitchenDeskElement } from './kitchen.js';
 import { createGamingDeskElement } from './gaming.js';
@@ -108,6 +110,45 @@ export function renderActiveDesks() {
       openEditDeskModal(deskId);
     });
   });
+
+  // Attach view notes & details click listeners to workbench cards
+  grid.querySelectorAll('[data-action^="view-"][data-action$="-details"]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const deskId = btn.getAttribute('data-action').replace('view-', '').replace('-details', '');
+      const deskData = state.desks[deskId] || { id: deskId };
+
+      const allCaptures = await db.getAll('captures');
+      const targetTitle = (deskData.title || deskData.name || '').toLowerCase();
+      const matched = allCaptures.find(c => c.title && c.title.toLowerCase() === targetTitle);
+
+      if (matched) {
+        openCaptureDetailModal(matched);
+      } else {
+        openCaptureDetailModal({
+          domain: deskData.domain || deskId,
+          topic: deskData.specs || deskData.platform || deskData.stack || deskData.format || 'Workbench',
+          title: deskData.title || deskData.name || capitalize(deskId),
+          summary: deskData.quest || deskData.focus || `${deskData.author ? 'Author: ' + deskData.author + ' · ' : ''}${deskData.currentPage ? deskData.currentPage + '/' + deskData.totalPages + ' pages' : ''}`,
+          creator: deskData.author || '',
+          meta: [
+            ...(deskData.author ? [{ label: 'Author', value: deskData.author }] : []),
+            ...(deskData.format ? [{ label: 'Format', value: deskData.format }] : []),
+            ...(deskData.platform ? [{ label: 'Platform', value: deskData.platform }] : []),
+            ...(deskData.specs ? [{ label: 'Specs', value: deskData.specs }] : []),
+            ...(deskData.tool ? [{ label: 'Tool', value: deskData.tool }] : [])
+          ],
+          body: {
+            format: 'note',
+            takeaways: deskData.quest ? [deskData.quest] : (deskData.focus ? [deskData.focus] : []),
+            highlight: deskData.focus || deskData.quest || deskData.specs || ''
+          },
+          sourceUrl: deskData.linkUrl || deskData.storygraphUrl,
+          foundUrl: deskData.foundUrl || null
+        });
+      }
+    });
+  });
 }
 
 /**
@@ -146,35 +187,58 @@ export function initDeskManager() {
         const total = parseInt(document.getElementById('edit-reading-total')?.value, 10);
         const author = document.getElementById('edit-reading-author')?.value.trim();
         const format = document.getElementById('edit-reading-format')?.value.trim();
+        const storygraphUrl = document.getElementById('edit-reading-storygraph')?.value.trim();
+        const linkUrl = document.getElementById('edit-reading-linkurl')?.value.trim();
+        const linkText = document.getElementById('edit-reading-linktext')?.value.trim();
         if (!isNaN(page)) patch.currentPage = page;
         if (!isNaN(total)) patch.totalPages = total;
         if (author) patch.author = author;
         if (format) patch.format = format;
+        if (storygraphUrl !== undefined) patch.storygraphUrl = storygraphUrl;
+        if (linkUrl !== undefined) patch.linkUrl = linkUrl;
+        if (linkText !== undefined) patch.linkText = linkText;
       } else if (deskId === 'fiber') {
         patch.name = title;
         const rows = parseInt(document.getElementById('edit-fiber-rows')?.value, 10);
         const targetRows = parseInt(document.getElementById('edit-fiber-target')?.value, 10);
         const specs = document.getElementById('edit-fiber-specs')?.value.trim();
+        const linkUrl = document.getElementById('edit-fiber-linkurl')?.value.trim();
+        const linkText = document.getElementById('edit-fiber-linktext')?.value.trim();
         if (!isNaN(rows)) patch.rows = rows;
         if (!isNaN(targetRows)) patch.targetRows = targetRows;
         if (specs) patch.specs = specs;
+        if (linkUrl !== undefined) patch.linkUrl = linkUrl;
+        if (linkText !== undefined) patch.linkText = linkText;
       } else if (deskId === 'gaming') {
         const platform = document.getElementById('edit-gaming-platform')?.value.trim();
         const quest = document.getElementById('edit-gaming-quest')?.value.trim();
+        const linkUrl = document.getElementById('edit-gaming-linkurl')?.value.trim();
+        const linkText = document.getElementById('edit-gaming-linktext')?.value.trim();
         if (platform) patch.platform = platform;
         if (quest) patch.quest = quest;
+        if (linkUrl !== undefined) patch.linkUrl = linkUrl;
+        if (linkText !== undefined) patch.linkText = linkText;
       } else if (deskId === 'tech') {
         const tool = document.getElementById('edit-tech-tool')?.value.trim();
         const focus = document.getElementById('edit-tech-focus')?.value.trim();
+        const linkUrl = document.getElementById('edit-tech-linkurl')?.value.trim();
+        const linkText = document.getElementById('edit-tech-linktext')?.value.trim();
         if (tool) patch.tool = tool;
         if (focus) patch.focus = focus;
+        if (linkUrl !== undefined) patch.linkUrl = linkUrl;
+        if (linkText !== undefined) patch.linkText = linkText;
       } else if (deskId === 'kitchen') {
         const servings = parseInt(document.getElementById('edit-kitchen-servings')?.value, 10);
         const prep = document.getElementById('edit-kitchen-prep')?.value.trim();
         const cook = document.getElementById('edit-kitchen-cook')?.value.trim();
+        const sourceUrl = document.getElementById('edit-kitchen-sourceurl')?.value.trim();
         if (!isNaN(servings)) patch.servings = servings;
         if (prep) patch.prepTime = prep;
         if (cook) patch.cookTime = cook;
+        if (sourceUrl !== undefined) {
+          patch.sourceUrl = sourceUrl;
+          patch.foundUrl = sourceUrl;
+        }
       }
 
       await updateDesk(deskId, patch);
@@ -343,6 +407,20 @@ export function openEditDeskModal(deskId) {
         <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Reading Format / Routine</label>
         <input type="text" id="edit-reading-format" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.format || '')}">
       </div>
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">The StoryGraph URL</label>
+        <input type="url" id="edit-reading-storygraph" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.storygraphUrl || '')}">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Store / Audio Link URL</label>
+          <input type="url" id="edit-reading-linkurl" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.linkUrl || '')}">
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Link Button Label</label>
+          <input type="text" id="edit-reading-linktext" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.linkText || 'Open Audiobook')}">
+        </div>
+      </div>
     `;
   } else if (deskId === 'fiber') {
     fieldsHtml = `
@@ -360,6 +438,16 @@ export function openEditDeskModal(deskId) {
         <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Specs / Needle / Gauge</label>
         <input type="text" id="edit-fiber-specs" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.specs || '')}">
       </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Pattern / Ravelry URL</label>
+          <input type="url" id="edit-fiber-linkurl" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.linkUrl || '')}">
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Link Button Label</label>
+          <input type="text" id="edit-fiber-linktext" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.linkText || 'Open Ravelry')}">
+        </div>
+      </div>
     `;
   } else if (deskId === 'gaming') {
     fieldsHtml = `
@@ -371,6 +459,16 @@ export function openEditDeskModal(deskId) {
         <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Active Quest / Objective</label>
         <input type="text" id="edit-gaming-quest" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.quest || '')}">
       </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Wiki / Guide URL</label>
+          <input type="url" id="edit-gaming-linkurl" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.linkUrl || '')}">
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Link Button Label</label>
+          <input type="text" id="edit-gaming-linktext" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.linkText || 'Game Wiki')}">
+        </div>
+      </div>
     `;
   } else if (deskId === 'tech') {
     fieldsHtml = `
@@ -381,6 +479,16 @@ export function openEditDeskModal(deskId) {
       <div style="margin-bottom: 12px;">
         <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Focus / Breakthrough Topic</label>
         <input type="text" id="edit-tech-focus" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.focus || '')}">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Tool / Repository URL</label>
+          <input type="url" id="edit-tech-linkurl" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.linkUrl || '')}">
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Link Button Label</label>
+          <input type="text" id="edit-tech-linktext" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.linkText || 'Tool Link')}">
+        </div>
       </div>
     `;
   } else if (deskId === 'kitchen') {
@@ -398,6 +506,10 @@ export function openEditDeskModal(deskId) {
           <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Cook Time</label>
           <input type="text" id="edit-kitchen-cook" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.cookTime || '')}">
         </div>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Source Recipe / Blog URL</label>
+        <input type="url" id="edit-kitchen-sourceurl" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.sourceUrl || desk.linkUrl || '')}">
       </div>
     `;
   }

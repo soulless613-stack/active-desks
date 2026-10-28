@@ -51,6 +51,15 @@ export function createKitchenDeskElement(deskData = {}) {
     <div>
       <h2 class="desk-title">${escapeText(activeRecipe.title)}</h2>
       <div class="desk-meta">${escapeText(metaText)}</div>
+      ${recipes.length > 1 ? `
+        <select class="recipe-select" data-action="select-recipe" aria-label="Select Recipe">
+          ${recipes.map((r, idx) => `
+            <option value="${idx}" ${idx === selectedIdx ? 'selected' : ''}>
+              🍳 ${escapeText(r.title)}
+            </option>
+          `).join('')}
+        </select>
+      ` : ''}
     </div>
 
     <div style="background: rgba(0,0,0,0.25); border-radius: var(--radius-md); padding: 10px;">
@@ -59,19 +68,33 @@ export function createKitchenDeskElement(deskData = {}) {
       </div>
     </div>
 
-    <div class="desk-footer">
-      ${recipes.length > 1 ? `
-        <button type="button" class="desk-action-btn" data-action="cycle-recipe" style="color: #38bdf8;">Next (${selectedIdx + 1}/${recipes.length}) ➔</button>
-      ` : `
-        <span style="color: var(--accent-recipe); font-weight: 600;">Active Recipe</span>
-      `}
-      ${activeRecipe.body ? `
-        <button type="button" class="desk-link" data-action="view-recipe" style="background: none; border: none; cursor: pointer; font-size: 0.78rem;">Full Recipe ↗</button>
-      ` : (activeRecipe.sourceUrl ? `
-        <a href="${escapeText(activeRecipe.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="desk-link">Source ↗</a>
-      ` : `<span style="color: var(--text-muted); font-size: 0.72rem;">Local DB</span>`)}
+    <div class="desk-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        ${activeRecipe.foundUrl && activeRecipe.foundUrl !== activeRecipe.sourceUrl ? `
+          <a href="${escapeText(activeRecipe.foundUrl)}" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: #38bdf8; font-weight: 600;">🌐 Blog ↗</a>
+        ` : ''}
+        ${activeRecipe.sourceUrl ? `
+          <a href="${escapeText(activeRecipe.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: var(--text-secondary);">🔗 Reel ↗</a>
+        ` : ''}
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        ${recipes.length > 1 ? `
+          <button type="button" class="desk-action-btn" data-action="cycle-recipe" style="color: #38bdf8;" title="Next Recipe">➔</button>
+        ` : ''}
+        <button type="button" class="desk-action-btn" data-action="view-recipe" style="font-size: 0.76rem; padding: 4px 10px;">🔍 Notes & Details</button>
+      </div>
     </div>
   `;
+
+  // Attach recipe dropdown select listener
+  const selectEl = card.querySelector('[data-action="select-recipe"]');
+  if (selectEl) {
+    selectEl.addEventListener('change', (e) => {
+      e.stopPropagation();
+      const nextIdx = parseInt(e.target.value, 10) || 0;
+      updateDesk('kitchen', { selectedIndex: nextIdx });
+    });
+  }
 
   // Attach cycle recipe listener
   const cycleBtn = card.querySelector('[data-action="cycle-recipe"]');

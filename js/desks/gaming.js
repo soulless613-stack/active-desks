@@ -38,11 +38,11 @@ export function createGamingDeskElement(deskData = {}) {
       </div>
     </div>
 
-    <div class="desk-footer">
-      <a href="${escapeText(deskData.linkUrl || '#')}" target="_blank" rel="noopener noreferrer" class="desk-link">
-        <span>Game Wiki</span> ↗
+    <div class="desk-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <a href="${escapeText(deskData.linkUrl || '#')}" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: #38bdf8;">
+        <span>${escapeText(deskData.linkText || 'Game Wiki')}</span> ↗
       </a>
-      <span style="color: var(--text-muted); font-size: 0.72rem;">Local DB</span>
+      <button type="button" class="desk-action-btn" data-action="view-gaming-details" style="font-size: 0.76rem; padding: 4px 10px;">🔍 Notes & Details</button>
     </div>
   `;
 

@@ -45,11 +45,20 @@ export function createReadingDeskElement(deskData = {}) {
       </div>
     </div>
 
-    <div class="desk-footer">
-      <a href="${escapeText(deskData.storygraphUrl || '#')}" target="_blank" rel="noopener noreferrer" class="desk-link">
-        <span>The StoryGraph</span> ↗
-      </a>
-      <span style="color: var(--text-muted); font-size: 0.72rem;">Local DB</span>
+    <div class="desk-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        ${deskData.storygraphUrl ? `
+          <a href="${escapeText(deskData.storygraphUrl)}" target="_blank" rel="noopener noreferrer" class="desk-link">
+            <span>The StoryGraph</span> ↗
+          </a>
+        ` : ''}
+        ${deskData.linkUrl ? `
+          <a href="${escapeText(deskData.linkUrl)}" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: #38bdf8;">
+            <span>${escapeText(deskData.linkText || 'Open Book')}</span> ↗
+          </a>
+        ` : ''}
+      </div>
+      <button type="button" class="desk-action-btn" data-action="view-reading-details" style="font-size: 0.76rem; padding: 4px 10px;">🔍 Notes & Details</button>
     </div>
   `;
 

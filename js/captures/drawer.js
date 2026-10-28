@@ -9,6 +9,7 @@ import { state } from '../state.js';
 import { processCaptureIntake } from './intake.js';
 
 let activeDomainFilter = 'all';
+let activeTopicFilter = 'all';
 
 /**
  * Opens and renders the captures slide-over drawer.
@@ -32,11 +33,12 @@ export function closeCapturesDrawer() {
 }
 
 /**
- * Renders the full drawer content (filter pills and card list).
+ * Renders the full drawer content (filter pills, topic pills, and card list).
  */
 export async function renderCapturesDrawer() {
   const allCaptures = (await db.getAll('captures')).sort((a, b) => (b.id || 0) - (a.id || 0));
   renderFilterPills(allCaptures);
+  renderTopicFilterPills(allCaptures);
   renderCaptureCards(allCaptures);
 }
 
@@ -65,6 +67,53 @@ function renderFilterPills(captures) {
   container.querySelectorAll('[data-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
       activeDomainFilter = btn.getAttribute('data-filter');
+      activeTopicFilter = 'all';
+      renderCapturesDrawer();
+    });
+  });
+}
+
+/**
+ * Renders secondary scoped topic filter pills when a specific domain is selected.
+ * Only displayed if activeDomainFilter !== 'all' and there are >= 2 distinct topics.
+ */
+function renderTopicFilterPills(captures) {
+  const topicBar = document.getElementById('drawer-topic-filter-bar');
+  if (!topicBar) return;
+
+  if (activeDomainFilter === 'all') {
+    topicBar.style.display = 'none';
+    topicBar.innerHTML = '';
+    return;
+  }
+
+  const domainCaptures = captures.filter(c => (c.domain || 'misc').toLowerCase() === activeDomainFilter);
+  const topicCounts = { all: domainCaptures.length };
+  domainCaptures.forEach(c => {
+    const t = c.topic || 'General';
+    topicCounts[t] = (topicCounts[t] || 0) + 1;
+  });
+
+  const distinctTopics = Object.keys(topicCounts).filter(t => t !== 'all');
+  if (distinctTopics.length < 2) {
+    topicBar.style.display = 'none';
+    topicBar.innerHTML = '';
+    return;
+  }
+
+  topicBar.style.display = 'flex';
+  const topics = ['all', ...distinctTopics.sort()];
+
+  topicBar.innerHTML = topics.map(t => `
+    <button type="button" class="capture-topic-pill ${activeTopicFilter === t ? 'active' : ''}" data-topic="${escapeText(t)}">
+      <span>${t === 'all' ? 'All Topics' : escapeText(t)}</span>
+      <span class="pill-count" style="font-size: 0.68rem; opacity: 0.7;">${topicCounts[t]}</span>
+    </button>
+  `).join('');
+
+  topicBar.querySelectorAll('[data-topic]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTopicFilter = btn.getAttribute('data-topic');
       renderCapturesDrawer();
     });
   });
@@ -77,9 +126,13 @@ function renderCaptureCards(captures) {
   const listEl = document.getElementById('drawer-captures-list');
   if (!listEl) return;
 
-  const filtered = activeDomainFilter === 'all'
+  let filtered = activeDomainFilter === 'all'
     ? captures
     : captures.filter(c => (c.domain || 'misc').toLowerCase() === activeDomainFilter);
+
+  if (activeDomainFilter !== 'all' && activeTopicFilter !== 'all') {
+    filtered = filtered.filter(c => (c.topic || 'General') === activeTopicFilter);
+  }
 
   if (filtered.length === 0) {
     listEl.innerHTML = `
@@ -97,6 +150,7 @@ function renderCaptureCards(captures) {
     const topic = c.topic || 'General';
     const isLinkOnly = topic.toLowerCase() === 'link' || domain === 'link';
     const showAnalyze = isLinkOnly && hasApiKey;
+    const hasFoundUrl = c.foundUrl && c.foundUrl !== c.sourceUrl;
 
     // Body format indicator badge
     let formatBadge = '';
@@ -118,12 +172,15 @@ function renderCaptureCards(captures) {
 
         ${formatBadge}
 
-        <div class="capture-card-footer">
+        <div class="capture-card-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
           <div style="display: flex; align-items: center; gap: 8px;">
             ${renderMediaStatusBadge(c.mediaStatus)}
             ${showAnalyze ? `<button type="button" class="btn-analyze-inline" data-analyze-id="${c.id}">🔄 Analyze</button>` : ''}
           </div>
-          ${c.sourceUrl ? `<a href="${escapeText(c.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="desk-link" onclick="event.stopPropagation()">🔗 Link ↗</a>` : ''}
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            ${hasFoundUrl ? `<a href="${escapeText(c.foundUrl)}" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: #38bdf8; font-weight: 600;" onclick="event.stopPropagation()">🌐 Found Page ↗</a>` : ''}
+            ${c.sourceUrl ? `<a href="${escapeText(c.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="desk-link" style="color: var(--text-secondary);" onclick="event.stopPropagation()">🔗 Source ↗</a>` : ''}
+          </div>
         </div>
       </div>
     `;
@@ -250,6 +307,17 @@ export function openCaptureDetailModal(capture) {
           </div>
         ` : ''}
       `;
+    }
+  }
+
+  // Found page / blog button
+  const foundBtn = document.getElementById('modal-capture-found-btn');
+  if (foundBtn) {
+    if (capture.foundUrl && capture.foundUrl !== capture.sourceUrl) {
+      foundBtn.href = capture.foundUrl;
+      foundBtn.style.display = 'inline-flex';
+    } else {
+      foundBtn.style.display = 'none';
     }
   }
 

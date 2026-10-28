@@ -177,7 +177,8 @@ export async function processCaptureIntake(rawInput) {
  */
 async function runStage1Grounded(rawText, foundUrl, apiKey) {
   const cleanUrl = sanitizeUrl(foundUrl);
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const model = state.settings?.gemini_model || 'gemini-3.8-flash';
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const prompt = `You are the content analyzer for Active Desks.
 Extract structured metadata from this link using Google Search Grounding:
@@ -242,7 +243,8 @@ Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
  */
 async function runStage2Ungrounded(rawText, foundUrl, apiKey) {
   const cleanUrl = sanitizeUrl(foundUrl);
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const model = state.settings?.gemini_model || 'gemini-3.8-flash';
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const prompt = `Analyze this link without web searching:
 URL: ${cleanUrl}

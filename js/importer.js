@@ -22,6 +22,8 @@ export function normalizeLegacyCapture(raw) {
   const summary = (raw.summary || raw.note || raw.highlight || title).trim();
   const creator = raw.creator || raw.source || raw.author || null;
   const sourceUrl = raw.sourceUrl || raw.url || null;
+  const rawFound = raw.blogUrl || (raw.payload && (raw.payload.blogUrl || raw.payload.linkUrl)) || raw.foundUrl || null;
+  const foundUrl = (rawFound && rawFound !== sourceUrl) ? rawFound : null;
   const createdAt = raw.createdAt || (raw.time ? new Date().toISOString() : new Date().toISOString());
   const status = raw.status === 'processed' ? 'processed' : 'pending';
 
@@ -122,6 +124,7 @@ export function normalizeLegacyCapture(raw) {
     summary,
     creator,
     sourceUrl,
+    foundUrl,
     createdAt,
     status,
     mediaStatus,
