@@ -173,13 +173,71 @@ export async function processCaptureIntake(rawInput) {
 }
 
 /**
+ * Unified Gemini API Invoker supporting both modern Interactions API (v1beta/interactions)
+ * and legacy generateContent with automatic fallback.
+ */
+async function callGemini(promptText, useSearch, apiKey) {
+  const model = state.settings?.gemini_model || 'gemini-3.8-flash';
+
+  // 1. Try Interactions API first (required for Gemini 3.8 / 4.x models)
+  try {
+    const intBody = {
+      model,
+      input: promptText
+    };
+    if (useSearch) {
+      intBody.tools = [{ type: 'google_search' }];
+    }
+
+    const intResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/interactions?key=${encodeURIComponent(apiKey)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(intBody)
+    });
+
+    if (intResp.ok) {
+      const data = await intResp.json();
+      const steps = data.steps || [];
+      const outputStep = steps.find(s => s.type === 'model_output' || s.step_type === 'model_output');
+      if (outputStep?.content) {
+        for (const block of outputStep.content) {
+          if (block.type === 'text' && block.text) return block.text;
+          if (typeof block === 'string') return block;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Interactions API call failed, trying generateContent fallback:', err);
+  }
+
+  // 2. Fallback to generateContent API
+  const gcBody = {
+    contents: [{ parts: [{ text: promptText }] }]
+  };
+  if (useSearch) {
+    gcBody.tools = [{ google_search: {} }];
+  }
+
+  const gcResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(gcBody)
+  });
+
+  if (!gcResp.ok) {
+    const err = await gcResp.json().catch(() => ({}));
+    throw new Error(`Gemini API HTTP ${gcResp.status}: ${err.error?.message || gcResp.statusText}`);
+  }
+
+  const gcData = await gcResp.json();
+  return gcData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+/**
  * Stage 1: Grounded Gemini Multimodal API Runner.
  */
 async function runStage1Grounded(rawText, foundUrl, apiKey) {
   const cleanUrl = sanitizeUrl(foundUrl);
-  const model = state.settings?.gemini_model || 'gemini-3.8-flash';
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
   const prompt = `You are the content analyzer for Active Desks.
 Extract structured metadata from this link using Google Search Grounding:
 Target URL: ${cleanUrl}
@@ -204,21 +262,7 @@ Return strictly a valid JSON object matching this schema:
 }
 Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      tools: [{ google_search: {} }]
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`Gemini API HTTP ${response.status}`);
-  }
-
-  const data = await response.json();
-  const rawResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const rawResponseText = await callGemini(prompt, true, apiKey);
   const parsed = JSON.parse(rawResponseText.replace(/```json\n?|```/g, '').trim());
 
   return {
@@ -243,9 +287,6 @@ Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
  */
 async function runStage2Ungrounded(rawText, foundUrl, apiKey) {
   const cleanUrl = sanitizeUrl(foundUrl);
-  const model = state.settings?.gemini_model || 'gemini-3.8-flash';
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
   const prompt = `Analyze this link without web searching:
 URL: ${cleanUrl}
 User Note: ${rawText}
@@ -263,20 +304,7 @@ Return strictly raw JSON:
   "userTakeaways": [string]
 }`;
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }]
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`Gemini API HTTP ${response.status}`);
-  }
-
-  const data = await response.json();
-  const rawResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const rawResponseText = await callGemini(prompt, false, apiKey);
   const parsed = JSON.parse(rawResponseText.replace(/```json\n?|```/g, '').trim());
 
   return {

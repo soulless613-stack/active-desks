@@ -104,17 +104,53 @@ export function initSettingsModal() {
         state.settings.gemini_model = bestModel;
         await db.put('settings', { key: 'gemini_model', value: bestModel, updatedAt: new Date().toISOString() });
 
-        // 2. Perform verification ping with discovered model
+        // 2. Perform verification ping with discovered model via Interactions API (or generateContent fallback)
         testKeyBtn.textContent = 'Pinging...';
-        const pingResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${bestModel}:generateContent?key=${encodeURIComponent(keyVal)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: 'ping' }] }]
-          })
-        });
+        let pingOk = false;
+        let pingErrorMsg = '';
 
-        if (pingResp.ok) {
+        // Try Interactions API first (required for Gemini 3.8 / 4.x models)
+        try {
+          const intResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/interactions?key=${encodeURIComponent(keyVal)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: bestModel,
+              input: 'ping'
+            })
+          });
+          if (intResp.ok) {
+            pingOk = true;
+          } else {
+            const errData = await intResp.json().catch(() => ({}));
+            pingErrorMsg = errData.error?.message || `HTTP ${intResp.status}`;
+          }
+        } catch (e) {
+          pingErrorMsg = e.message;
+        }
+
+        // If Interactions API failed, try generateContent fallback
+        if (!pingOk) {
+          try {
+            const pingResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${bestModel}:generateContent?key=${encodeURIComponent(keyVal)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: 'ping' }] }]
+              })
+            });
+            if (pingResp.ok) {
+              pingOk = true;
+            } else {
+              const pingErr = await pingResp.json().catch(() => ({}));
+              pingErrorMsg = pingErr.error?.message || `HTTP ${pingResp.status}`;
+            }
+          } catch (e) {
+            pingErrorMsg = e.message;
+          }
+        }
+
+        if (pingOk) {
           if (dot) dot.style.background = '#34d399';
           if (text) {
             text.textContent = `✓ Verified! Model: ${bestModel}`;
@@ -122,8 +158,7 @@ export function initSettingsModal() {
           }
           testKeyBtn.textContent = '✓ Verified';
         } else {
-          const pingErr = await pingResp.json();
-          throw new Error(`Ping failed (${pingResp.status}): ${pingErr.error?.message}`);
+          throw new Error(`Ping failed: ${pingErrorMsg}`);
         }
       } catch (err) {
         if (dot) dot.style.background = '#f87171';
