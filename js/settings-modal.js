@@ -93,19 +93,20 @@ export function initSettingsModal() {
         }
 
         const modelsList = modelsData.models || [];
-        const candidates = modelsList.filter(m => {
-          const methods = m.supportedGenerationMethods || [];
-          return methods.includes('generateContent') && /flash/i.test(m.name);
+        // Filter out deprecated models (2.5, 2.0, 1.5) that Google sunset
+        const modernCandidates = modelsList.filter(m => {
+          const name = m.name || '';
+          return /flash/i.test(name) && !name.includes('2.5') && !name.includes('2.0') && !name.includes('1.5');
         });
 
-        candidates.sort((a, b) => b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' }));
-        const bestModel = candidates[0]?.name.replace('models/', '') || 'gemini-3.8-flash';
+        modernCandidates.sort((a, b) => b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' }));
+        const bestModel = modernCandidates[0]?.name.replace('models/', '') || 'gemini-3.8-flash';
 
         state.settings.gemini_model = bestModel;
         await db.put('settings', { key: 'gemini_model', value: bestModel, updatedAt: new Date().toISOString() });
 
         // 2. Perform verification ping with discovered model via Interactions API (or generateContent fallback)
-        testKeyBtn.textContent = 'Pinging...';
+        testKeyBtn.textContent = `Pinging ${bestModel}...`;
         let pingOk = false;
         let pingErrorMsg = '';
 
