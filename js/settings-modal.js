@@ -10,6 +10,27 @@ import { createP2POffer } from './sync/p2p-provider.js';
 import { setSyncBadge } from './sync/sync-manager.js';
 
 /**
+ * Updates the persistent Gemini API key status indicator in Settings.
+ */
+function updateGeminiStatusUI() {
+  const dot = document.getElementById('gemini-status-dot');
+  const text = document.getElementById('gemini-status-text');
+  const key = state.settings?.gemini_api_key?.trim();
+
+  if (dot && text) {
+    if (key && key.length > 8) {
+      dot.style.background = '#34d399';
+      text.style.color = '#34d399';
+      text.textContent = `Active: ${key.slice(0, 6)}...${key.slice(-4)}`;
+    } else {
+      dot.style.background = '#64748b';
+      text.style.color = 'var(--text-muted)';
+      text.textContent = 'No API key saved (Offline heuristics mode)';
+    }
+  }
+}
+
+/**
  * Initializes the settings modal UI and binds event listeners.
  */
 export function initSettingsModal() {
@@ -38,8 +59,64 @@ export function initSettingsModal() {
       await db.put('settings', { key: 'gemini_api_key', value: keyVal, updatedAt: new Date().toISOString() });
       await db.put('settings', { key: 'search_grounding_enabled', value: groundingVal, updatedAt: new Date().toISOString() });
 
+      updateGeminiStatusUI();
       saveKeyBtn.textContent = 'Saved! ✓';
       setTimeout(() => { saveKeyBtn.textContent = 'Save Key'; }, 2000);
+    });
+  }
+
+  // Bind Test Gemini Key button
+  const testKeyBtn = document.getElementById('btn-test-gemini-key');
+  if (testKeyBtn) {
+    testKeyBtn.addEventListener('click', async () => {
+      const keyVal = keyInput?.value?.trim() || state.settings?.gemini_api_key?.trim();
+      const dot = document.getElementById('gemini-status-dot');
+      const text = document.getElementById('gemini-status-text');
+
+      if (!keyVal) {
+        if (text) {
+          text.textContent = '⚠️ Paste an API key above before testing';
+          text.style.color = '#f87171';
+        }
+        return;
+      }
+
+      testKeyBtn.textContent = 'Testing...';
+      try {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(keyVal)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: 'ping' }] }]
+          })
+        });
+
+        const data = await resp.json();
+        if (resp.ok) {
+          if (dot) dot.style.background = '#34d399';
+          if (text) {
+            text.textContent = '✓ Verified! Gemini API connected & ready.';
+            text.style.color = '#34d399';
+          }
+          testKeyBtn.textContent = '✓ Verified';
+        } else {
+          if (dot) dot.style.background = '#f87171';
+          if (text) {
+            text.textContent = `⚠️ Error ${resp.status}: ${data.error?.message || 'Invalid API key'}`;
+            text.style.color = '#f87171';
+          }
+          testKeyBtn.textContent = '⚠️ Invalid';
+        }
+      } catch (err) {
+        if (dot) dot.style.background = '#f87171';
+        if (text) {
+          text.textContent = `Network error: ${err.message}`;
+          text.style.color = '#f87171';
+        }
+        testKeyBtn.textContent = '⚠️ Error';
+      }
+
+      setTimeout(() => { testKeyBtn.textContent = '⚡ Test Key'; }, 3500);
     });
   }
 
@@ -123,6 +200,7 @@ export function openSettingsModal() {
   const targetRadio = document.querySelector(`input[name="sync_provider"][value="${currentProvider}"]`);
   if (targetRadio) targetRadio.checked = true;
 
+  updateGeminiStatusUI();
   modal.classList.add('active');
 }
 

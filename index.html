@@ -33,7 +33,7 @@
         <button type="button" class="btn-icon" id="btn-open-drawer" title="View Captures Stream">
           <span>🧠</span>
         </button>
-        <div class="sync-badge" id="header-sync-badge" title="Device Sync Status">
+        <div class="sync-badge" id="header-sync-badge" title="Device Sync Storage: Local (IndexedDB)">
           <span class="sync-dot" id="header-sync-dot"></span>
           <span id="header-sync-text">Local</span>
         </div>
@@ -105,25 +105,57 @@
 
   <!-- Modal: 4-Workbench Swapping & Concentration -->
   <div id="swap-desk-modal" class="modal-overlay" role="dialog" aria-modal="true">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 520px;">
       <div class="modal-header">
         <h3 class="modal-title">Rotate Active Workbenches</h3>
         <button type="button" class="modal-close-btn" data-close="swap-desk-modal">✕</button>
       </div>
 
+      <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.4;">
+        Focus is strictly capped at <strong>4 active workbenches</strong>. Choose a resting workbench to spin up, then select which active desk to swap into dormancy:
+      </div>
+
       <div class="swap-list-section">
-        <div class="swap-section-label">Active Workbenches (4 of 4)</div>
-        <div id="swap-active-list">
+        <div class="swap-section-label">1. Resting Workbenches (Available to Activate)</div>
+        <div id="swap-dormant-list">
           <!-- Populated by desk-manager.js -->
         </div>
       </div>
 
       <div class="swap-list-section">
-        <div class="swap-section-label">Resting Workbenches (Zero Data Loss Dormancy)</div>
-        <div id="swap-dormant-list">
+        <div class="swap-section-label">2. Active Workbenches (Tap to Swap Out)</div>
+        <div id="swap-active-list">
           <!-- Populated by desk-manager.js -->
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Workbench Progress & Details -->
+  <div id="edit-desk-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="edit-desk-modal-title">✏️ Update Workbench</h3>
+        <button type="button" class="modal-close-btn" data-close="edit-desk-modal">✕</button>
+      </div>
+
+      <form id="edit-desk-form">
+        <input type="hidden" id="edit-desk-id">
+
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Title / Focus Item</label>
+          <input type="text" id="edit-desk-title-input" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" required>
+        </div>
+
+        <div id="edit-desk-dynamic-fields">
+          <!-- Populated by desk-manager.js -->
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="desk-action-btn" data-close="edit-desk-modal">Cancel</button>
+          <button type="submit" class="quick-capture-btn" style="border-radius: var(--radius-sm); padding: 8px 18px;">Save Changes</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -146,6 +178,11 @@
       <!-- Captures List Container -->
       <div class="drawer-captures-list" id="drawer-captures-list">
         <!-- Populated by drawer.js -->
+      </div>
+
+      <!-- Drawer Footer Action -->
+      <div style="display: flex; justify-content: flex-end; padding-top: 12px; margin-top: 8px; border-top: 1px solid var(--border-subtle);">
+        <button type="button" class="desk-action-btn" data-close="captures-drawer" style="padding: 7px 18px;">Close Stream</button>
       </div>
     </div>
   </div>
@@ -235,11 +272,19 @@
       <!-- Gemini AI Settings Section -->
       <div class="swap-list-section" style="margin-top: 20px;">
         <div class="swap-section-label">Gemini AI Intelligence (BYOK)</div>
-        <form onsubmit="return false;" style="display: flex; gap: 8px; margin-bottom: 10px;">
+        <form onsubmit="return false;" style="display: flex; gap: 8px; margin-bottom: 8px;">
           <input type="text" name="username" autocomplete="username" style="display: none;" tabindex="-1" aria-hidden="true">
           <input type="password" id="settings-gemini-key" class="quick-capture-input" placeholder="Paste Gemini API Key (AI Studio)..." autocomplete="current-password" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;">
           <button type="submit" class="quick-capture-btn" id="btn-save-gemini-key" style="border-radius: var(--radius-sm); padding: 8px 14px;">Save Key</button>
         </form>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: rgba(0,0,0,0.25); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+          <div id="gemini-status-indicator" style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+            <span id="gemini-status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block;"></span>
+            <span id="gemini-status-text">No API key saved</span>
+          </div>
+          <button type="button" class="desk-action-btn" id="btn-test-gemini-key" style="font-size: 0.75rem; padding: 4px 10px; color: #38bdf8;">⚡ Test Key</button>
+        </div>
 
         <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
           <input type="checkbox" id="settings-grounding-checkbox" style="margin-top: 3px;">

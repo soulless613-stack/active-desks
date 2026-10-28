@@ -166,6 +166,12 @@ export async function loadInitialState() {
   }
   state.desks = deskMap;
 
+  // 2b. Connect Recipe Captures to Kitchen Shelf Desk
+  const recipeCaptures = await db.getAll('captures', 'by_domain', 'recipe');
+  if (state.desks.kitchen) {
+    state.desks.kitchen.recipes = recipeCaptures;
+  }
+
   // 3. Load or Seed Daily 3 Anchors (Midnight reset aware)
   const today = new Date().toISOString().split('T')[0];
   const todayAnchors = await db.get('anchors', today);

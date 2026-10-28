@@ -4,7 +4,7 @@
  * Enforces the strict 4-desk display cap while supporting an unlimited registry of dormant desks.
  */
 
-import { state, setActiveDeskIds } from '../state.js';
+import { state, setActiveDeskIds, updateDesk } from '../state.js';
 import { createReadingDeskElement } from './reading.js';
 import { createKitchenDeskElement } from './kitchen.js';
 import { createGamingDeskElement } from './gaming.js';
@@ -22,6 +22,8 @@ const DESK_FACTORIES = {
   fiber: createFiberDeskElement,
   tech: createTechDeskElement
 };
+
+let selectedIncomingDormantId = null;
 
 /**
  * Registers a new dynamic workbench factory into the open registry.
@@ -79,10 +81,10 @@ function createGenericDeskElement(deskData = {}) {
 /**
  * Mounts the 4 active workbenches on the main dashboard grid.
  * 
- * @purpose Renders the 4 active desks according to state.activeDeskIds.
+ * @purpose Renders the 4 active desks according to state.activeDeskIds and wires edit buttons.
  * @inputs None. Reads state.activeDeskIds and state.desks.
  * @outputs {void}
- * @sideEffects Replaces children of #desks-grid in the DOM.
+ * @sideEffects Replaces children of #desks-grid in the DOM and binds edit events.
  */
 export function renderActiveDesks() {
   const grid = document.getElementById('desks-grid');
@@ -97,12 +99,21 @@ export function renderActiveDesks() {
     const cardEl = factory(data);
     grid.appendChild(cardEl);
   });
+
+  // Attach edit button click listeners to all rendered cards
+  grid.querySelectorAll('[data-action^="edit-"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const deskId = btn.getAttribute('data-action').replace('edit-', '');
+      openEditDeskModal(deskId);
+    });
+  });
 }
 
 /**
  * Initializes workbench swapping modal triggers and event listeners.
  * 
- * @purpose Binds the ⚙️ Swap Desks button and close interactions.
+ * @purpose Binds the ⚙️ Swap Desks button, edit form submission, and close interactions.
  * @inputs None.
  * @outputs {void}
  * @sideEffects Attaches listeners to DOM elements.
@@ -117,26 +128,79 @@ export function initDeskManager() {
     });
   }
 
-  // Bind close buttons with data-close
-  document.querySelectorAll('[data-close="swap-desk-modal"]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      modal?.classList.remove('active');
+  // Bind edit desk modal form
+  const editForm = document.getElementById('edit-desk-form');
+  const editModal = document.getElementById('edit-desk-modal');
+  if (editForm) {
+    editForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const deskId = document.getElementById('edit-desk-id')?.value;
+      if (!deskId) return;
+
+      const title = document.getElementById('edit-desk-title-input')?.value.trim();
+      const patch = {};
+      if (title) patch.title = title;
+
+      if (deskId === 'reading') {
+        const page = parseInt(document.getElementById('edit-reading-page')?.value, 10);
+        const total = parseInt(document.getElementById('edit-reading-total')?.value, 10);
+        const author = document.getElementById('edit-reading-author')?.value.trim();
+        const format = document.getElementById('edit-reading-format')?.value.trim();
+        if (!isNaN(page)) patch.currentPage = page;
+        if (!isNaN(total)) patch.totalPages = total;
+        if (author) patch.author = author;
+        if (format) patch.format = format;
+      } else if (deskId === 'fiber') {
+        patch.name = title;
+        const rows = parseInt(document.getElementById('edit-fiber-rows')?.value, 10);
+        const targetRows = parseInt(document.getElementById('edit-fiber-target')?.value, 10);
+        const specs = document.getElementById('edit-fiber-specs')?.value.trim();
+        if (!isNaN(rows)) patch.rows = rows;
+        if (!isNaN(targetRows)) patch.targetRows = targetRows;
+        if (specs) patch.specs = specs;
+      } else if (deskId === 'gaming') {
+        const platform = document.getElementById('edit-gaming-platform')?.value.trim();
+        const quest = document.getElementById('edit-gaming-quest')?.value.trim();
+        if (platform) patch.platform = platform;
+        if (quest) patch.quest = quest;
+      } else if (deskId === 'tech') {
+        const tool = document.getElementById('edit-tech-tool')?.value.trim();
+        const focus = document.getElementById('edit-tech-focus')?.value.trim();
+        if (tool) patch.tool = tool;
+        if (focus) patch.focus = focus;
+      } else if (deskId === 'kitchen') {
+        const servings = parseInt(document.getElementById('edit-kitchen-servings')?.value, 10);
+        const prep = document.getElementById('edit-kitchen-prep')?.value.trim();
+        const cook = document.getElementById('edit-kitchen-cook')?.value.trim();
+        if (!isNaN(servings)) patch.servings = servings;
+        if (prep) patch.prepTime = prep;
+        if (cook) patch.cookTime = cook;
+      }
+
+      await updateDesk(deskId, patch);
+      renderActiveDesks();
+      editModal?.classList.remove('active');
     });
-  });
+  }
 
   // Render initial active desks
   renderActiveDesks();
 }
 
 /**
- * Opens and renders the 4-Workbench Swapping Modal.
- * 
- * @purpose Displays active vs dormant workbenches and attaches 1-tap swap handlers.
- * @inputs None.
- * @outputs {void}
- * @sideEffects Mutates the DOM inside #swap-desk-modal and sets the 'active' class.
+ * Opens and renders the 4-Workbench Swapping Modal with interactive 2-step selection.
  */
 export function openSwapModal() {
+  const modal = document.getElementById('swap-desk-modal');
+  if (!modal) return;
+  renderSwapModalContent();
+  modal.classList.add('active');
+}
+
+/**
+ * Renders dormant workbenches on top and active target workbenches below.
+ */
+function renderSwapModalContent() {
   const modal = document.getElementById('swap-desk-modal');
   const activeList = document.getElementById('swap-active-list');
   const dormantList = document.getElementById('swap-dormant-list');
@@ -145,81 +209,82 @@ export function openSwapModal() {
   activeList.innerHTML = '';
   dormantList.innerHTML = '';
 
-  const activeIds = new Set(state.activeDeskIds || []);
+  const activeIds = state.activeDeskIds || [];
   const allDeskIds = Object.keys(state.desks || {});
+  const dormantIds = allDeskIds.filter(id => !activeIds.includes(id));
 
-  // 1. Render Active Desks (with domain badge and title)
-  activeIds.forEach(id => {
-    const d = state.desks[id] || { id };
-    const row = document.createElement('div');
-    row.className = 'swap-item-row';
-    row.innerHTML = `
-      <div class="swap-item-left">
-        <span class="desk-badge ${d.domain || id}">${getDeskEmoji(id)} ${escapeText(d.title || d.name || id)}</span>
-      </div>
-      <span style="font-size: 0.72rem; color: #34d399; font-weight: 700;">ACTIVE</span>
-    `;
-    activeList.appendChild(row);
-  });
-
-  // 2. Render Dormant Desks (with 1-tap Swap-In buttons)
-  const dormantIds = allDeskIds.filter(id => !activeIds.has(id));
-
+  // 1. Render Resting / Dormant Desks
   if (dormantIds.length === 0) {
     dormantList.innerHTML = `
       <div style="font-size: 0.8rem; color: var(--text-muted); padding: 8px;">
         All registered workbenches are currently active.
       </div>
     `;
+    selectedIncomingDormantId = null;
   } else {
+    if (!selectedIncomingDormantId || !dormantIds.includes(selectedIncomingDormantId)) {
+      selectedIncomingDormantId = dormantIds[0];
+    }
+
     dormantIds.forEach(dormantId => {
       const d = state.desks[dormantId] || { id: dormantId };
+      const isSelected = dormantId === selectedIncomingDormantId;
       const row = document.createElement('div');
-      row.className = 'swap-item-row';
-
-      const selectOptions = Array.from(activeIds).map(actId => {
-        const actDesk = state.desks[actId] || { id: actId };
-        return `<option value="${actId}">Replace ${escapeText(actDesk.title || actDesk.name || actId)}</option>`;
-      }).join('');
-
+      row.className = `swap-item-row ${isSelected ? 'dormant-selected' : ''}`;
       row.innerHTML = `
         <div class="swap-item-left">
           <span class="desk-badge ${d.domain || dormantId}">${getDeskEmoji(dormantId)} ${escapeText(d.title || d.name || dormantId)}</span>
         </div>
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <select class="swap-replace-select" data-dormant="${dormantId}" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: var(--radius-sm); font-size: 0.72rem; padding: 3px 6px;">
-            ${selectOptions}
-          </select>
-          <button type="button" class="desk-action-btn" data-swap-in="${dormantId}" style="color: #38bdf8;">Swap In ➔</button>
-        </div>
+        <button type="button" class="desk-action-btn" data-select-dormant="${dormantId}" style="${isSelected ? 'background: #38bdf8; color: #080c14; font-weight: 700;' : ''}">
+          ${isSelected ? '● Ready to Activate' : 'Select to Activate'}
+        </button>
       `;
 
-      const swapBtn = row.querySelector(`[data-swap-in="${dormantId}"]`);
-      const selectEl = row.querySelector(`[data-dormant="${dormantId}"]`);
-
-      if (swapBtn && selectEl) {
-        swapBtn.addEventListener('click', () => {
-          const replaceTargetId = selectEl.value;
-          swapWorkbenches(dormantId, replaceTargetId);
-          modal.classList.remove('active');
-        });
-      }
+      row.querySelector(`[data-select-dormant="${dormantId}"]`).addEventListener('click', () => {
+        selectedIncomingDormantId = dormantId;
+        renderSwapModalContent();
+      });
 
       dormantList.appendChild(row);
     });
   }
 
-  modal.classList.add('active');
+  // 2. Render Active Desks with Direct Target Buttons
+  const incomingDesk = selectedIncomingDormantId ? (state.desks[selectedIncomingDormantId] || { id: selectedIncomingDormantId }) : null;
+  const incomingName = incomingDesk ? (incomingDesk.title || incomingDesk.name || selectedIncomingDormantId) : 'Resting Bench';
+  const incomingEmoji = selectedIncomingDormantId ? getDeskEmoji(selectedIncomingDormantId) : '🌱';
+
+  activeIds.forEach(actId => {
+    const d = state.desks[actId] || { id: actId };
+    const row = document.createElement('div');
+    row.className = 'swap-item-row';
+    row.innerHTML = `
+      <div class="swap-item-left">
+        <span class="desk-badge ${d.domain || actId}">${getDeskEmoji(actId)} ${escapeText(d.title || d.name || actId)}</span>
+      </div>
+      ${selectedIncomingDormantId ? `
+        <button type="button" class="desk-action-btn" data-swap-target="${actId}" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">
+          Swap with ${incomingEmoji} ${escapeText(incomingName)} ➔
+        </button>
+      ` : `
+        <span style="font-size: 0.72rem; color: #34d399; font-weight: 700;">ACTIVE</span>
+      `}
+    `;
+
+    const swapTargetBtn = row.querySelector(`[data-swap-target="${actId}"]`);
+    if (swapTargetBtn) {
+      swapTargetBtn.addEventListener('click', () => {
+        swapWorkbenches(selectedIncomingDormantId, actId);
+        modal.classList.remove('active');
+      });
+    }
+
+    activeList.appendChild(row);
+  });
 }
 
 /**
  * Swaps a dormant workbench into an active slot, enforcing the 4-desk cap.
- * 
- * @purpose Rotates workbench visibility with zero data loss.
- * @inputs {string} newActiveId - The dormant workbench to activate.
- * @inputs {string} oldActiveId - The active workbench to put into dormancy.
- * @outputs {void}
- * @sideEffects Mutates activeDeskIds, re-renders the dashboard grid, and persists to IndexedDB.
  */
 export function swapWorkbenches(newActiveId, oldActiveId) {
   const current = [...(state.activeDeskIds || [])];
@@ -234,6 +299,113 @@ export function swapWorkbenches(newActiveId, oldActiveId) {
   setActiveDeskIds(current);
 }
 
+/**
+ * Opens the universal workbench edit modal pre-filled with the target desk's data.
+ * 
+ * @purpose Provides progressive disclosure editing for any workbench type.
+ * @inputs {string} deskId - The target workbench identifier.
+ * @outputs {void}
+ */
+export function openEditDeskModal(deskId) {
+  const modal = document.getElementById('edit-desk-modal');
+  const titleEl = document.getElementById('edit-desk-modal-title');
+  const idInput = document.getElementById('edit-desk-id');
+  const titleInput = document.getElementById('edit-desk-title-input');
+  const dynamicContainer = document.getElementById('edit-desk-dynamic-fields');
+
+  if (!modal || !dynamicContainer) return;
+
+  const desk = state.desks[deskId] || { id: deskId };
+  idInput.value = deskId;
+  const currentTitle = desk.title || desk.name || capitalize(deskId);
+  titleInput.value = currentTitle;
+  titleEl.textContent = `✏️ Update ${getDeskEmoji(deskId)} ${currentTitle}`;
+
+  let fieldsHtml = '';
+
+  if (deskId === 'reading') {
+    fieldsHtml = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Current Page</label>
+          <input type="number" id="edit-reading-page" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${desk.currentPage || 0}">
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Total Pages</label>
+          <input type="number" id="edit-reading-total" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${desk.totalPages || 0}">
+        </div>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Author</label>
+        <input type="text" id="edit-reading-author" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.author || '')}">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Reading Format / Routine</label>
+        <input type="text" id="edit-reading-format" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.format || '')}">
+      </div>
+    `;
+  } else if (deskId === 'fiber') {
+    fieldsHtml = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Current Rows Worked</label>
+          <input type="number" id="edit-fiber-rows" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${desk.rows || 0}">
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Target Rows</label>
+          <input type="number" id="edit-fiber-target" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${desk.targetRows || 0}">
+        </div>
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Specs / Needle / Gauge</label>
+        <input type="text" id="edit-fiber-specs" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.specs || '')}">
+      </div>
+    `;
+  } else if (deskId === 'gaming') {
+    fieldsHtml = `
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Platform</label>
+        <input type="text" id="edit-gaming-platform" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.platform || '')}">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Active Quest / Objective</label>
+        <input type="text" id="edit-gaming-quest" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.quest || '')}">
+      </div>
+    `;
+  } else if (deskId === 'tech') {
+    fieldsHtml = `
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Developer Tool / Architecture</label>
+        <input type="text" id="edit-tech-tool" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.tool || '')}">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Focus / Breakthrough Topic</label>
+        <input type="text" id="edit-tech-focus" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.focus || '')}">
+      </div>
+    `;
+  } else if (deskId === 'kitchen') {
+    fieldsHtml = `
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Servings</label>
+          <input type="number" id="edit-kitchen-servings" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${desk.servings || 4}">
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Prep Time</label>
+          <input type="text" id="edit-kitchen-prep" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.prepTime || '')}">
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Cook Time</label>
+          <input type="text" id="edit-kitchen-cook" class="quick-capture-input" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px;" value="${escapeText(desk.cookTime || '')}">
+        </div>
+      </div>
+    `;
+  }
+
+  dynamicContainer.innerHTML = fieldsHtml;
+  modal.classList.add('active');
+}
+
 function getDeskEmoji(id) {
   const map = {
     reading: '📚',
@@ -243,6 +415,10 @@ function getDeskEmoji(id) {
     tech: '💻'
   };
   return map[id] || '🌱';
+}
+
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 }
 
 function escapeText(str) {

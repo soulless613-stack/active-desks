@@ -49,6 +49,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
+    // Global Escape Key Dismissal
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active, .drawer-overlay.active').forEach(el => {
+          el.classList.remove('active');
+        });
+      }
+    });
+
     // Close buttons with data-close attribute
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.addEventListener('click', () => {

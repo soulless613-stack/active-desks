@@ -57,7 +57,7 @@ function renderFilterPills(captures) {
 
   container.innerHTML = domains.map(d => `
     <button type="button" class="capture-filter-pill ${activeDomainFilter === d ? 'active' : ''}" data-filter="${d}">
-      <span>${d === 'all' ? 'All' : getDomainEmoji(d) + ' ' + capitalize(d)}</span>
+      <span>${d === 'all' ? 'All' : getDomainEmoji(d) + ' ' + getDomainLabel(d)}</span>
       <span class="pill-count">${counts[d]}</span>
     </button>
   `).join('');
@@ -276,6 +276,20 @@ function renderMediaStatusBadge(status) {
     fallback_link: '<span class="status-pill amber">📌 Link Only (Unchecked)</span>'
   };
   return map[status] || '<span class="status-pill slate">📌 Note</span>';
+}
+
+function getDomainLabel(domain) {
+  const map = {
+    all: 'All',
+    book: 'Books',
+    recipe: 'Recipes',
+    game: 'Games',
+    tech: 'Tech',
+    fiber: 'Fiber Arts',
+    misc: 'Notes',
+    home: 'Home'
+  };
+  return map[domain] || capitalize(domain);
 }
 
 function getDomainEmoji(domain) {
