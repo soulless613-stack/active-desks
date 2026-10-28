@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "exportedAt": "2026-10-28T03:06:56.076Z",
+  "exportedAt": "2026-10-28T04:16:13.144Z",
   "stores": {
     "desks": [
       {
@@ -477,32 +477,93 @@
       {
         "id": 1792963881958,
         "domain": "game",
-        "topic": "Coding Game",
-        "title": "Windwright",
-        "summary": "A cozy browser-based educational game where players restore a garden by writing real Python code to control automatons and creatures.",
-        "creator": "Windwright (@windwright.dev)",
+        "topic": "Python Coding Sim",
+        "title": "Windwright: Cozy Garden Automation",
+        "summary": "A browser-based educational puzzle game where players tend mystical gardens by writing real Python scripts to wake and guide creature automata through 8 progressive clearings.",
+        "creator": "William Hsu (@windwright.dev)",
         "sourceUrl": "https://www.instagram.com/reel/DekNRqMJ4D6/?vrfl=YWJ1ZWxvNnEzMGdx",
         "foundUrl": "https://windwright.dev",
         "createdAt": "2026-10-28T03:06:56.072Z",
+        "updatedAt": "2026-10-28T04:16:13.124Z",
         "status": "processed",
         "mediaStatus": "video_extracted",
         "searchPerformed": true,
         "meta": [
           {
             "label": "Platform",
-            "value": "Web Browser (PC)"
+            "value": "Web Browser (PC / Keyboard)"
           },
           {
-            "label": "Genre",
-            "value": "Cozy Coding Sim / Educational"
+            "label": "Language",
+            "value": "Python 3"
+          },
+          {
+            "label": "Price",
+            "value": "100% Free / No Login Required"
+          },
+          {
+            "label": "Pacing",
+            "value": "Cozy / Relaxing / Low-Stress"
           }
         ],
         "body": {
-          "format": "note",
-          "takeaways": [
-            "A cozy browser-based educational game where players restore a garden by writing real Python code to control automatons and creatures."
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "Desktop or laptop web browser with physical keyboard",
+              "checked": true
+            },
+            {
+              "text": "No account registration or email needed to start",
+              "checked": true
+            },
+            {
+              "text": "Adjust slate execution speed (Breeze to Storm)",
+              "checked": false
+            },
+            {
+              "text": "Enable Teach Me assistant if stuck on Python syntax",
+              "checked": false
+            }
           ],
-          "highlight": "Complete the introductory clearings by writing print statements, movement coordinates, and if-statements to automate watering and weeding."
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "The First Clearing: Learn print() statements, variable assignments, and foundational if-conditions."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "The Tangled Hollow: Master Python lists, for-loops, and while-loops to automate repetitive harvesting."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "The Stone Terraces: Define custom helper functions (def) and utilize not-operators for environmental checks."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "The Forked Path: Work with dictionaries, boolean logic (and, or), and multi-branch elif routing."
+            },
+            {
+              "stepNumber": 5,
+              "instruction": "The Counting Brook: Manage variable reassignment and calculate cumulative mathematical sums for yields."
+            },
+            {
+              "stepNumber": 6,
+              "instruction": "The Hundred Steps: Write range() iterators and nested loops (loops inside loops) for spatial grid patrols."
+            },
+            {
+              "stepNumber": 7,
+              "instruction": "The Gathering Ledger: Pass function parameters, append items dynamically to lists (.append()), and return computed results."
+            },
+            {
+              "stepNumber": 8,
+              "instruction": "The Night Garden: Implement string equality checks, infinite loops with break conditions, and formatted f-strings."
+            },
+            {
+              "stepNumber": 9,
+              "instruction": "The Keeper’s Garden: Build sandbox automations where your persistent Python scripts govern the landscape."
+            }
+          ]
         }
       },
       {
@@ -880,63 +941,136 @@
       {
         "id": 1792557991993,
         "domain": "game",
-        "topic": "Board Games",
-        "title": "Board Game Arena",
-        "summary": "An online tabletop platform letting you play hundreds of popular board games like Catan, Azul, and Wingspan directly in your browser without any setup or clean-up.",
+        "topic": "Digital Tabletop",
+        "title": "Board Game Arena: Best 2-Player & Couple Games",
+        "summary": "Top 2-player digital tabletop picks on Board Game Arena featuring zero physical setup, automated rules enforcement, and cross-platform play on browser or tablet.",
         "creator": "2 Kids With Adult Money (@2kidswithadultmoney)",
         "sourceUrl": "https://www.instagram.com/reel/DdJd_qSzwtB/?rpxt=MWZkN2theHA2bHd3aQ==",
         "foundUrl": "https://boardgamearena.com",
         "createdAt": "2026-10-28T03:06:56.073Z",
+        "updatedAt": "2026-10-28T04:16:13.129Z",
         "status": "processed",
-        "mediaStatus": "text_images",
+        "mediaStatus": "video_extracted",
         "searchPerformed": true,
         "meta": [
           {
             "label": "Platform",
-            "value": "Web Browser / Mobile"
+            "value": "Web Browser / Tablet / Mobile"
           },
           {
-            "label": "Genre",
-            "value": "Digital Tabletop / Board Games"
+            "label": "Player Count",
+            "value": "Strictly 2-Player & Duo Focus"
+          },
+          {
+            "label": "Cost",
+            "value": "Free (Only 1 Premium needed for premium tables)"
+          },
+          {
+            "label": "Modes",
+            "value": "Live Real-Time or Turn-Based (Async)"
           }
         ],
         "body": {
-          "format": "note",
-          "takeaways": [
-            "An online tabletop platform letting you play hundreds of popular board games like Catan, Azul, and Wingspan directly in your browser without any setup or clean-up."
-          ],
-          "highlight": "Create an account and host a cozy couple's game night session of Wingspan, Sky Team, or Azul."
+          "format": "collection",
+          "items": [
+            {
+              "title": "Sky Team",
+              "subtitle": "2-Player Co-op Dice Placement · 20 Mins",
+              "detail": "Work together as pilot and co-pilot to balance axis tilt, manage engine speed, and deploy landing gear into airports across the globe without crashing."
+            },
+            {
+              "title": "Wingspan",
+              "subtitle": "1–5 Players · Engine-Building Bird Sanctuary · 40 Mins",
+              "detail": "Attract beautiful birds to your wildlife preserve by laying eggs, drawing bird cards, and caching food tokens across forest, grassland, and wetland habitats."
+            },
+            {
+              "title": "Azul",
+              "subtitle": "2–4 Players · Mosaic Tile Drafting · 30 Mins",
+              "detail": "Draft vibrant glazed ceramic tiles from factory displays to decorate the walls of the Royal Palace of Evora while dodging penalty point floor spills."
+            },
+            {
+              "title": "Patchwork",
+              "subtitle": "2-Player Spatial Tile Placement · 25 Mins",
+              "detail": "Draft Tetris-like fabric patches using button currency and time management to stitch together the highest-scoring cozy quilt."
+            },
+            {
+              "title": "7 Wonders Duel",
+              "subtitle": "2-Player Civilization Drafting · 30 Mins",
+              "detail": "Construct architectural wonders, progress through three military and scientific ages, and achieve victory through supremacy or points."
+            }
+          ]
         }
       },
       {
         "id": 1792557954978,
         "domain": "game",
-        "topic": "Board Games",
-        "title": "Board Game Arena",
-        "summary": "An online gaming platform featuring hundreds of popular board games playable directly in your browser with instant matchmaking and zero setup.",
+        "topic": "Browser Gaming",
+        "title": "Board Game Arena: Zero-Install Digital Board Games",
+        "summary": "Complete guide to playing hundreds of licensed modern board games in your web browser with automated rules, live matchmaking, and asynchronous turn-based gaming.",
         "creator": "Kyle Whitney (@techcommons)",
         "sourceUrl": "https://www.instagram.com/reel/Dej_PxGlCfE/?srtk=cmg0dmJ2aHEycXNo",
         "foundUrl": "https://boardgamearena.com",
         "createdAt": "2026-10-28T03:06:56.073Z",
+        "updatedAt": "2026-10-28T04:16:13.129Z",
         "status": "processed",
-        "mediaStatus": "text_images",
+        "mediaStatus": "video_extracted",
         "searchPerformed": true,
         "meta": [
           {
             "label": "Platform",
-            "value": "Web Browser"
+            "value": "Zero-Install Browser (Chrome, Safari, Edge)"
           },
           {
-            "label": "Genre",
-            "value": "Digital Board Games / Tabletop"
+            "label": "Catalog",
+            "value": "900+ Official Licensed Tabletop Games"
+          },
+          {
+            "label": "Multiplayer",
+            "value": "Public Ranked Matchmaking or Private Friends"
+          },
+          {
+            "label": "Pacing",
+            "value": "Turn-Based (Play 1 turn/day) or Real-Time"
           }
         ],
         "body": {
-          "format": "note",
-          "takeaways": [
-            "An online gaming platform featuring hundreds of popular board games playable directly in your browser with instant matchmaking and zero setup."
+          "format": "guide",
+          "checklist": [
+            {
+              "text": "Create a free account at boardgamearena.com",
+              "checked": true
+            },
+            {
+              "text": "Add your board game group / partner to Friends list",
+              "checked": false
+            },
+            {
+              "text": "Choose game speed: Real-time (live) or Turn-based (async notifications)",
+              "checked": true
+            },
+            {
+              "text": "Try the built-in interactive game rules tutorials before playing",
+              "checked": false
+            }
           ],
-          "highlight": "Create an account and start a match of a favorite tabletop game or organize an online game night."
+          "steps": [
+            {
+              "stepNumber": 1,
+              "instruction": "Navigate to boardgamearena.com on desktop, tablet, or phone. No app installation or Steam download required."
+            },
+            {
+              "stepNumber": 2,
+              "instruction": "Filter the 900+ game library by complexity, game duration, or player count (e.g. 2-player, party, or expert euro)."
+            },
+            {
+              "stepNumber": 3,
+              "instruction": "Create a private table and share the table URL link in Discord or text to launch an instant game night."
+            },
+            {
+              "stepNumber": 4,
+              "instruction": "Enable Turn-Based mode if you prefer playing long strategy games casually over days by receiving email or browser notifications when it is your turn."
+            }
+          ]
         }
       },
       {
