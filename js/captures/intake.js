@@ -42,8 +42,12 @@ export function extractUrl(text) {
 export function sanitizeUrl(urlString) {
   try {
     const parsed = new URL(urlString);
-    const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'fbclid', 'gclid', 'igshid'];
-    trackingParams.forEach(p => parsed.searchParams.delete(p));
+    if (parsed.hostname.includes('instagram.com') && parsed.pathname.includes('/reel/')) {
+      parsed.search = '';
+    } else {
+      const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'fbclid', 'gclid', 'igshid', 'mdxt', 'srtk'];
+      trackingParams.forEach(p => parsed.searchParams.delete(p));
+    }
     return parsed.toString();
   } catch (e) {
     return urlString;
@@ -284,7 +288,7 @@ async function callGemini(promptText, useSearch, apiKey) {
 async function fetchSocialMetadata(url) {
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4500);
+    const timer = setTimeout(() => controller.abort(), 12000);
     const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`, {
       signal: controller.signal
     });
@@ -343,10 +347,12 @@ Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
   const rawResponseText = await callGemini(prompt, true, apiKey);
   let parsed = JSON.parse(rawResponseText.replace(/```json\n?|```/g, '').trim());
 
-  // Check if Gemini encountered an authentication or login redirect wall
-  const isAuthBlocked = /requires account authentication|login and privacy restrictions|private, deleted|sign in to view|login required/i.test(
-    `${parsed.summary || ''} ${(parsed.body?.takeaways || []).join(' ')}`
-  );
+  // Check if Gemini encountered an authentication or login redirect wall or failed to index
+  const isAuthBlocked = 
+    /could not be retrieved|not accessible|not indexed|private|requires.*authentication|login|sign in|restricted|direct access|http 302|redirect/i.test(
+      `${parsed.summary || ''} ${(parsed.body?.takeaways || []).join(' ')} ${parsed.title || ''}`
+    ) ||
+    ((!parsed.creator || parsed.creator === 'Unknown') && /^Instagram Reel|^TikTok|^Social Media/i.test(parsed.title || ''));
 
   const isSocialUrl = /(?:instagram\.com|tiktok\.com|threads\.net|x\.com)\//i.test(cleanUrl);
 
@@ -387,6 +393,9 @@ Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
         const unblockedParsed = JSON.parse(fallbackResponseText.replace(/```json\n?|```/g, '').trim());
         if (unblockedParsed && unblockedParsed.title) {
           parsed = unblockedParsed;
+          if ((!parsed.creator || parsed.creator === 'Unknown') && socialMeta.author) {
+            parsed.creator = socialMeta.author;
+          }
         }
       } catch (fallbackErr) {
         console.warn('Social un-walled analysis fallback failed:', fallbackErr);

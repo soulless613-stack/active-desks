@@ -7,7 +7,7 @@
 import * as db from './db.js';
 
 /** Active bundle cache identifier */
-export const APP_VERSION = 'active-desks-v2-1.1.5';
+export const APP_VERSION = 'active-desks-v2-1.1.6';
 
 /**
  * In-memory global state cache.
