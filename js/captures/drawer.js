@@ -222,7 +222,7 @@ function renderCaptureCards(captures) {
 
       btn.textContent = '⏳ ...';
       try {
-        await processCaptureIntake(target.sourceUrl, target.id);
+        await processCaptureIntake(target.sourceUrl, target.id, target);
         await renderCapturesDrawer();
       } catch (err) {
         console.error('Analyze failed:', err);

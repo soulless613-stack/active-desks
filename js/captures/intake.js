@@ -130,10 +130,11 @@ function processStage3Offline(rawInput, foundUrl, existingId = null) {
  * @purpose Ingests user input, evaluates active credentials and grounding settings, and routes to appropriate stage.
  * @inputs {string} rawInput - Input string from the capture dock or mobile share sheet.
  * @inputs {number | null} existingId - Optional existing ID to update in-place rather than generating a new record.
+ * @inputs {object | null} existingContext - Optional existing card object for retaining hints during re-analysis.
  * @outputs {Promise<object>} Resolves with the saved UniversalCapture record.
  * @sideEffects Writes the record directly into IndexedDB 'captures' store.
  */
-export async function processCaptureIntake(rawInput, existingId = null) {
+export async function processCaptureIntake(rawInput, existingId = null, existingContext = null) {
   const text = (rawInput || '').trim();
   if (!text) {
     throw new Error('Input text is empty');
@@ -150,7 +151,7 @@ export async function processCaptureIntake(rawInput, existingId = null) {
   if (apiKey && groundingEnabled && foundUrl) {
     // Stage 1: Grounded Gemini extraction
     try {
-      captureRecord = await runStage1Grounded(text, foundUrl, apiKey, existingId);
+      captureRecord = await runStage1Grounded(text, foundUrl, apiKey, existingId, existingContext);
     } catch (err) {
       lastError = err;
       console.warn('Stage 1 Grounded extraction failed, falling back to Stage 2:', err);
@@ -177,6 +178,11 @@ export async function processCaptureIntake(rawInput, existingId = null) {
     // Stage 3: Offline deterministic fallback (for brand new captures added without keys)
     captureRecord = processStage3Offline(text, foundUrl, existingId);
   }
+
+  // Persist record to IndexedDB
+  await db.put('captures', captureRecord);
+  return captureRecord;
+}
 
   // Persist record to IndexedDB
   await db.put('captures', captureRecord);
@@ -274,13 +280,50 @@ async function callGemini(promptText, useSearch, apiKey) {
 }
 
 /**
+ * Fetches OpenGraph social metadata (title, author, caption) from CORS-enabled Microlink.
+ * 
+ * @purpose Bypasses Instagram/TikTok login redirects when search grounding hits a login wall.
+ * @inputs {string} url - Target social media URL.
+ * @outputs {Promise<{ title: string|null, description: string|null, author: string|null }|null>}
+ */
+async function fetchSocialMetadata(url) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 4500);
+    const res = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json.status === 'success' && json.data) {
+      return {
+        title: json.data.title || null,
+        description: json.data.description || null,
+        author: json.data.author || null
+      };
+    }
+  } catch (err) {
+    console.warn('Social metadata fetch skipped or timed out:', err);
+  }
+  return null;
+}
+
+/**
  * Stage 1: Grounded Gemini Multimodal API Runner.
  */
-async function runStage1Grounded(rawText, foundUrl, apiKey, existingId = null) {
+async function runStage1Grounded(rawText, foundUrl, apiKey, existingId = null, existingContext = null) {
   const cleanUrl = sanitizeUrl(foundUrl);
+  const contextCreator = existingContext?.creator || '';
+  const contextTitle = existingContext?.title && !existingContext.title.startsWith('http') && !existingContext.title.startsWith('Instagram Reel') ? existingContext.title : '';
+  const contextFoundUrl = existingContext?.foundUrl || '';
+
   const prompt = `You are the content analyzer for Active Desks.
 Extract structured metadata from this link using Google Search Grounding:
 Target URL: ${cleanUrl}
+${contextCreator ? `Creator Hint: ${contextCreator}` : ''}
+${contextTitle ? `Title / Subject Hint: ${contextTitle}` : ''}
+${contextFoundUrl ? `Associated Link: ${contextFoundUrl}` : ''}
 User note: ${rawText}
 
 Return strictly a valid JSON object matching this schema:
@@ -303,7 +346,58 @@ Return strictly a valid JSON object matching this schema:
 Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
 
   const rawResponseText = await callGemini(prompt, true, apiKey);
-  const parsed = JSON.parse(rawResponseText.replace(/```json\n?|```/g, '').trim());
+  let parsed = JSON.parse(rawResponseText.replace(/```json\n?|```/g, '').trim());
+
+  // Check if Gemini encountered an authentication or login redirect wall
+  const isAuthBlocked = /requires account authentication|login and privacy restrictions|private, deleted|sign in to view|login required/i.test(
+    `${parsed.summary || ''} ${(parsed.body?.takeaways || []).join(' ')}`
+  );
+
+  const isSocialUrl = /(?:instagram\.com|tiktok\.com|threads\.net|x\.com)\//i.test(cleanUrl);
+
+  // Conditional Fallback: If blocked by a login wall, fetch OpenGraph metadata and re-query
+  if (isAuthBlocked && isSocialUrl) {
+    const socialMeta = await fetchSocialMetadata(cleanUrl);
+    if (socialMeta && (socialMeta.description || socialMeta.title)) {
+      const unblockedPrompt = `You are the content analyzer for Active Desks.
+Analyze this social media content using the provided un-walled post caption:
+Target URL: ${cleanUrl}
+Author / Creator: ${socialMeta.author || contextCreator || 'Unknown'}
+Post Title: ${socialMeta.title || contextTitle || 'Social Post'}
+Caption / Content: ${socialMeta.description || ''}
+User Note: ${rawText}
+
+Extract structured metadata. If this is a developer tool, recipe, 3D print, or guide, extract its actual steps, tools, ingredients, or takeaways from the caption.
+Return strictly a valid JSON object matching this schema:
+{
+  "domain": "tech" | "book" | "game" | "recipe" | "fiber" | "misc",
+  "topic": "specific micro topic",
+  "title": "Clean concise title",
+  "summary": "1-2 sentence core takeaway",
+  "creator": "Author name and handle",
+  "meta": [{ "label": string, "value": string }],
+  "body": {
+    "format": "collection" | "guide" | "note",
+    "items": [{ "title": string, "subtitle": string, "detail": string }] (only if format is collection),
+    "checklist": [{ "text": string, "checked": false }] (only if format is guide),
+    "steps": [{ "stepNumber": number, "instruction": string }] (only if format is guide),
+    "takeaways": [string] (only if format is note),
+    "highlight": string | null (only if format is note)
+  }
+}
+Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
+
+      try {
+        const fallbackResponseText = await callGemini(unblockedPrompt, false, apiKey);
+        const unblockedParsed = JSON.parse(fallbackResponseText.replace(/```json\n?|```/g, '').trim());
+        if (unblockedParsed && unblockedParsed.title) {
+          parsed = unblockedParsed;
+        }
+      } catch (fallbackErr) {
+        console.warn('Social un-walled analysis fallback failed:', fallbackErr);
+      }
+    }
+  }
 
   return {
     id: existingId ? existingId : Date.now(),
@@ -311,7 +405,7 @@ Do not include markdown code fences (\`\`\`json). Return raw JSON only.`;
     topic: parsed.topic || 'General',
     title: parsed.title || cleanUrl,
     summary: parsed.summary || rawText,
-    creator: parsed.creator || null,
+    creator: parsed.creator || (existingContext?.creator || null),
     sourceUrl: cleanUrl,
     createdAt: new Date().toISOString(),
     status: 'processed',
