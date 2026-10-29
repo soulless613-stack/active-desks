@@ -148,22 +148,28 @@ function renderCaptureCards(captures) {
   listEl.innerHTML = filtered.map(c => {
     const domain = (c.domain || 'misc').toLowerCase();
     const topic = c.topic || 'General';
-    const isLinkOnly = topic.toLowerCase() === 'link' || domain === 'link' || c.status === 'pending' || c.searchPerformed === false || c.mediaStatus === 'fallback_link';
+    const isProcessing = c.status === 'processing';
+    const isLinkOnly = !isProcessing && (topic.toLowerCase() === 'link' || domain === 'link' || c.status === 'pending' || c.searchPerformed === false || c.mediaStatus === 'fallback_link');
     const showAnalyze = isLinkOnly && hasApiKey;
     const hasFoundUrl = c.foundUrl && c.foundUrl !== c.sourceUrl;
 
     // Body format indicator badge
     let formatBadge = '';
-    if (c.body?.format === 'collection') {
+    if (isProcessing) {
+      formatBadge = `<span class="format-badge" style="background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.25);">⏳ Analyzing content & extracting details...</span>`;
+    } else if (c.body?.format === 'collection') {
       formatBadge = `<span class="format-badge">📦 ${c.body.items?.length || 0} Items</span>`;
     } else if (c.body?.format === 'guide') {
       formatBadge = `<span class="format-badge">📋 Guide (${c.body.checklist?.length || 0} items)</span>`;
     }
 
     return `
-      <div class="capture-card" data-capture-id="${c.id}">
+      <div class="capture-card ${isProcessing ? 'processing' : ''}" data-capture-id="${c.id}">
         <div class="capture-card-header" style="display: flex; justify-content: space-between; align-items: center;">
-          <span class="desk-badge ${domain}">[${capitalize(domain)}] · ${escapeText(topic)}</span>
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span class="desk-badge ${domain}">[${capitalize(domain)}] · ${escapeText(topic)}</span>
+            ${isProcessing ? `<span class="desk-badge processing" style="background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); font-size: 0.68rem;">⏳ Extracting...</span>` : ''}
+          </div>
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 0.72rem; color: var(--text-muted);">${formatDate(c.createdAt)}</span>
             <button type="button" class="btn-delete-capture" data-delete-id="${c.id}" style="background: none; border: none; cursor: pointer; padding: 2px 4px; font-size: 0.8rem; color: var(--text-muted); opacity: 0.6; line-height: 1;" title="Delete Capture" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑️</button>
@@ -171,13 +177,13 @@ function renderCaptureCards(captures) {
         </div>
 
         <div class="capture-card-title">${escapeText(c.title)}</div>
-        <div class="capture-card-summary">${escapeText(c.summary)}</div>
+        <div class="capture-card-summary" ${isProcessing ? 'style="color: #38bdf8; font-style: italic;"' : ''}>${escapeText(c.summary)}</div>
 
         ${formatBadge}
 
         <div class="capture-card-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            ${renderMediaStatusBadge(c.mediaStatus)}
+            ${isProcessing ? `<span class="desk-badge" style="background: rgba(56,189,248,0.1); color: #38bdf8; font-size: 0.7rem;">⚡ Active Gemini Query</span>` : renderMediaStatusBadge(c.mediaStatus)}
             ${showAnalyze ? `<button type="button" class="btn-analyze-inline" data-analyze-id="${c.id}">🔄 Analyze</button>` : ''}
           </div>
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">

@@ -325,6 +325,12 @@ body {
 .desk-badge.gaming  { background: rgba(236, 72, 153, 0.15); color: var(--accent-gaming); }
 .desk-badge.fiber   { background: rgba(192, 132, 252, 0.15); color: var(--accent-fiber); }
 .desk-badge.tech    { background: rgba(6, 182, 212, 0.15); color: var(--accent-tech); }
+.desk-badge.processing { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+
+.capture-card.processing {
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.08);
+}
 
 .desk-action-btn {
   background: rgba(255, 255, 255, 0.05);

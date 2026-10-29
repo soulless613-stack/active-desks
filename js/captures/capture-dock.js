@@ -3,8 +3,10 @@
  * @description Quick-capture bottom dock controller.
  */
 
-import { processCaptureIntake } from './intake.js';
+import { processCaptureIntake, processStage3Offline, extractUrl } from './intake.js';
 import { openCapturesDrawer, renderCapturesDrawer } from './drawer.js';
+import { state } from '../state.js';
+import * as db from '../db.js';
 
 /**
  * Initializes the bottom quick-capture dock listeners.
@@ -29,13 +31,41 @@ export function initCaptureDock() {
       input.value = '';
       input.blur();
 
-      try {
-        await processCaptureIntake(val);
-        openCapturesDrawer();
-        renderCapturesDrawer();
-      } catch (err) {
-        console.error('Capture intake failed:', err);
+      const foundUrl = extractUrl(val);
+      const hasApiKey = !!state.settings?.gemini_api_key?.trim();
+
+      // If plain text note or no API key, process immediately
+      if (!foundUrl || !hasApiKey) {
+        try {
+          await processCaptureIntake(val);
+          await openCapturesDrawer();
+        } catch (err) {
+          console.error('Capture intake failed:', err);
+        }
+        return;
       }
+
+      // Optimistic Intake for Web Links:
+      // Persist immediate placeholder into IndexedDB and pop open drawer (<100ms)
+      const placeholder = processStage3Offline(val, foundUrl);
+      placeholder.status = 'processing';
+      placeholder.summary = '⏳ Extracting details, creator, and takeaways via Gemini...';
+
+      try {
+        await db.put('captures', placeholder);
+        await openCapturesDrawer();
+      } catch (dbErr) {
+        console.error('Failed to write optimistic placeholder:', dbErr);
+      }
+
+      // Execute deep background extraction asynchronously
+      processCaptureIntake(val, placeholder.id, placeholder)
+        .catch(err => {
+          console.warn('Background capture extraction failed:', err);
+        })
+        .finally(() => {
+          renderCapturesDrawer();
+        });
     });
   }
 

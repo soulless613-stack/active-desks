@@ -6,7 +6,7 @@
  * online clients immediately receive fresh updates.
  */
 
-const CACHE_NAME = 'active-desks-v2-1.1.6';
+const CACHE_NAME = 'active-desks-v2-1.1.7';
 
 /**
  * Static assets pre-cached during service worker installation.
@@ -49,7 +49,8 @@ const BYPASS_HOSTS = [
   'generativelanguage.googleapis.com',
   'googleapis.com',
   'accounts.google.com',
-  'apis.google.com'
+  'apis.google.com',
+  'api.microlink.io'
 ];
 
 /**

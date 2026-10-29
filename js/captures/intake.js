@@ -63,7 +63,7 @@ export function sanitizeUrl(urlString) {
  * @inputs {number | null} existingId - Optional existing ID to update in-place.
  * @outputs {object} UniversalCapture compliant record.
  */
-function processStage3Offline(rawInput, foundUrl, existingId = null) {
+export function processStage3Offline(rawInput, foundUrl, existingId = null) {
   const now = new Date().toISOString();
   const id = existingId ? existingId : Date.now();
 
@@ -172,9 +172,17 @@ export async function processCaptureIntake(rawInput, existingId = null, existing
     }
   }
 
-  // If this is an existing capture being re-analyzed and extraction failed,
-  // do NOT wipe the card with Stage 3 offline template. Throw the error to preserve existing data!
+  // If this is an existing capture being re-analyzed and extraction failed:
   if (existingId && !captureRecord) {
+    // If this was an optimistic processing placeholder, finalize into clean offline fallback
+    if (existingContext?.status === 'processing') {
+      captureRecord = processStage3Offline(text, foundUrl, existingId);
+      captureRecord.status = 'processed';
+      captureRecord.summary = 'Deep web extraction was unavailable. Tap 🔄 Analyze on this card to retry.';
+      await db.put('captures', captureRecord);
+      return captureRecord;
+    }
+    // For manual re-analyses on established cards, preserve existing data and throw error
     throw (lastError || new Error('Extraction failed to retrieve data from Gemini API'));
   }
 
