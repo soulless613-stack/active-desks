@@ -162,9 +162,12 @@ function renderCaptureCards(captures) {
 
     return `
       <div class="capture-card" data-capture-id="${c.id}">
-        <div class="capture-card-header">
+        <div class="capture-card-header" style="display: flex; justify-content: space-between; align-items: center;">
           <span class="desk-badge ${domain}">[${capitalize(domain)}] · ${escapeText(topic)}</span>
-          <span style="font-size: 0.72rem; color: var(--text-muted);">${formatDate(c.createdAt)}</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.72rem; color: var(--text-muted);">${formatDate(c.createdAt)}</span>
+            <button type="button" class="btn-delete-capture" data-delete-id="${c.id}" style="background: none; border: none; cursor: pointer; padding: 2px 4px; font-size: 0.8rem; color: var(--text-muted); opacity: 0.6; line-height: 1;" title="Delete Capture" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑️</button>
+          </div>
         </div>
 
         <div class="capture-card-title">${escapeText(c.title)}</div>
@@ -192,6 +195,20 @@ function renderCaptureCards(captures) {
       const id = parseInt(card.getAttribute('data-capture-id'), 10);
       const target = captures.find(c => c.id === id);
       if (target) openCaptureDetailModal(target);
+    });
+  });
+
+  // Attach inline delete click handlers
+  listEl.querySelectorAll('[data-delete-id]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.getAttribute('data-delete-id'), 10);
+      const target = captures.find(c => c.id === id);
+      const title = target?.title || 'this capture';
+      if (confirm(`Delete "${title.slice(0, 40)}"?`)) {
+        await db.remove('captures', id);
+        await renderCapturesDrawer();
+      }
     });
   });
 
@@ -333,6 +350,19 @@ export function openCaptureDetailModal(capture) {
     } else {
       sourceBtn.style.display = 'none';
     }
+  }
+
+  // Modal Delete Button
+  const modalDeleteBtn = document.getElementById('btn-modal-delete-capture');
+  if (modalDeleteBtn) {
+    modalDeleteBtn.onclick = async () => {
+      const title = capture.title || 'this capture';
+      if (confirm(`Permanently delete "${title.slice(0, 40)}"?`)) {
+        await db.remove('captures', capture.id);
+        modal.classList.remove('active');
+        await renderCapturesDrawer();
+      }
+    };
   }
 
   modal.classList.add('active');

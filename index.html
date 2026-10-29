@@ -229,7 +229,10 @@
             <span>🔗 Source Post</span> ↗
           </a>
         </div>
-        <button type="button" class="desk-action-btn" data-close="capture-detail-modal">Close</button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="desk-action-btn" id="btn-modal-delete-capture" style="color: #f87171; border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.08);">🗑️ Delete</button>
+          <button type="button" class="desk-action-btn" data-close="capture-detail-modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
@@ -240,7 +243,7 @@
       <div class="modal-header">
         <h3 class="modal-title" style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
           <span>⚙️ Settings &amp; Device Sync</span>
-          <span id="settings-cache-version" style="font-size: 0.72rem; font-weight: 400; color: var(--text-muted); font-family: monospace;">(v1.1.1)</span>
+          <span id="settings-cache-version" style="font-size: 0.72rem; font-weight: 400; color: var(--text-muted); font-family: monospace;">(v1.1.2)</span>
         </h3>
         <button type="button" class="modal-close-btn" data-close="settings-modal">✕</button>
       </div>
@@ -267,7 +270,7 @@
 
           <!-- Drive Configuration & Auth Panel -->
           <div id="drive-config-panel" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: none;">
-            <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; margin-bottom: 8px;">Sync Client Cache: active-desks-v2-1.1.1</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; margin-bottom: 8px;">Sync Client Cache: active-desks-v2-1.1.2</div>
             <label style="display: block; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 4px;">Google OAuth 2.0 Web Client ID</label>
             <div style="display: flex; gap: 8px; margin-bottom: 10px;">
               <input type="text" id="input-drive-client-id" class="quick-capture-input" placeholder="Paste Client ID from Google Cloud Console..." style="width: 100%; font-size: 0.78rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 6px 10px;">

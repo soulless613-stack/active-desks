@@ -60,21 +60,22 @@ export async function populateModelsFromAPI(apiKey) {
     }
 
     const modelsList = modelsData.models || [];
-    // Filter for text generation capable models and exclude heavy/expensive or incompatible media models
+    // Filter for text generation capable models strictly belonging to the Gemini family, excluding heavy/audio models
     const textModels = modelsList.filter(m => {
       const name = (m.name || '').toLowerCase();
+      const isGemini = name.includes('gemini');
       const methods = m.supportedGenerationMethods || [];
       const canGenerate = methods.includes('generateContent') || methods.includes('interactions');
       const isDeprecated = name.includes('2.0') || name.includes('1.5');
       const isHeavyOrAudio = /omni|live|audio|video|argon|pro|imagen|embedding|tts/i.test(name);
-      return canGenerate && !isDeprecated && !isHeavyOrAudio;
+      return isGemini && canGenerate && !isDeprecated && !isHeavyOrAudio;
     });
 
     if (textModels.length === 0) {
-      // Fallback: at least show models supporting generateContent if filter was too strict
+      // Fallback: at least show Gemini models supporting generateContent if filter was too strict
       modelsList.forEach(m => {
         const name = (m.name || '').toLowerCase();
-        if ((m.supportedGenerationMethods || []).includes('generateContent') && !/tts|audio|video|embedding/i.test(name)) {
+        if (name.includes('gemini') && (m.supportedGenerationMethods || []).includes('generateContent') && !/tts|audio|video|embedding/i.test(name)) {
           textModels.push(m);
         }
       });
