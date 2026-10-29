@@ -17,20 +17,11 @@ import { initSettingsModal } from './settings-modal.js';
  */
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // 1. Initialize Date & Version Header
+    // 1. Initialize Date Header
     const dateEl = document.getElementById('current-date');
     if (dateEl) {
       const now = new Date();
       dateEl.textContent = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-    }
-
-    const versionPill = document.getElementById('header-version-pill');
-    if (versionPill) {
-      versionPill.textContent = APP_VERSION.replace('active-desks-v2-', 'v');
-      versionPill.addEventListener('click', () => {
-        const modal = document.getElementById('settings-modal');
-        if (modal) modal.classList.add('active');
-      });
     }
 
     // 2. Load IndexedDB State into memory (seeds defaults if first run)

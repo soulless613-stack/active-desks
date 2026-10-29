@@ -188,7 +188,10 @@ export async function processCaptureIntake(rawInput, existingId = null) {
  * and legacy generateContent with automatic fallback.
  */
 async function callGemini(promptText, useSearch, apiKey) {
-  const model = state.settings?.gemini_model || 'gemini-3.8-flash-lite';
+  let model = state.settings?.gemini_model || 'gemini-3.5-flash-lite';
+  if (model === 'gemini-3.8-flash-lite' || /omni|tts/i.test(model)) {
+    model = 'gemini-3.5-flash-lite';
+  }
 
   // 1. Try Interactions API first (required for Gemini 3.8 / 4.x models)
   try {
@@ -252,7 +255,10 @@ async function callGemini(promptText, useSearch, apiKey) {
 
   const gcResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Api-Revision': '2026-05-20'
+    },
     body: JSON.stringify(gcBody)
   });
 

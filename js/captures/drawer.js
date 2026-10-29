@@ -210,6 +210,7 @@ function renderCaptureCards(captures) {
       } catch (err) {
         console.error('Analyze failed:', err);
         btn.textContent = '⚠️ Failed';
+        alert('Analysis failed: ' + (err.message || 'Unknown error'));
         setTimeout(() => { btn.textContent = '🔄 Analyze'; }, 3000);
       }
     });

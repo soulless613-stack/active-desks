@@ -38,7 +38,6 @@
           <span class="sync-dot" id="header-sync-dot"></span>
           <span id="header-sync-text">Local</span>
         </div>
-        <span id="header-version-pill" style="font-size: 0.68rem; color: var(--text-muted); font-family: monospace; background: rgba(255,255,255,0.06); padding: 3px 6px; border-radius: 4px; border: 1px solid var(--border-subtle); cursor: pointer;" title="Active Bundle Cache Version">v1.1.0</span>
       </div>
     </header>
 
@@ -239,15 +238,15 @@
   <div id="settings-modal" class="modal-overlay" role="dialog" aria-modal="true">
     <div class="modal-content" style="max-width: 540px;">
       <div class="modal-header">
-        <h3 class="modal-title">⚙️ Settings &amp; Device Sync</h3>
+        <h3 class="modal-title" style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+          <span>⚙️ Settings &amp; Device Sync</span>
+          <span id="settings-cache-version" style="font-size: 0.72rem; font-weight: 400; color: var(--text-muted); font-family: monospace;">(v1.1.1)</span>
+        </h3>
         <button type="button" class="modal-close-btn" data-close="settings-modal">✕</button>
       </div>
 
-      <!-- App Version & 1-Tap Cache Reload Bar -->
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; margin-bottom: 14px; padding: 6px 12px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span style="font-size: 0.75rem; color: var(--text-secondary); font-family: monospace;" id="settings-cache-version">Bundle: active-desks-v2-1.1.0</span>
-        </div>
+      <!-- 1-Tap Cache Reload Row -->
+      <div style="display: flex; justify-content: flex-end; margin-top: 6px; margin-bottom: 12px;">
         <button type="button" id="btn-force-cache-refresh" class="desk-action-btn" style="font-size: 0.72rem; padding: 4px 10px; color: #38bdf8; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); border-radius: 4px;" title="Unregister Service Worker and force-reload latest files">🔄 Reload Fresh Bundle</button>
       </div>
 
@@ -268,7 +267,7 @@
 
           <!-- Drive Configuration & Auth Panel -->
           <div id="drive-config-panel" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: none;">
-            <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; margin-bottom: 8px;">Sync Client Cache: active-desks-v2-1.1.0</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; margin-bottom: 8px;">Sync Client Cache: active-desks-v2-1.1.1</div>
             <label style="display: block; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 4px;">Google OAuth 2.0 Web Client ID</label>
             <div style="display: flex; gap: 8px; margin-bottom: 10px;">
               <input type="text" id="input-drive-client-id" class="quick-capture-input" placeholder="Paste Client ID from Google Cloud Console..." style="width: 100%; font-size: 0.78rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 6px 10px;">
@@ -330,15 +329,14 @@
             <span id="gemini-status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block;"></span>
             <span id="gemini-status-text">No API key saved</span>
           </div>
-          <button type="button" class="desk-action-btn" id="btn-test-gemini-key" style="font-size: 0.75rem; padding: 4px 10px; color: #38bdf8;">⚡ Test Key</button>
+          <button type="button" class="desk-action-btn" id="btn-test-gemini-key" style="font-size: 0.75rem; padding: 4px 10px; color: #38bdf8;">⚡ Discover Models &amp; Test</button>
         </div>
 
         <!-- Model Selection Dropdown -->
         <div style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px;">
           <label for="settings-gemini-model" style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Model Selection</label>
           <select id="settings-gemini-model" class="recipe-select" style="width: 100%; background: rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 10px; color: var(--text-primary); font-size: 0.82rem;">
-            <option value="gemini-3.8-flash-lite">gemini-3.8-flash-lite (Ultra-Low Cost / Fast — Recommended)</option>
-            <option value="gemini-3.8-flash">gemini-3.8-flash (Standard Intelligence)</option>
+            <option value="">Enter API key to discover models...</option>
           </select>
         </div>
 

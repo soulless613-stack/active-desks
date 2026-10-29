@@ -7,7 +7,7 @@
 import * as db from './db.js';
 
 /** Active bundle cache identifier */
-export const APP_VERSION = 'active-desks-v2-1.1.0';
+export const APP_VERSION = 'active-desks-v2-1.1.1';
 
 /**
  * In-memory global state cache.
@@ -23,7 +23,7 @@ export const state = {
   },
   settings: {
     gemini_api_key: '',
-    gemini_model: 'gemini-3.8-flash-lite',
+    gemini_model: 'gemini-3.5-flash-lite',
     search_grounding_enabled: true,
     sync_provider: 'local'
   }
@@ -192,12 +192,20 @@ export async function loadInitialState() {
     await db.put('anchors', state.anchors);
   }
 
-  // 4. Load Settings
+  // 4. Load Settings & sanitize obsolete or non-existent models
   const allSettings = await db.getAll('settings');
   for (const s of allSettings) {
     if (s.key && s.value !== undefined) {
       state.settings[s.key] = s.value;
     }
+  }
+
+  // Auto-migrate non-existent model name or expensive omni/tts models
+  if (!state.settings.gemini_model ||
+      state.settings.gemini_model === 'gemini-3.8-flash-lite' ||
+      /omni|tts/i.test(state.settings.gemini_model)) {
+    state.settings.gemini_model = 'gemini-3.5-flash-lite';
+    await db.put('settings', { key: 'gemini_model', value: 'gemini-3.5-flash-lite', updatedAt: new Date().toISOString() });
   }
 }
 

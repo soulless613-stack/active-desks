@@ -24,7 +24,7 @@ function updateGeminiStatusUI() {
   const dot = document.getElementById('gemini-status-dot');
   const text = document.getElementById('gemini-status-text');
   const key = state.settings?.gemini_api_key?.trim();
-  const currentModel = state.settings?.gemini_model || 'gemini-3.8-flash-lite';
+  const currentModel = state.settings?.gemini_model || 'gemini-3.5-flash-lite';
 
   if (dot && text) {
     if (key && key.length > 8) {
@@ -36,6 +36,92 @@ function updateGeminiStatusUI() {
       text.style.color = 'var(--text-muted)';
       text.textContent = 'No API key saved (Offline heuristics mode)';
     }
+  }
+}
+
+/**
+ * Dynamically queries available Gemini models from the API for the given key,
+ * filters for text generation / interactions compatibility, and populates the dropdown.
+ *
+ * @purpose Ensures only valid, authorized models for the user's key appear in the UI.
+ * @inputs {string} apiKey - Gemini API key.
+ * @outputs {Promise<Array<string>>} List of discovered valid model names.
+ */
+export async function populateModelsFromAPI(apiKey) {
+  const modelSelect = document.getElementById('settings-gemini-model');
+  if (!modelSelect || !apiKey) return [];
+
+  try {
+    const modelsResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+    const modelsData = await modelsResp.json();
+
+    if (!modelsResp.ok) {
+      throw new Error(`Google API ${modelsResp.status}: ${modelsData.error?.message || 'Unauthorized or invalid key'}`);
+    }
+
+    const modelsList = modelsData.models || [];
+    // Filter for text generation capable models and exclude heavy/expensive or incompatible media models
+    const textModels = modelsList.filter(m => {
+      const name = (m.name || '').toLowerCase();
+      const methods = m.supportedGenerationMethods || [];
+      const canGenerate = methods.includes('generateContent') || methods.includes('interactions');
+      const isDeprecated = name.includes('2.0') || name.includes('1.5');
+      const isHeavyOrAudio = /omni|live|audio|video|argon|pro|imagen|embedding|tts/i.test(name);
+      return canGenerate && !isDeprecated && !isHeavyOrAudio;
+    });
+
+    if (textModels.length === 0) {
+      // Fallback: at least show models supporting generateContent if filter was too strict
+      modelsList.forEach(m => {
+        const name = (m.name || '').toLowerCase();
+        if ((m.supportedGenerationMethods || []).includes('generateContent') && !/tts|audio|video|embedding/i.test(name)) {
+          textModels.push(m);
+        }
+      });
+    }
+
+    // Sort models: flash-lite first, then other flash models, then alphabetical
+    textModels.sort((a, b) => {
+      const aName = a.name.toLowerCase();
+      const bName = b.name.toLowerCase();
+      const aIsLite = aName.includes('flash-lite');
+      const bIsLite = bName.includes('flash-lite');
+      if (aIsLite && !bIsLite) return -1;
+      if (!aIsLite && bIsLite) return 1;
+      return aName.localeCompare(bName, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    // Populate the dropdown
+    modelSelect.innerHTML = '';
+    const currentSaved = state.settings?.gemini_model;
+    let selectedFound = false;
+
+    for (const m of textModels) {
+      const cleanId = m.name.replace(/^models\//, '');
+      const opt = document.createElement('option');
+      opt.value = cleanId;
+      const display = m.displayName ? `${m.displayName} (${cleanId})` : cleanId;
+      opt.textContent = display;
+      if (cleanId === currentSaved) {
+        opt.selected = true;
+        selectedFound = true;
+      }
+      modelSelect.appendChild(opt);
+    }
+
+    // If saved model wasn't found or was invalid, select the first one (recommended flash-lite)
+    if (!selectedFound && textModels.length > 0) {
+      const defaultModel = textModels[0].name.replace(/^models\//, '');
+      modelSelect.value = defaultModel;
+      state.settings.gemini_model = defaultModel;
+      await db.put('settings', { key: 'gemini_model', value: defaultModel, updatedAt: new Date().toISOString() });
+      updateGeminiStatusUI();
+    }
+
+    return textModels.map(m => m.name.replace(/^models\//, ''));
+  } catch (err) {
+    console.warn('Failed to populate models from API:', err);
+    throw err;
   }
 }
 
@@ -82,7 +168,7 @@ export function initSettingsModal() {
     saveKeyBtn.addEventListener('click', async () => {
       const keyVal = keyInput.value.trim();
       const groundingVal = !!groundingCheckbox?.checked;
-      const modelVal = document.getElementById('settings-gemini-model')?.value || 'gemini-3.8-flash-lite';
+      const modelVal = document.getElementById('settings-gemini-model')?.value || 'gemini-3.5-flash-lite';
 
       state.settings.gemini_api_key = keyVal;
       state.settings.search_grounding_enabled = groundingVal;
@@ -127,45 +213,20 @@ export function initSettingsModal() {
 
       testKeyBtn.textContent = 'Discovering...';
       try {
-        // 1. Query available models for this specific API key
-        const modelsResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(keyVal)}`);
-        const modelsData = await modelsResp.json();
-
-        if (!modelsResp.ok) {
-          throw new Error(`Google API ${modelsResp.status}: ${modelsData.error?.message || 'Unauthorized or invalid key'}`);
+        const availableModels = await populateModelsFromAPI(keyVal);
+        if (availableModels.length === 0) {
+          throw new Error('No compatible text generation models found for this key');
         }
-
-        const modelsList = modelsData.models || [];
-        // Filter out deprecated models (2.5, 2.0, 1.5) and exclude heavy/expensive multimedia models (omni, live, audio, video, pro, argon)
-        const modernCandidates = modelsList.filter(m => {
-          const name = (m.name || '').toLowerCase();
-          const isFlash = name.includes('flash');
-          const isDeprecated = name.includes('2.5') || name.includes('2.0') || name.includes('1.5');
-          const isHeavy = /omni|live|audio|video|argon|pro|imagen/i.test(name);
-          return isFlash && !isDeprecated && !isHeavy;
-        });
-
-        // Specifically prioritize ultra-low-cost flash-lite first, then standard flash
-        let bestModel = 'gemini-3.8-flash-lite';
-        const hasLite = modernCandidates.find(m => m.name.includes('flash-lite'));
-        const hasStandardFlash = modernCandidates.find(m => m.name.includes('3.8-flash'));
-
-        if (hasLite) {
-          bestModel = hasLite.name.replace('models/', '');
-        } else if (hasStandardFlash) {
-          bestModel = hasStandardFlash.name.replace('models/', '');
-        } else if (modernCandidates.length > 0) {
-          bestModel = modernCandidates[0].name.replace('models/', '');
-        }
-
-        state.settings.gemini_model = bestModel;
-        await db.put('settings', { key: 'gemini_model', value: bestModel, updatedAt: new Date().toISOString() });
 
         const modelSelectEl = document.getElementById('settings-gemini-model');
-        if (modelSelectEl) modelSelectEl.value = bestModel;
+        const chosenModel = modelSelectEl?.value || availableModels[0];
+
+        state.settings.gemini_model = chosenModel;
+        await db.put('settings', { key: 'gemini_model', value: chosenModel, updatedAt: new Date().toISOString() });
+        updateGeminiStatusUI();
 
         // 2. Perform verification ping with discovered model via Interactions API (or generateContent fallback)
-        testKeyBtn.textContent = `Pinging ${bestModel}...`;
+        testKeyBtn.textContent = `Pinging ${chosenModel}...`;
         let pingOk = false;
         let pingErrorMsg = '';
 
@@ -173,9 +234,12 @@ export function initSettingsModal() {
         try {
           const intResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/interactions?key=${encodeURIComponent(keyVal)}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'Api-Revision': '2026-05-20'
+            },
             body: JSON.stringify({
-              model: bestModel,
+              model: chosenModel,
               input: 'ping'
             })
           });
@@ -192,9 +256,12 @@ export function initSettingsModal() {
         // If Interactions API failed, try generateContent fallback
         if (!pingOk) {
           try {
-            const pingResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${bestModel}:generateContent?key=${encodeURIComponent(keyVal)}`, {
+            const pingResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${chosenModel}:generateContent?key=${encodeURIComponent(keyVal)}`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                'Api-Revision': '2026-05-20'
+              },
               body: JSON.stringify({
                 contents: [{ parts: [{ text: 'ping' }] }]
               })
@@ -213,7 +280,7 @@ export function initSettingsModal() {
         if (pingOk) {
           if (dot) dot.style.background = '#34d399';
           if (text) {
-            text.textContent = `✓ Verified! Model: ${bestModel}`;
+            text.textContent = `✓ Verified! Model: ${chosenModel}`;
             text.style.color = '#34d399';
           }
           testKeyBtn.textContent = '✓ Verified';
@@ -229,7 +296,7 @@ export function initSettingsModal() {
         testKeyBtn.textContent = '⚠️ Test Failed';
       }
 
-      setTimeout(() => { testKeyBtn.textContent = '⚡ Test Key'; }, 3500);
+      setTimeout(() => { testKeyBtn.textContent = '⚡ Discover Models & Test'; }, 3500);
     });
   }
 
@@ -412,10 +479,16 @@ export function openSettingsModal() {
   const driveClientIdInput = document.getElementById('input-drive-client-id');
   const modelSelect = document.getElementById('settings-gemini-model');
 
-  if (keyInput) keyInput.value = state.settings?.gemini_api_key || '';
+  const currentKey = state.settings?.gemini_api_key?.trim();
+  if (keyInput) keyInput.value = currentKey || '';
   if (groundingCheckbox) groundingCheckbox.checked = !!state.settings?.search_grounding_enabled;
   if (driveClientIdInput) driveClientIdInput.value = state.settings?.drive_client_id || '';
-  if (modelSelect) modelSelect.value = state.settings?.gemini_model || 'gemini-3.8-flash-lite';
+  if (modelSelect) modelSelect.value = state.settings?.gemini_model || 'gemini-3.5-flash-lite';
+
+  // Automatically discover and populate models if API key exists
+  if (currentKey) {
+    populateModelsFromAPI(currentKey).catch(() => {});
+  }
 
   const currentProvider = state.settings?.sync_provider || 'offline';
   const targetRadio = document.querySelector(`input[name="sync_provider"][value="${currentProvider}"]`);
@@ -426,7 +499,7 @@ export function openSettingsModal() {
   }
 
   const versionEl = document.getElementById('settings-cache-version');
-  if (versionEl) versionEl.textContent = `Bundle: ${APP_VERSION}`;
+  if (versionEl) versionEl.textContent = `(${APP_VERSION.replace('active-desks-v2-', 'v')})`;
 
   updateDriveConfigPanelVisibility();
   updateDriveStatusUI();
