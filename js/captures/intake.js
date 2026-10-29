@@ -184,11 +184,6 @@ export async function processCaptureIntake(rawInput, existingId = null, existing
   return captureRecord;
 }
 
-  // Persist record to IndexedDB
-  await db.put('captures', captureRecord);
-  return captureRecord;
-}
-
 /**
  * Unified Gemini API Invoker supporting both modern Interactions API (v1beta/interactions)
  * and legacy generateContent with automatic fallback.
