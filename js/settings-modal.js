@@ -4,7 +4,7 @@
  */
 
 import * as db from './db.js';
-import { state } from './state.js';
+import { state, APP_VERSION } from './state.js';
 import { exportFullBackup, importFullBackup } from './sync/export-provider.js';
 import { createP2POffer } from './sync/p2p-provider.js';
 import { setSyncBadge, performSync } from './sync/sync-manager.js';
@@ -49,6 +49,27 @@ export function initSettingsModal() {
   if (syncBadge && modal) {
     syncBadge.addEventListener('click', () => {
       openSettingsModal();
+    });
+  }
+
+  // Bind 1-tap cache clear and reload
+  const reloadBtn = document.getElementById('btn-force-cache-refresh');
+  if (reloadBtn) {
+    reloadBtn.addEventListener('click', async () => {
+      reloadBtn.textContent = 'Purging...';
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const reg of registrations) await reg.unregister();
+        }
+        if ('caches' in window) {
+          const cacheKeys = await caches.keys();
+          await Promise.all(cacheKeys.map(k => caches.delete(k)));
+        }
+      } catch (e) {
+        console.warn('Cache clear error:', e);
+      }
+      window.location.reload(true);
     });
   }
 
@@ -403,6 +424,9 @@ export function openSettingsModal() {
   if (currentProvider === 'drive' && !isDriveConnected()) {
     restoreDriveSession();
   }
+
+  const versionEl = document.getElementById('settings-cache-version');
+  if (versionEl) versionEl.textContent = `Bundle: ${APP_VERSION}`;
 
   updateDriveConfigPanelVisibility();
   updateDriveStatusUI();

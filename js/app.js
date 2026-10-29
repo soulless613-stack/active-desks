@@ -4,7 +4,7 @@
  * Orchestrates IndexedDB startup, state initialization, and component mounting.
  */
 
-import { loadInitialState, subscribe } from './state.js';
+import { loadInitialState, subscribe, APP_VERSION } from './state.js';
 import { initAnchors, renderAnchors } from './desks/anchors.js';
 import { initDeskManager, renderActiveDesks } from './desks/desk-manager.js';
 import { initCaptureDock } from './captures/capture-dock.js';
@@ -17,11 +17,20 @@ import { initSettingsModal } from './settings-modal.js';
  */
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // 1. Initialize Date Header
+    // 1. Initialize Date & Version Header
     const dateEl = document.getElementById('current-date');
     if (dateEl) {
       const now = new Date();
       dateEl.textContent = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    const versionPill = document.getElementById('header-version-pill');
+    if (versionPill) {
+      versionPill.textContent = APP_VERSION.replace('active-desks-v2-', 'v');
+      versionPill.addEventListener('click', () => {
+        const modal = document.getElementById('settings-modal');
+        if (modal) modal.classList.add('active');
+      });
     }
 
     // 2. Load IndexedDB State into memory (seeds defaults if first run)

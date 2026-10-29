@@ -38,6 +38,7 @@
           <span class="sync-dot" id="header-sync-dot"></span>
           <span id="header-sync-text">Local</span>
         </div>
+        <span id="header-version-pill" style="font-size: 0.68rem; color: var(--text-muted); font-family: monospace; background: rgba(255,255,255,0.06); padding: 3px 6px; border-radius: 4px; border: 1px solid var(--border-subtle); cursor: pointer;" title="Active Bundle Cache Version">v1.1.0</span>
       </div>
     </header>
 
@@ -242,6 +243,14 @@
         <button type="button" class="modal-close-btn" data-close="settings-modal">✕</button>
       </div>
 
+      <!-- App Version & 1-Tap Cache Reload Bar -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; margin-bottom: 14px; padding: 6px 12px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 0.75rem; color: var(--text-secondary); font-family: monospace;" id="settings-cache-version">Bundle: active-desks-v2-1.1.0</span>
+        </div>
+        <button type="button" id="btn-force-cache-refresh" class="desk-action-btn" style="font-size: 0.72rem; padding: 4px 10px; color: #38bdf8; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); border-radius: 4px;" title="Unregister Service Worker and force-reload latest files">🔄 Reload Fresh Bundle</button>
+      </div>
+
       <!-- Sync Method Section -->
       <div class="swap-list-section">
         <div class="swap-section-label">Device Synchronization Method</div>
@@ -259,6 +268,7 @@
 
           <!-- Drive Configuration & Auth Panel -->
           <div id="drive-config-panel" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: none;">
+            <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; margin-bottom: 8px;">Sync Client Cache: active-desks-v2-1.1.0</div>
             <label style="display: block; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 4px;">Google OAuth 2.0 Web Client ID</label>
             <div style="display: flex; gap: 8px; margin-bottom: 10px;">
               <input type="text" id="input-drive-client-id" class="quick-capture-input" placeholder="Paste Client ID from Google Cloud Console..." style="width: 100%; font-size: 0.78rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 6px 10px;">
