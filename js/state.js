@@ -20,7 +20,7 @@ export const state = {
   },
   settings: {
     gemini_api_key: '',
-    search_grounding_enabled: false,
+    search_grounding_enabled: true,
     sync_provider: 'local'
   }
 };

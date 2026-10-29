@@ -208,7 +208,9 @@ function renderCaptureCards(captures) {
         await processCaptureIntake(target.sourceUrl, target.id);
         await renderCapturesDrawer();
       } catch (err) {
+        console.error('Analyze failed:', err);
         btn.textContent = '⚠️ Failed';
+        setTimeout(() => { btn.textContent = '🔄 Analyze'; }, 3000);
       }
     });
   });

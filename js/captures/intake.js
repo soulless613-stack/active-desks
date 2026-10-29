@@ -144,6 +144,7 @@ export async function processCaptureIntake(rawInput, existingId = null) {
   const groundingEnabled = !!state.settings?.search_grounding_enabled;
 
   let captureRecord = null;
+  let lastError = null;
 
   // Determine stage execution
   if (apiKey && groundingEnabled && foundUrl) {
@@ -151,6 +152,7 @@ export async function processCaptureIntake(rawInput, existingId = null) {
     try {
       captureRecord = await runStage1Grounded(text, foundUrl, apiKey, existingId);
     } catch (err) {
+      lastError = err;
       console.warn('Stage 1 Grounded extraction failed, falling back to Stage 2:', err);
     }
   }
@@ -160,12 +162,19 @@ export async function processCaptureIntake(rawInput, existingId = null) {
     try {
       captureRecord = await runStage2Ungrounded(text, foundUrl, apiKey, existingId);
     } catch (err) {
+      lastError = err;
       console.warn('Stage 2 Ungrounded extraction failed, falling back to Stage 3:', err);
     }
   }
 
+  // If this is an existing capture being re-analyzed and extraction failed,
+  // do NOT wipe the card with Stage 3 offline template. Throw the error to preserve existing data!
+  if (existingId && !captureRecord) {
+    throw (lastError || new Error('Extraction failed to retrieve data from Gemini API'));
+  }
+
   if (!captureRecord) {
-    // Stage 3: Offline deterministic fallback
+    // Stage 3: Offline deterministic fallback (for brand new captures added without keys)
     captureRecord = processStage3Offline(text, foundUrl, existingId);
   }
 
@@ -193,23 +202,44 @@ async function callGemini(promptText, useSearch, apiKey) {
 
     const intResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/interactions?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Api-Revision': '2026-05-20'
+      },
       body: JSON.stringify(intBody)
     });
 
     if (intResp.ok) {
       const data = await intResp.json();
-      const steps = data.steps || [];
-      const outputStep = steps.find(s => s.type === 'model_output' || s.step_type === 'model_output');
-      if (outputStep?.content) {
-        for (const block of outputStep.content) {
-          if (block.type === 'text' && block.text) return block.text;
-          if (typeof block === 'string') return block;
+
+      // A. Check output_text sugar property
+      if (typeof data.output_text === 'string' && data.output_text.trim()) {
+        return data.output_text.trim();
+      }
+
+      // B. Check outputs array (legacy interactions schema)
+      if (Array.isArray(data.outputs)) {
+        const textOut = data.outputs.find(o => o.text || (o.type === 'text' && o.text));
+        if (textOut?.text) return textOut.text.trim();
+      }
+
+      // C. Check steps array (structured timeline schema)
+      if (Array.isArray(data.steps)) {
+        const modelStep = data.steps.find(s => s.type === 'model_output' || s.step_type === 'model_output');
+        if (modelStep?.content) {
+          for (const block of modelStep.content) {
+            if (block.type === 'text' && block.text) return block.text.trim();
+            if (typeof block === 'string') return block.trim();
+          }
         }
       }
+    } else {
+      const errData = await intResp.json().catch(() => ({}));
+      const errMsg = errData.error?.message || `HTTP ${intResp.status}`;
+      console.warn(`Interactions API returned error: ${errMsg}`);
     }
   } catch (err) {
-    console.warn('Interactions API call failed, trying generateContent fallback:', err);
+    console.warn('Interactions API call exception, trying generateContent fallback:', err);
   }
 
   // 2. Fallback to generateContent API
@@ -232,7 +262,11 @@ async function callGemini(promptText, useSearch, apiKey) {
   }
 
   const gcData = await gcResp.json();
-  return gcData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const resText = gcData.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!resText) {
+    throw new Error('Gemini API returned empty response');
+  }
+  return resText.trim();
 }
 
 /**
