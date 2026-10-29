@@ -236,8 +236,7 @@ export function initSettingsModal() {
           const intResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/interactions?key=${encodeURIComponent(keyVal)}`, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'Api-Revision': '2026-05-20'
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify({
               model: chosenModel,
@@ -260,8 +259,7 @@ export function initSettingsModal() {
             const pingResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${chosenModel}:generateContent?key=${encodeURIComponent(keyVal)}`, {
               method: 'POST',
               headers: {
-                'Content-Type': 'application/json',
-                'Api-Revision': '2026-05-20'
+                'Content-Type': 'application/json'
               },
               body: JSON.stringify({
                 contents: [{ parts: [{ text: 'ping' }] }]

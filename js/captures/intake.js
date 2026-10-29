@@ -206,8 +206,7 @@ async function callGemini(promptText, useSearch, apiKey) {
     const intResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/interactions?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Api-Revision': '2026-05-20'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(intBody)
     });
@@ -256,8 +255,7 @@ async function callGemini(promptText, useSearch, apiKey) {
   const gcResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Api-Revision': '2026-05-20'
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(gcBody)
   });
