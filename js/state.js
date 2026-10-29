@@ -20,6 +20,7 @@ export const state = {
   },
   settings: {
     gemini_api_key: '',
+    gemini_model: 'gemini-3.8-flash-lite',
     search_grounding_enabled: true,
     sync_provider: 'local'
   }

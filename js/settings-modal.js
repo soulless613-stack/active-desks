@@ -24,12 +24,13 @@ function updateGeminiStatusUI() {
   const dot = document.getElementById('gemini-status-dot');
   const text = document.getElementById('gemini-status-text');
   const key = state.settings?.gemini_api_key?.trim();
+  const currentModel = state.settings?.gemini_model || 'gemini-3.8-flash-lite';
 
   if (dot && text) {
     if (key && key.length > 8) {
       dot.style.background = '#34d399';
       text.style.color = '#34d399';
-      text.textContent = `Active: ${key.slice(0, 6)}...${key.slice(-4)}`;
+      text.textContent = `Active (${currentModel}): ${key.slice(0, 6)}...${key.slice(-4)}`;
     } else {
       dot.style.background = '#64748b';
       text.style.color = 'var(--text-muted)';
@@ -60,16 +61,30 @@ export function initSettingsModal() {
     saveKeyBtn.addEventListener('click', async () => {
       const keyVal = keyInput.value.trim();
       const groundingVal = !!groundingCheckbox?.checked;
+      const modelVal = document.getElementById('settings-gemini-model')?.value || 'gemini-3.8-flash-lite';
 
       state.settings.gemini_api_key = keyVal;
       state.settings.search_grounding_enabled = groundingVal;
+      state.settings.gemini_model = modelVal;
 
       await db.put('settings', { key: 'gemini_api_key', value: keyVal, updatedAt: new Date().toISOString() });
       await db.put('settings', { key: 'search_grounding_enabled', value: groundingVal, updatedAt: new Date().toISOString() });
+      await db.put('settings', { key: 'gemini_model', value: modelVal, updatedAt: new Date().toISOString() });
 
       updateGeminiStatusUI();
       saveKeyBtn.textContent = 'Saved! ✓';
       setTimeout(() => { saveKeyBtn.textContent = 'Save Key'; }, 2000);
+    });
+  }
+
+  // Bind Model selector change
+  const modelSelect = document.getElementById('settings-gemini-model');
+  if (modelSelect) {
+    modelSelect.addEventListener('change', async (e) => {
+      const selected = e.target.value;
+      state.settings.gemini_model = selected;
+      await db.put('settings', { key: 'gemini_model', value: selected, updatedAt: new Date().toISOString() });
+      updateGeminiStatusUI();
     });
   }
 
@@ -100,17 +115,33 @@ export function initSettingsModal() {
         }
 
         const modelsList = modelsData.models || [];
-        // Filter out deprecated models (2.5, 2.0, 1.5) that Google sunset
+        // Filter out deprecated models (2.5, 2.0, 1.5) and exclude heavy/expensive multimedia models (omni, live, audio, video, pro, argon)
         const modernCandidates = modelsList.filter(m => {
-          const name = m.name || '';
-          return /flash/i.test(name) && !name.includes('2.5') && !name.includes('2.0') && !name.includes('1.5');
+          const name = (m.name || '').toLowerCase();
+          const isFlash = name.includes('flash');
+          const isDeprecated = name.includes('2.5') || name.includes('2.0') || name.includes('1.5');
+          const isHeavy = /omni|live|audio|video|argon|pro|imagen/i.test(name);
+          return isFlash && !isDeprecated && !isHeavy;
         });
 
-        modernCandidates.sort((a, b) => b.name.localeCompare(a.name, undefined, { numeric: true, sensitivity: 'base' }));
-        const bestModel = modernCandidates[0]?.name.replace('models/', '') || 'gemini-3.8-flash';
+        // Specifically prioritize ultra-low-cost flash-lite first, then standard flash
+        let bestModel = 'gemini-3.8-flash-lite';
+        const hasLite = modernCandidates.find(m => m.name.includes('flash-lite'));
+        const hasStandardFlash = modernCandidates.find(m => m.name.includes('3.8-flash'));
+
+        if (hasLite) {
+          bestModel = hasLite.name.replace('models/', '');
+        } else if (hasStandardFlash) {
+          bestModel = hasStandardFlash.name.replace('models/', '');
+        } else if (modernCandidates.length > 0) {
+          bestModel = modernCandidates[0].name.replace('models/', '');
+        }
 
         state.settings.gemini_model = bestModel;
         await db.put('settings', { key: 'gemini_model', value: bestModel, updatedAt: new Date().toISOString() });
+
+        const modelSelectEl = document.getElementById('settings-gemini-model');
+        if (modelSelectEl) modelSelectEl.value = bestModel;
 
         // 2. Perform verification ping with discovered model via Interactions API (or generateContent fallback)
         testKeyBtn.textContent = `Pinging ${bestModel}...`;
@@ -358,10 +389,12 @@ export function openSettingsModal() {
   const keyInput = document.getElementById('settings-gemini-key');
   const groundingCheckbox = document.getElementById('settings-grounding-checkbox');
   const driveClientIdInput = document.getElementById('input-drive-client-id');
+  const modelSelect = document.getElementById('settings-gemini-model');
 
   if (keyInput) keyInput.value = state.settings?.gemini_api_key || '';
   if (groundingCheckbox) groundingCheckbox.checked = !!state.settings?.search_grounding_enabled;
   if (driveClientIdInput) driveClientIdInput.value = state.settings?.drive_client_id || '';
+  if (modelSelect) modelSelect.value = state.settings?.gemini_model || 'gemini-3.8-flash-lite';
 
   const currentProvider = state.settings?.sync_provider || 'offline';
   const targetRadio = document.querySelector(`input[name="sync_provider"][value="${currentProvider}"]`);

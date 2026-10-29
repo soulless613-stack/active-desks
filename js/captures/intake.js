@@ -188,7 +188,7 @@ export async function processCaptureIntake(rawInput, existingId = null) {
  * and legacy generateContent with automatic fallback.
  */
 async function callGemini(promptText, useSearch, apiKey) {
-  const model = state.settings?.gemini_model || 'gemini-3.8-flash';
+  const model = state.settings?.gemini_model || 'gemini-3.8-flash-lite';
 
   // 1. Try Interactions API first (required for Gemini 3.8 / 4.x models)
   try {
