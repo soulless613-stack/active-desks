@@ -70,14 +70,50 @@ export function bindReadingEvents(root, desk) {
 
   const editBtn = root.querySelector('.btn-reading-edit');
   if (editBtn) {
-    editBtn.addEventListener('click', async () => {
-      const input = prompt('Enter current page number:', String(desk.currentPage || 0));
-      if (input !== null) {
-        const parsed = parseInt(input, 10);
-        if (!isNaN(parsed) && parsed >= 0) {
-          await updateDesk('reading', { currentPage: parsed });
-        }
-      }
+    editBtn.addEventListener('click', () => {
+      openReadingEditModal(desk);
     });
   }
+}
+
+/**
+ * Opens the Reading Edit Modal and populates inputs with current book data.
+ * 
+ * @purpose Provides a responsive, scrollable editing interface for book progress.
+ * @inputs {object} desk - Reading desk state.
+ * @outputs {void}
+ */
+export function openReadingEditModal(desk) {
+  const modal = document.getElementById('reading-edit-modal');
+  const form = document.getElementById('form-edit-reading');
+  if (!modal || !form) return;
+
+  const titleInput = document.getElementById('input-reading-title');
+  const authorInput = document.getElementById('input-reading-author');
+  const pageInput = document.getElementById('input-reading-page');
+  const totalInput = document.getElementById('input-reading-total');
+  const storygraphInput = document.getElementById('input-reading-storygraph');
+
+  if (titleInput) titleInput.value = desk.title || '';
+  if (authorInput) authorInput.value = desk.author || '';
+  if (pageInput) pageInput.value = desk.currentPage || 0;
+  if (totalInput) totalInput.value = desk.totalPages || 100;
+  if (storygraphInput) storygraphInput.value = desk.storygraphUrl || '';
+
+  // Wire form submit once
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const patch = {
+      title: titleInput?.value.trim() || 'Untitled Book',
+      author: authorInput?.value.trim() || '',
+      currentPage: parseInt(pageInput?.value || '0', 10),
+      totalPages: Math.max(1, parseInt(totalInput?.value || '1', 10)),
+      storygraphUrl: storygraphInput?.value.trim() || ''
+    };
+
+    await updateDesk('reading', patch);
+    modal.classList.remove('active');
+  };
+
+  modal.classList.add('active');
 }
