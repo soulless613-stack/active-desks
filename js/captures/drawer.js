@@ -154,7 +154,10 @@ export function renderCapturesList() {
 
         <div class="capture-card-footer">
           <span>${c.creator ? `by ${escapeHtml(c.creator)}` : (c.topic || '')}</span>
-          ${c.sourceUrl ? `<a href="${c.sourceUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" onclick="event.stopPropagation()">Source ↗</a>` : ''}
+          <div style="display: flex; gap: 6px; align-items: center;">
+            ${c.blogUrl && c.blogUrl !== c.sourceUrl ? `<a href="${c.blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;" onclick="event.stopPropagation()">Destination ↗</a>` : ''}
+            ${c.sourceUrl ? `<a href="${c.sourceUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" onclick="event.stopPropagation()">Source ↗</a>` : ''}
+          </div>
         </div>
       </div>
     `;

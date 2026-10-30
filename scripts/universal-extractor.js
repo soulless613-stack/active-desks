@@ -25,6 +25,33 @@ const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || '').trim();
 const TARGET_URL = process.env.TARGET_URL || process.argv[2] || '';
 const CAPTURE_ID = process.env.CAPTURE_ID || process.argv[3] || '';
 
+/**
+ * Safely parses JSON from Gemini responses, handling markdown code fences and partial text.
+ * 
+ * @param {string} text - Raw model response text.
+ * @returns {object|null}
+ */
+function parseJsonFromResponse(text) {
+  if (!text) return null;
+  const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const jsonStr = match ? match[1] : text;
+
+  try {
+    return JSON.parse(jsonStr.trim());
+  } catch (e) {
+    const firstOpen = text.indexOf('{');
+    const lastClose = text.lastIndexOf('}');
+    if (firstOpen !== -1 && lastClose > firstOpen) {
+      try {
+        return JSON.parse(text.substring(firstOpen, lastClose + 1));
+      } catch (err2) {
+        // Failed fallback parsing
+      }
+    }
+  }
+  return null;
+}
+
 async function run() {
   console.log('=== Starting Active Desks v3 Autonomous Extractor ===');
   console.log(`Target URL: ${TARGET_URL}`);
@@ -79,33 +106,45 @@ async function run() {
     }
   }
 
-  // 2. Structured Extraction via Google Gemini
-  console.log('Sending transcript & caption to Google Gemini...');
+  // 2. Structured Extraction & Live Search Grounding via Google Gemini
+  console.log('Sending transcript & caption to Google Gemini with Search Grounding...');
   const prompt = `
-You are the Active Desks Autonomous Universal Extractor.
-Extract structured 3-tier data from this social media post or article:
+You are the Active Desks Autonomous Universal Extractor & Knowledge Grounding Engine.
+Extract rich, structured 3-tier data from this social media post or article:
 
 URL: ${TARGET_URL}
 Title / Caption: ${mediaTitle}
 Description / Notes: ${captionText}
 
-Requirements:
-- Domain must strictly be one of: "recipe", "book", "tech", "game", "fiber", "misc".
-- If recipe:
-  - Extract ALL ingredients with exact metric grams (grams: number) wherever stated or estimable.
-  - Step-by-step instructions.
-- Return valid JSON matching this schema:
+CRITICAL ANTI-BAIT & LIVE SEARCH GROUNDING INSTRUCTIONS:
+1. INTERACTION BAIT RESOLUTION:
+   - Creators frequently use engagement bait (e.g. "Comment RECIPE/LINK to get the link in your DMs", "Link in broadcast channel", "DM for guide", "Link in bio").
+   - DO NOT leave the user with an incomplete teaser or placeholder!
+   - Use Google Search grounding to search for the creator's actual food blog, GitHub repository, project site, Substack, or documentation.
+   - If found, extract the FULL authentic recipe, code, steps, or article directly from the grounded web results and set "blogUrl" to the real destination URL.
+
+2. DOMAIN & METRIC ACCURACY:
+   - Domain must strictly be one of: "recipe", "book", "tech", "game", "fiber", "misc".
+   - If recipe:
+     * Extract ALL ingredients with exact metric gram weights (grams: number) wherever stated or estimable.
+     * Step-by-step cooking instructions.
+     * Realistic macros (calories, protein, carbs, fat) if available.
+   - If tech / tool / game / fiber:
+     * Extract specific tools, steps, commands, and actionable insights.
+
+Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ... \`\`\`):
 {
   "domain": "recipe" | "book" | "tech" | "game" | "fiber" | "misc",
   "topic": "Concise 2-3 word topic",
   "title": "Clean, descriptive title",
   "summary": "1-2 sentence core value or high-protein macro summary",
   "creator": "Creator handle or author",
+  "blogUrl": "Direct destination link/URL or null",
   "ingredients": [
     { "item": "Chicken breast", "grams": 350, "amount": "350g" }
   ],
   "steps": [ "Step 1...", "Step 2..." ],
-  "keyInsights": [ "High protein", "Slow cooker friendly" ]
+  "keyInsights": [ "Key takeaway 1", "Key takeaway 2" ]
 }
 `;
 
@@ -118,33 +157,65 @@ Requirements:
   let structuredPayload = null;
 
   for (const model of CANDIDATE_MODELS) {
-    try {
-      console.log(`Querying Gemini model [${model}]...`);
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: 'application/json' }
-        })
-      });
+    // Mode A: Google Search Grounding enabled
+    // Mode B: Direct JSON mode without tools
+    const attempts = [
+      { name: 'grounded', tools: [{ googleSearch: {} }] },
+      { name: 'direct', tools: [] }
+    ];
 
-      if (!res.ok) {
-        const errorBody = await res.text();
-        console.warn(`[${model}] HTTP ${res.status}: ${errorBody}`);
-        continue;
-      }
+    for (const attempt of attempts) {
+      try {
+        console.log(`Querying Gemini [${model}] in ${attempt.name} mode...`);
+        const bodyPayload = {
+          contents: [{ parts: [{ text: prompt }] }]
+        };
+        if (attempt.tools.length > 0) {
+          bodyPayload.tools = attempt.tools;
+        } else {
+          bodyPayload.generationConfig = { responseMimeType: 'application/json' };
+        }
 
-      const json = await res.json();
-      const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (rawText) {
-        structuredPayload = JSON.parse(rawText);
-        console.log(`✓ Successfully generated 3-tier payload via [${model}]:`, structuredPayload.title);
-        break;
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyPayload)
+        });
+
+        if (!res.ok) {
+          const errorBody = await res.text();
+          console.warn(`[${model}:${attempt.name}] HTTP ${res.status}: ${errorBody}`);
+          continue;
+        }
+
+        const json = await res.json();
+        const candidate = json.candidates?.[0];
+        const parts = candidate?.content?.parts || [];
+        const rawText = parts.map(p => p.text || '').join('\n');
+
+        const parsed = parseJsonFromResponse(rawText);
+        if (parsed && parsed.domain && parsed.title) {
+          structuredPayload = parsed;
+
+          // Check for grounding sources
+          const groundingChunks = candidate?.groundingMetadata?.groundingChunks || [];
+          const groundedWeb = groundingChunks.map(c => c.web?.uri).filter(Boolean);
+          if (groundedWeb.length > 0) {
+            console.log(`✓ Grounded in web sources:`, groundedWeb);
+            if (!structuredPayload.blogUrl) {
+              structuredPayload.blogUrl = groundedWeb[0];
+            }
+          }
+
+          console.log(`✓ Successfully extracted 3-tier payload via [${model}:${attempt.name}]:`, structuredPayload.title);
+          break;
+        }
+      } catch (err) {
+        console.warn(`Model [${model}:${attempt.name}] error:`, err.message);
       }
-    } catch (err) {
-      console.warn(`Model [${model}] query error:`, err.message);
     }
+
+    if (structuredPayload) break;
   }
 
   if (!structuredPayload) {
