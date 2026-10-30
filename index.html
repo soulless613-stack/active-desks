@@ -36,18 +36,39 @@
   <!-- Main View Area -->
   <main class="main-layout">
     
-    <!-- Anchors (Daily 3 Rhythm) -->
-    <section class="anchors-card" aria-label="Daily 3 Anchors">
-      <div class="anchors-title">Daily 3 Rhythm</div>
-      <div class="anchors-pills">
-        <div class="anchor-chip" id="anchor-home" data-anchor="home">
-          <span>🏠</span> <span>Home</span>
+    <!-- 3-Bucket Day Banner (v1 Tactile Grid) -->
+    <section class="bucket-banner" aria-label="Daily 3 Anchors">
+      <div class="bucket-header">
+        <div class="bucket-title-wrap">
+          <span style="font-size: 1.1rem;">⚖️</span>
+          <span class="bucket-title">Today's 3 Anchors</span>
         </div>
-        <div class="anchor-chip" id="anchor-body" data-anchor="body">
-          <span>⚡</span> <span>Body</span>
+        <span id="bucket-status-tag" class="bucket-status-tag">0/3 Anchors Done</span>
+      </div>
+
+      <div class="bucket-grid">
+        <!-- 1. Home Anchor -->
+        <div id="bucket-home" class="bucket-card home" data-anchor="home">
+          <div class="bucket-check-indicator"></div>
+          <div class="bucket-icon">🏠</div>
+          <div class="bucket-name">Home Anchor</div>
+          <div class="bucket-sub">Family &amp; Chores</div>
         </div>
-        <div class="anchor-chip" id="anchor-spark" data-anchor="spark">
-          <span>✨</span> <span>Spark</span>
+
+        <!-- 2. Body Anchor -->
+        <div id="bucket-body" class="bucket-card body" data-anchor="body">
+          <div class="bucket-check-indicator"></div>
+          <div class="bucket-icon">💪</div>
+          <div class="bucket-name">Body Anchor</div>
+          <div class="bucket-sub">Walk, jog, stretch</div>
+        </div>
+
+        <!-- 3. Spark Anchor -->
+        <div id="bucket-spark" class="bucket-card spark" data-anchor="spark">
+          <div class="bucket-check-indicator"></div>
+          <div class="bucket-icon">✨</div>
+          <div class="bucket-name">Spark Anchor</div>
+          <div class="bucket-sub">Audiobook &amp; Hobbies</div>
         </div>
       </div>
     </section>
@@ -71,47 +92,55 @@
 
   </main>
 
-  <!-- Bottom Quick Capture Dock -->
+  <!-- Sticky Bottom Quick-Capture Bar (Universal Intake from v1) -->
   <footer class="capture-dock">
     <div class="capture-dock-inner">
-      <input type="url" id="capture-input" class="capture-input" placeholder="Drop URL or paste link (Reel, Blog, Book, Project)..." autocomplete="off">
-      <button type="button" id="btn-capture-submit" class="btn-capture-submit">Capture</button>
-      <button type="button" id="btn-toggle-drawer" class="btn-drawer-toggle">
-        <span>📦 Captures</span>
-        <span id="captures-count-badge" style="font-size: 0.75rem; opacity: 0.7;">(0)</span>
+      <button type="button" id="btn-toggle-captures" class="quick-capture-view-btn" title="View Universal Captures Stream" aria-label="View captures">
+        <span>⚡</span>
       </button>
+      <input type="text" id="capture-input" class="capture-input" placeholder="Drop a link (recipe, book, game) or type a thought..." autocomplete="off" enterkeyhint="send" aria-label="Universal capture input">
+      <button type="button" id="btn-capture-submit" class="btn-capture-submit">Save</button>
     </div>
   </footer>
 
-  <!-- Captures Slide-Over Drawer -->
-  <div id="drawer-backdrop" class="drawer-backdrop"></div>
-  <aside id="captures-drawer" class="captures-drawer">
-    <div class="drawer-header">
-      <div class="drawer-title">Inbox &amp; Captures</div>
-      <button type="button" id="btn-close-drawer" class="drawer-close-btn">✕</button>
-    </div>
+  <!-- Modal: Centered Universal Captures Stream (from v1) -->
+  <div id="captures-modal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 720px; max-height: 85vh;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">⚡</span>
+          <h3 style="font-size: 1.1rem; font-weight: 700;">Universal Captures</h3>
+          <span id="captures-count-badge" class="brand-badge" style="font-size: 0.72rem;">0 Items</span>
+        </div>
+        <button type="button" class="drawer-close-btn" data-close-modal="captures-modal">✕</button>
+      </div>
 
-    <!-- Domain Filter Bar -->
-    <div class="drawer-filter-bar">
-      <button type="button" class="filter-pill active" data-domain="all">All</button>
-      <button type="button" class="filter-pill" data-domain="recipe">Recipe</button>
-      <button type="button" class="filter-pill" data-domain="book">Book</button>
-      <button type="button" class="filter-pill" data-domain="tech">Tech</button>
-      <button type="button" class="filter-pill" data-domain="game">Game</button>
-      <button type="button" class="filter-pill" data-domain="fiber">Fiber</button>
-      <button type="button" class="filter-pill" data-domain="misc">Misc</button>
-    </div>
+      <!-- Domain Filter Bar -->
+      <div class="captures-filter-bar">
+        <button type="button" class="filter-pill active" data-domain="all">All</button>
+        <button type="button" class="filter-pill" data-domain="recipe">Recipe</button>
+        <button type="button" class="filter-pill" data-domain="book">Book</button>
+        <button type="button" class="filter-pill" data-domain="tech">Tech</button>
+        <button type="button" class="filter-pill" data-domain="game">Game</button>
+        <button type="button" class="filter-pill" data-domain="fiber">Fiber</button>
+        <button type="button" class="filter-pill" data-domain="misc">Misc</button>
+      </div>
 
-    <!-- Search Bar -->
-    <div class="drawer-search-bar">
-      <input type="text" id="drawer-search-input" class="drawer-search-input" placeholder="Search captures by title, creator, or topic...">
-    </div>
+      <!-- Search Bar -->
+      <div class="captures-search-bar">
+        <input type="text" id="drawer-search-input" class="captures-search-input" placeholder="Search captures by title, creator, or topic...">
+      </div>
 
-    <!-- Captures List Container -->
-    <div id="drawer-captures-list" class="drawer-captures-list">
-      <!-- Cards rendered dynamically by js/captures/drawer.js -->
+      <!-- Captures List Container -->
+      <div id="drawer-captures-list" class="captures-items-list">
+        <!-- Rendered dynamically by js/captures/drawer.js -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="desk-action-btn" data-close-modal="captures-modal">Close</button>
+      </div>
     </div>
-  </aside>
+  </div>
 
   <!-- Modal: Capture 3-Tier Detail View -->
   <div id="capture-detail-modal" class="modal-overlay">

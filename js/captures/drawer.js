@@ -1,7 +1,7 @@
 /**
  * @file drawer.js
- * @description Captures Slide-Over Drawer and 3-Tier Detail Modal for Active Desks v3.0.
- * Directly syncs with Firestore captures collection and executes real-time atomic deletions.
+ * @description Centered Universal Captures Stream and 3-Tier Detail Modal for Active Desks v3.0.
+ * Recreates the centered modal viewport from v1 while retaining Firestore real-time synchronization.
  */
 
 import { state, subscribe } from '../state.js';
@@ -11,21 +11,29 @@ let activeDomainFilter = 'all';
 let searchQuery = '';
 
 /**
- * Initializes the captures drawer toggle, filters, search, and detail modal listeners.
+ * Initializes the centered captures modal, filter pills, search, and detail modal listeners.
  * 
- * @purpose Sets up drawer interactions and subscribes to captures state changes.
+ * @purpose Sets up capture interactions and subscribes to Firestore captures updates.
  * @inputs None.
  * @outputs {void}
  */
 export function initCapturesDrawer() {
-  const toggleBtn = document.getElementById('btn-toggle-drawer');
-  const closeBtn = document.getElementById('btn-close-drawer');
-  const backdrop = document.getElementById('drawer-backdrop');
+  const toggleBtn = document.getElementById('btn-toggle-captures');
+  const modal = document.getElementById('captures-modal');
   const searchInput = document.getElementById('drawer-search-input');
 
-  if (toggleBtn) toggleBtn.addEventListener('click', toggleCapturesDrawer);
-  if (closeBtn) closeBtn.addEventListener('click', closeCapturesDrawer);
-  if (backdrop) backdrop.addEventListener('click', closeCapturesDrawer);
+  if (toggleBtn) toggleBtn.addEventListener('click', toggleCapturesModal);
+
+  // Close when clicking modal backdrop or close button
+  document.querySelectorAll('[data-close-modal="captures-modal"]').forEach(btn => {
+    btn.addEventListener('click', closeCapturesModal);
+  });
+
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeCapturesModal();
+    });
+  }
 
   // Wire domain filter pills
   const filterPills = document.querySelectorAll('.filter-pill');
@@ -57,52 +65,46 @@ export function initCapturesDrawer() {
 }
 
 /**
- * Toggles the drawer open or closed.
+ * Toggles the centered captures modal open or closed.
  */
-export function toggleCapturesDrawer() {
-  const drawer = document.getElementById('captures-drawer');
-  const backdrop = document.getElementById('drawer-backdrop');
-  if (drawer && backdrop) {
-    const isActive = drawer.classList.contains('active');
-    if (isActive) closeCapturesDrawer();
-    else openCapturesDrawer();
+export function toggleCapturesModal() {
+  const modal = document.getElementById('captures-modal');
+  if (modal) {
+    if (modal.classList.contains('active')) closeCapturesModal();
+    else openCapturesModal();
   }
 }
 
 /**
- * Opens the captures drawer.
+ * Opens the centered captures modal.
  */
-export function openCapturesDrawer() {
-  const drawer = document.getElementById('captures-drawer');
-  const backdrop = document.getElementById('drawer-backdrop');
-  if (drawer) drawer.classList.add('active');
-  if (backdrop) backdrop.classList.add('active');
+export function openCapturesModal() {
+  const modal = document.getElementById('captures-modal');
+  if (modal) modal.classList.add('active');
   renderCapturesList();
 }
 
 /**
- * Closes the captures drawer.
+ * Closes the centered captures modal.
  */
-export function closeCapturesDrawer() {
-  const drawer = document.getElementById('captures-drawer');
-  const backdrop = document.getElementById('drawer-backdrop');
-  if (drawer) drawer.classList.remove('active');
-  if (backdrop) backdrop.classList.remove('active');
+export function closeCapturesModal() {
+  const modal = document.getElementById('captures-modal');
+  if (modal) modal.classList.remove('active');
 }
 
 /**
- * Updates the counter badge in the bottom capture dock.
+ * Updates the counter badge in the centered captures modal.
  */
 function updateBadgeCount() {
   const badge = document.getElementById('captures-count-badge');
   if (badge) {
     const count = (state.captures || []).length;
-    badge.textContent = `(${count})`;
+    badge.textContent = `${count} Items`;
   }
 }
 
 /**
- * Renders the filtered capture cards inside the drawer list.
+ * Renders the filtered capture cards inside the modal list.
  */
 export function renderCapturesList() {
   const listEl = document.getElementById('drawer-captures-list');

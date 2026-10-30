@@ -1,13 +1,13 @@
 /**
  * @file capture-dock.js
- * @description Quick capture dock and optimistic intake processor for Active Desks v3.0.
- * Writes placeholder cards to Firestore instantly (<50ms) and dispatches the
- * autonomous server-side GitHub Action extraction worker.
+ * @description Universal capture dock for Active Desks v3.0.
+ * Ingests BOTH raw text thoughts/notes and web links (reels, blogs, books) with 0ms UI response.
+ * Saves raw thoughts directly and dispatches the autonomous server-side worker for links.
  */
 
 import { saveDoc } from '../firebase.js';
 import { state } from '../state.js';
-import { openCapturesDrawer } from './drawer.js';
+import { openCapturesModal } from './drawer.js';
 
 /**
  * Initializes the bottom capture bar input and submission handlers.
@@ -32,50 +32,67 @@ export function initCaptureDock() {
 }
 
 /**
- * Handles incoming capture URL submissions with optimistic intake.
+ * Handles incoming capture text or URL submissions.
  * 
- * @purpose Creates instant Firestore placeholder and dispatches autonomous extractor.
+ * @purpose Creates instant Firestore document for raw thoughts or links.
  * @inputs {HTMLInputElement} inputEl - Target input DOM element.
  * @outputs {Promise<void>}
  */
 async function handleCaptureSubmission(inputEl) {
-  const rawUrl = (inputEl.value || '').trim();
-  if (!rawUrl) return;
-
-  // Basic URL validation
-  if (!/^https?:\/\//i.test(rawUrl)) {
-    alert('Please enter a valid URL (starting with http:// or https://)');
-    return;
-  }
+  const rawInput = (inputEl.value || '').trim();
+  if (!rawInput) return;
 
   inputEl.value = '';
   inputEl.blur();
 
   const captureId = String(Date.now());
-  const domain = inferDomainFromUrl(rawUrl);
+  const isUrl = /^https?:\/\//i.test(rawInput);
 
-  // 1. Optimistic Intake: Save placeholder to Firestore
-  const placeholder = {
-    id: captureId,
-    domain,
-    topic: 'Incoming Capture',
-    title: `Extracting: ${rawUrl.slice(0, 45)}...`,
-    summary: 'Autonomous cloud extraction worker dispatched. Gathering media & transcript...',
-    sourceUrl: rawUrl,
-    status: 'extracting',
-    createdAt: new Date().toISOString()
-  };
+  if (isUrl) {
+    // 1A. URL Link Intake: Save placeholder and trigger extraction worker
+    const domain = inferDomainFromUrl(rawInput);
+    const placeholder = {
+      id: captureId,
+      domain,
+      topic: 'Incoming Link',
+      title: `Extracting: ${rawInput.slice(0, 45)}...`,
+      summary: 'Autonomous cloud extraction worker dispatched. Gathering media & transcript...',
+      sourceUrl: rawInput,
+      status: 'extracting',
+      createdAt: new Date().toISOString()
+    };
 
-  try {
-    await saveDoc('captures', captureId, placeholder);
-    // 2. Open drawer immediately to show progress badge (<50ms)
-    openCapturesDrawer();
+    try {
+      await saveDoc('captures', captureId, placeholder);
+      openCapturesModal();
+      await dispatchExtractionWorker(captureId, rawInput);
+    } catch (err) {
+      console.error('Failed to register URL capture:', err);
+      alert('Could not submit capture: ' + err.message);
+    }
+  } else {
+    // 1B. Raw Text Thought / Note Intake: Save immediately as a ready capture
+    const domain = inferDomainFromText(rawInput);
+    const title = rawInput.length > 55 ? `${rawInput.slice(0, 52)}...` : rawInput;
 
-    // 3. Dispatch Autonomous Extraction Worker
-    await dispatchExtractionWorker(captureId, rawUrl);
-  } catch (err) {
-    console.error('Failed to register capture:', err);
-    alert('Could not submit capture: ' + err.message);
+    const thoughtRecord = {
+      id: captureId,
+      domain,
+      topic: 'Raw Thought',
+      title,
+      summary: rawInput,
+      sourceUrl: '',
+      status: 'ready',
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      await saveDoc('captures', captureId, thoughtRecord);
+      openCapturesModal();
+    } catch (err) {
+      console.error('Failed to save thought capture:', err);
+      alert('Could not save note: ' + err.message);
+    }
   }
 }
 
@@ -156,6 +173,19 @@ async function triggerClientFallback(captureId, url, apiKey) {
   } catch (err) {
     console.warn('Client fallback extraction error:', err);
   }
+}
+
+/**
+ * Heuristically infers domain from raw text.
+ */
+function inferDomainFromText(text) {
+  const lower = text.toLowerCase();
+  if (/recipe|cook|bake|chicken|dinner|lunch|breakfast|calories|protein|bread|focaccia/i.test(lower)) return 'recipe';
+  if (/book|read|chapter|author|sanderson|pages|novel/i.test(lower)) return 'book';
+  if (/game|quest|steam|boss|rpg|baldurs|bg3|playstation|nintendo/i.test(lower)) return 'game';
+  if (/knit|crochet|yarn|stitch|rows|pattern|ravelry/i.test(lower)) return 'fiber';
+  if (/3d print|cad|stl|filament|code|git|api|hardware|arduino|esp32/i.test(lower)) return 'tech';
+  return 'misc';
 }
 
 /**
