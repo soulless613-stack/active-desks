@@ -140,8 +140,9 @@ export function renderCapturesList() {
     return `
       <div class="capture-card" data-capture-id="${c.id}">
         <div class="capture-card-header">
-          <div style="display: flex; align-items: center; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
             <span class="desk-domain-tag ${domain}">${domain}</span>
+            ${c.topic ? `<span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">· ${escapeHtml(c.topic)}</span>` : ''}
             ${isExtracting ? `<span class="brand-badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);">⏳ Extracting...</span>` : ''}
           </div>
           <button type="button" class="btn-delete-capture" data-delete-id="${c.id}" title="Delete capture">🗑️</button>
@@ -153,7 +154,7 @@ export function renderCapturesList() {
         </div>
 
         <div class="capture-card-footer">
-          <span>${c.creator ? `by ${escapeHtml(c.creator)}` : (c.topic || '')}</span>
+          <span>${c.creator ? `by ${escapeHtml(c.creator)}` : ''}</span>
           <div style="display: flex; gap: 6px; align-items: center;">
             ${c.blogUrl && c.blogUrl !== c.sourceUrl ? `<a href="${c.blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;" onclick="event.stopPropagation()">Blog ↗</a>` : ''}
             ${c.sourceUrl ? `<a href="${c.sourceUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" onclick="event.stopPropagation()">Source ↗</a>` : ''}
@@ -210,7 +211,7 @@ export function openCaptureDetailModal(capture) {
 
   if (domainBadge) {
     domainBadge.className = `desk-domain-tag ${domain}`;
-    domainBadge.textContent = domain;
+    domainBadge.textContent = capture.topic ? `[${domain}] · ${capture.topic}` : domain;
   }
   if (creatorEl) creatorEl.textContent = capture.creator ? `by ${capture.creator}` : '';
   if (titleEl) titleEl.textContent = capture.title || 'Untitled Capture';
