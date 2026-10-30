@@ -6,7 +6,7 @@
  * online clients immediately receive fresh updates.
  */
 
-const CACHE_NAME = 'active-desks-v2-1.1.7';
+const CACHE_NAME = 'active-desks-v2-1.2.0';
 
 /**
  * Static assets pre-cached during service worker installation.
@@ -38,8 +38,7 @@ const PRECACHE_ASSETS = [
   './js/captures/taxonomy.js',
   './js/sync/sync-manager.js',
   './js/sync/export-provider.js',
-  './js/sync/drive-provider.js',
-  './js/sync/p2p-provider.js'
+  './js/sync/github-provider.js'
 ];
 
 /**
@@ -48,8 +47,7 @@ const PRECACHE_ASSETS = [
 const BYPASS_HOSTS = [
   'generativelanguage.googleapis.com',
   'googleapis.com',
-  'accounts.google.com',
-  'apis.google.com',
+  'api.github.com',
   'api.microlink.io'
 ];
 

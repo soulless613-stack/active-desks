@@ -6,16 +6,13 @@
 import * as db from './db.js';
 import { state, APP_VERSION } from './state.js';
 import { exportFullBackup, importFullBackup } from './sync/export-provider.js';
-import { createP2POffer } from './sync/p2p-provider.js';
 import { setSyncBadge, performSync } from './sync/sync-manager.js';
 import {
-  initDriveTokenClient,
-  requestDriveAuth,
-  isDriveConnected,
-  getDriveUserEmail,
-  syncWithDrive,
-  restoreDriveSession
-} from './sync/drive-provider.js';
+  getGitHubConfig,
+  saveGitHubConfig,
+  isGitHubConnected,
+  testGitHubConnection
+} from './sync/github-provider.js';
 
 /**
  * Updates the persistent Gemini API key status indicator in Settings.
@@ -335,72 +332,48 @@ export function initSettingsModal() {
     });
   }
 
-  // Bind P2P QR pair button
-  const p2pBtn = document.getElementById('btn-show-p2p-qr');
-  if (p2pBtn) {
-    p2pBtn.addEventListener('click', async () => {
-      try {
-        p2pBtn.textContent = 'Generating...';
-        const invitation = await createP2POffer();
-        showP2PQROverlay(invitation);
-      } catch (err) {
-        alert('Could not start P2P pairing: ' + err.message);
-      } finally {
-        p2pBtn.textContent = 'Pair via QR Code';
-      }
+  // Bind GitHub Configuration controls
+  const inputGithubToken = document.getElementById('input-github-token');
+  const inputGithubRepo = document.getElementById('input-github-repo');
+  const inputGithubBranch = document.getElementById('input-github-branch');
+  const btnSaveGithubConfig = document.getElementById('btn-save-github-config');
+  const btnSyncGithubNow = document.getElementById('btn-sync-github-now');
+
+  if (btnSaveGithubConfig) {
+    btnSaveGithubConfig.addEventListener('click', async () => {
+      const token = inputGithubToken?.value || '';
+      const repo = inputGithubRepo?.value || '';
+      const branch = inputGithubBranch?.value || '';
+
+      await saveGitHubConfig({ token, repo, branch });
+      btnSaveGithubConfig.textContent = '✓ Saved';
+      setTimeout(() => { btnSaveGithubConfig.textContent = 'Save Credentials'; }, 1800);
+      updateGitHubStatusUI();
     });
   }
 
-  // Bind Drive Configuration controls
-  const driveClientIdInput = document.getElementById('input-drive-client-id');
-  const btnSaveDriveId = document.getElementById('btn-save-drive-client-id');
-  const btnConnectDrive = document.getElementById('btn-connect-drive');
-  const btnSyncDriveNow = document.getElementById('btn-sync-drive-now');
-
-  if (btnSaveDriveId && driveClientIdInput) {
-    btnSaveDriveId.addEventListener('click', async () => {
-      const clientId = driveClientIdInput.value.trim();
-      state.settings.drive_client_id = clientId;
-      await db.put('settings', { key: 'drive_client_id', value: clientId, updatedAt: new Date().toISOString() });
-      btnSaveDriveId.textContent = '✓ Saved';
-      setTimeout(() => { btnSaveDriveId.textContent = 'Save ID'; }, 1800);
-
-      if (clientId) {
-        initDriveTokenClient(clientId, handleDriveTokenReceived);
-      }
-    });
-  }
-
-  if (btnConnectDrive) {
-    btnConnectDrive.addEventListener('click', () => {
-      const clientId = driveClientIdInput?.value?.trim() || state.settings?.drive_client_id?.trim();
-      if (!clientId) {
-        alert('Please enter and save your Google OAuth 2.0 Web Client ID first.');
-        driveClientIdInput?.focus();
+  if (btnSyncGithubNow) {
+    btnSyncGithubNow.addEventListener('click', async () => {
+      const token = inputGithubToken?.value?.trim() || getGitHubConfig().token;
+      if (!token) {
+        alert('Please enter and save your GitHub Personal Access Token first.');
+        inputGithubToken?.focus();
         return;
       }
 
-      initDriveTokenClient(clientId, handleDriveTokenReceived);
+      btnSyncGithubNow.textContent = '⏳ Testing & Syncing...';
       try {
-        requestDriveAuth();
+        const testRes = await testGitHubConnection();
+        await performSync(false);
+        btnSyncGithubNow.textContent = '✓ Synced';
+        setSyncBadge('synced', 'GitHub');
+        updateGitHubStatusUI(`✓ Synced: ${testRes.message}`);
+        setTimeout(() => { btnSyncGithubNow.textContent = '⚡ Test & Sync Now'; }, 2000);
       } catch (err) {
-        alert(err.message);
-      }
-    });
-  }
-
-  if (btnSyncDriveNow) {
-    btnSyncDriveNow.addEventListener('click', async () => {
-      btnSyncDriveNow.textContent = '⏳ Syncing...';
-      try {
-        const res = await syncWithDrive();
-        btnSyncDriveNow.textContent = '✓ Synced';
-        setSyncBadge('synced', 'Synced');
-        setTimeout(() => { btnSyncDriveNow.textContent = '⚡ Sync Now'; }, 2000);
-      } catch (err) {
-        btnSyncDriveNow.textContent = '⚠️ Failed';
+        btnSyncGithubNow.textContent = '⚠️ Failed';
         setSyncBadge('error', 'Sync Error');
-        setTimeout(() => { btnSyncDriveNow.textContent = '⚡ Sync Now'; }, 2500);
+        updateGitHubStatusUI(`⚠️ ${err.message}`, '#f87171');
+        setTimeout(() => { btnSyncGithubNow.textContent = '⚡ Test & Sync Now'; }, 3000);
       }
     });
   }
@@ -411,58 +384,40 @@ export function initSettingsModal() {
       const provider = e.target.value;
       state.settings.sync_provider = provider;
       await db.put('settings', { key: 'sync_provider', value: provider, updatedAt: new Date().toISOString() });
-      updateDriveConfigPanelVisibility();
-      setSyncBadge('synced', provider === 'offline' ? 'Offline' : (provider === 'drive' ? (isDriveConnected() ? 'Drive' : 'Local') : 'P2P'));
+      updateGitHubConfigPanelVisibility();
+      setSyncBadge('synced', provider === 'github' ? (isGitHubConnected() ? 'GitHub' : 'Unsynced') : 'Offline');
     });
   });
 }
 
-function handleDriveTokenReceived(response) {
-  if (response.error) {
-    alert('Google authorization failed: ' + response.error);
-    return;
-  }
-  updateDriveStatusUI();
-  performSync();
-}
-
-function updateDriveConfigPanelVisibility() {
-  const panel = document.getElementById('drive-config-panel');
+function updateGitHubConfigPanelVisibility() {
+  const panel = document.getElementById('github-config-panel');
   if (!panel) return;
-  const isDriveSelected = (state.settings?.sync_provider || 'offline') === 'drive';
-  panel.style.display = isDriveSelected ? 'block' : 'none';
+  const isGitHubSelected = (state.settings?.sync_provider || 'offline') === 'github';
+  panel.style.display = isGitHubSelected ? 'block' : 'none';
 }
 
-function updateDriveStatusUI() {
-  const dot = document.getElementById('drive-auth-dot');
-  const text = document.getElementById('drive-auth-text');
-  const connectBtn = document.getElementById('btn-connect-drive');
-  const syncNowBtn = document.getElementById('btn-sync-drive-now');
-
+function updateGitHubStatusUI(customMsg = null, customColor = null) {
+  const dot = document.getElementById('github-auth-dot');
+  const text = document.getElementById('github-auth-text');
   if (!dot || !text) return;
 
-  if (isDriveConnected()) {
-    const email = getDriveUserEmail() || 'Google Account';
+  if (customMsg) {
+    text.textContent = customMsg;
+    dot.style.background = customColor || '#34d399';
+    text.style.color = customColor || '#34d399';
+    return;
+  }
+
+  const { token, repo, branch } = getGitHubConfig();
+  if (token) {
     dot.style.background = '#34d399';
     text.style.color = '#34d399';
-    text.textContent = `Connected: ${email}`;
-    if (connectBtn) connectBtn.textContent = '🔄 Re-authorize';
-    if (syncNowBtn) syncNowBtn.style.display = 'inline-flex';
+    text.textContent = `Connected: ${repo} (${branch})`;
   } else {
-    // Check if re-authorization is needed
-    const hadToken = !!localStorage.getItem('active_desks_drive_token_expires');
-    const clientId = state.settings?.drive_client_id;
-    if (hadToken && clientId) {
-      dot.style.background = '#fbbf24';
-      text.style.color = '#fbbf24';
-      text.textContent = '⚠️ Re-authorization required. Tap to reconnect.';
-    } else {
-      dot.style.background = '#64748b';
-      text.style.color = 'var(--text-muted)';
-      text.textContent = 'Not Connected';
-    }
-    if (connectBtn) connectBtn.textContent = '🔗 Connect Google Account';
-    if (syncNowBtn) syncNowBtn.style.display = 'none';
+    dot.style.background = '#64748b';
+    text.style.color = 'var(--text-muted)';
+    text.textContent = 'Not Connected';
   }
 }
 
@@ -475,14 +430,20 @@ export function openSettingsModal() {
 
   const keyInput = document.getElementById('settings-gemini-key');
   const groundingCheckbox = document.getElementById('settings-grounding-checkbox');
-  const driveClientIdInput = document.getElementById('input-drive-client-id');
+  const inputGithubToken = document.getElementById('input-github-token');
+  const inputGithubRepo = document.getElementById('input-github-repo');
+  const inputGithubBranch = document.getElementById('input-github-branch');
   const modelSelect = document.getElementById('settings-gemini-model');
 
   const currentKey = state.settings?.gemini_api_key?.trim();
   if (keyInput) keyInput.value = currentKey || '';
   if (groundingCheckbox) groundingCheckbox.checked = !!state.settings?.search_grounding_enabled;
-  if (driveClientIdInput) driveClientIdInput.value = state.settings?.drive_client_id || '';
   if (modelSelect) modelSelect.value = state.settings?.gemini_model || 'gemini-3.5-flash-lite';
+
+  const ghConfig = getGitHubConfig();
+  if (inputGithubToken) inputGithubToken.value = ghConfig.token || '';
+  if (inputGithubRepo) inputGithubRepo.value = ghConfig.repo || 'soulless613-stack/active-desk-v2-backups';
+  if (inputGithubBranch) inputGithubBranch.value = ghConfig.branch || 'main';
 
   // Automatically discover and populate models if API key exists
   if (currentKey) {
@@ -493,24 +454,11 @@ export function openSettingsModal() {
   const targetRadio = document.querySelector(`input[name="sync_provider"][value="${currentProvider}"]`);
   if (targetRadio) targetRadio.checked = true;
 
-  if (currentProvider === 'drive' && !isDriveConnected()) {
-    restoreDriveSession();
-  }
-
   const versionEl = document.getElementById('settings-cache-version');
   if (versionEl) versionEl.textContent = `(${APP_VERSION.replace('active-desks-v2-', 'v')})`;
 
-  updateDriveConfigPanelVisibility();
-  updateDriveStatusUI();
+  updateGitHubConfigPanelVisibility();
+  updateGitHubStatusUI();
   updateGeminiStatusUI();
   modal.classList.add('active');
-}
-
-function showP2PQROverlay(invitationString) {
-  const qrModal = document.getElementById('qr-pair-modal');
-  const rawTextEl = document.getElementById('qr-invitation-text');
-  if (qrModal) {
-    if (rawTextEl) rawTextEl.textContent = invitationString;
-    qrModal.classList.add('active');
-  }
 }

@@ -14,7 +14,6 @@
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -243,7 +242,7 @@
       <div class="modal-header">
         <h3 class="modal-title" style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
           <span>⚙️ Settings &amp; Device Sync</span>
-          <span id="settings-cache-version" style="font-size: 0.72rem; font-weight: 400; color: var(--text-muted); font-family: monospace;">(v1.1.7)</span>
+          <span id="settings-cache-version" style="font-size: 0.72rem; font-weight: 400; color: var(--text-muted); font-family: monospace;">(v1.2.0)</span>
         </h3>
         <button type="button" class="modal-close-btn" data-close="settings-modal">✕</button>
       </div>
@@ -257,56 +256,56 @@
       <div class="swap-list-section">
         <div class="swap-section-label">Device Synchronization Method</div>
         
+        <!-- Option 1: GitHub Cloud Sync -->
         <div class="sync-provider-card-wrapper" style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; background: rgba(255, 255, 255, 0.02);">
           <label class="sync-provider-card" style="margin: 0; cursor: pointer; display: flex; align-items: flex-start; gap: 10px;">
-            <input type="radio" name="sync_provider" value="drive" style="margin-top: 3px;">
+            <input type="radio" name="sync_provider" value="github" style="margin-top: 3px;">
             <div style="flex: 1;">
-              <div style="font-weight: 700; font-size: 0.9rem; color: #38bdf8;">Google Drive AppData Sync (Recommended)</div>
+              <div style="font-weight: 700; font-size: 0.9rem; color: #38bdf8;">GitHub Cloud Sync (Recommended)</div>
               <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
-                Syncs across phone and PC anytime via your personal Google account. Zero server hosting.
+                Syncs across phone and PC via your private backup repository. Zero server hosting, 100% private.
               </div>
             </div>
           </label>
 
-          <!-- Drive Configuration & Auth Panel -->
-          <div id="drive-config-panel" style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: none;">
-            <div style="font-size: 0.7rem; color: var(--text-muted); font-family: monospace; margin-bottom: 8px;">Sync Client Cache: active-desks-v2-1.1.4</div>
-            <label style="display: block; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 4px;">Google OAuth 2.0 Web Client ID</label>
-            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-              <input type="text" id="input-drive-client-id" class="quick-capture-input" placeholder="Paste Client ID from Google Cloud Console..." style="width: 100%; font-size: 0.78rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 6px 10px;">
-              <button type="button" id="btn-save-drive-client-id" class="desk-action-btn" style="padding: 6px 12px; font-size: 0.75rem; white-space: nowrap;">Save ID</button>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-              <div id="drive-auth-status" style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-                <span id="drive-auth-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block;"></span>
-                <span id="drive-auth-text">Not Connected</span>
+          <!-- GitHub Configuration & Credentials Panel -->
+          <div id="github-config-panel" style="margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); display: none;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div>
+                <label for="input-github-token" style="display: block; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 4px;">GitHub Personal Access Token (PAT)</label>
+                <input type="password" id="input-github-token" class="quick-capture-input" placeholder="ghp_... or github_pat_..." autocomplete="current-password" style="width: 100%; font-size: 0.78rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 7px 10px;">
               </div>
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <button type="button" id="btn-connect-drive" class="quick-capture-btn" style="padding: 6px 14px; font-size: 0.75rem; border-radius: var(--radius-sm);">🔗 Connect Google Account</button>
-                <button type="button" id="btn-sync-drive-now" class="desk-action-btn" style="padding: 6px 12px; font-size: 0.75rem; color: #38bdf8; display: none;">⚡ Sync Now</button>
-              </div>
-            </div>
 
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 8px; line-height: 1.35;">
-              🔒 <strong>Private AppData:</strong> Uses Google's restricted <code>drive.appdata</code> sandbox. Active Desks cannot see, browse, or access any of your Google Drive documents, photos, or files.
+              <div style="display: flex; gap: 8px;">
+                <div style="flex: 2;">
+                  <label for="input-github-repo" style="display: block; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 4px;">Repository</label>
+                  <input type="text" id="input-github-repo" class="quick-capture-input" value="soulless613-stack/active-desk-v2-backups" placeholder="owner/repo" style="width: 100%; font-size: 0.78rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 7px 10px;">
+                </div>
+                <div style="flex: 1;">
+                  <label for="input-github-branch" style="display: block; font-size: 0.76rem; color: var(--text-muted); margin-bottom: 4px;">Branch</label>
+                  <input type="text" id="input-github-branch" class="quick-capture-input" value="main" placeholder="main" style="width: 100%; font-size: 0.78rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 7px 10px;">
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 6px;">
+                <div id="github-auth-status" style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                  <span id="github-auth-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #64748b; display: inline-block;"></span>
+                  <span id="github-auth-text">Not Connected</span>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <button type="button" id="btn-save-github-config" class="quick-capture-btn" style="padding: 6px 14px; font-size: 0.75rem; border-radius: var(--radius-sm);">Save Credentials</button>
+                  <button type="button" id="btn-sync-github-now" class="desk-action-btn" style="padding: 6px 12px; font-size: 0.75rem; color: #38bdf8;">⚡ Test &amp; Sync Now</button>
+                </div>
+              </div>
+
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.35;">
+                🔒 <strong>Private Snapshot Storage:</strong> Reads and writes a single atomic state snapshot (<code>snapshot.json</code>) directly to your private backup repo. Tokens remain strictly in this browser's <code>localStorage</code>.
+              </div>
             </div>
           </div>
         </div>
 
-        <label class="sync-provider-card" style="margin-top: 8px;">
-          <input type="radio" name="sync_provider" value="p2p">
-          <div style="flex: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 700; font-size: 0.9rem; color: #c084fc;">Private Local Sync (Peer-to-Peer)</span>
-              <button type="button" class="desk-action-btn" id="btn-show-p2p-qr" style="font-size: 0.72rem;">Pair via QR Code</button>
-            </div>
-            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
-              Zero cloud. Direct encrypted WebRTC sync over local Wi-Fi.
-            </div>
-          </div>
-        </label>
-
+        <!-- Option 2: Offline Only -->
         <label class="sync-provider-card" style="margin-top: 8px;">
           <input type="radio" name="sync_provider" value="offline">
           <div>
@@ -362,25 +361,6 @@
           <button type="button" class="btn-icon" id="btn-import-backup" style="flex: 1; justify-content: center;">📤 Import JSON Backup</button>
           <input type="file" id="settings-import-file" accept=".json" style="display: none;">
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: P2P QR Code Pairing Overlay -->
-  <div id="qr-pair-modal" class="modal-overlay" role="dialog" aria-modal="true">
-    <div class="modal-content" style="max-width: 440px; text-align: center;">
-      <div class="modal-header">
-        <h3 class="modal-title">📡 Peer-to-Peer Pairing</h3>
-        <button type="button" class="modal-close-btn" data-close="qr-pair-modal">✕</button>
-      </div>
-      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
-        Scan this invitation with your other device to establish an encrypted direct link.
-      </div>
-      <div style="background: rgba(0,0,0,0.4); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); word-break: break-all; font-family: monospace; font-size: 0.72rem; color: #38bdf8; max-height: 140px; overflow-y: auto;" id="qr-invitation-text">
-        Generating invitation...
-      </div>
-      <div style="margin-top: 16px;">
-        <button type="button" class="desk-action-btn" data-close="qr-pair-modal">Done</button>
       </div>
     </div>
   </div>

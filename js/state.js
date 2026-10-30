@@ -7,7 +7,7 @@
 import * as db from './db.js';
 
 /** Active bundle cache identifier */
-export const APP_VERSION = 'active-desks-v2-1.1.7';
+export const APP_VERSION = 'active-desks-v2-1.2.0';
 
 /**
  * In-memory global state cache.
@@ -25,7 +25,10 @@ export const state = {
     gemini_api_key: '',
     gemini_model: 'gemini-3.5-flash-lite',
     search_grounding_enabled: true,
-    sync_provider: 'local'
+    sync_provider: 'github',
+    github_token: '',
+    github_repo: 'soulless613-stack/active-desk-v2-backups',
+    github_branch: 'main'
   }
 };
 
