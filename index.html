@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Active Desks v3</title>
+  <meta name="theme-color" content="#090d16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/png" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <h1 class="brand-title">ACTIVE DESKS</h1>
+      <span class="brand-badge">v3.0</span>
+    </div>
+
+    <div class="header-actions">
+      <!-- Live Sync Pill -->
+      <div id="header-sync-pill" class="sync-badge" title="Firebase Firestore Realtime Connection">
+        <span id="header-sync-dot" class="sync-dot"></span>
+        <span id="header-sync-text">Connecting...</span>
+      </div>
+
+      <!-- Settings / QR Button -->
+      <button type="button" id="btn-open-settings" class="icon-btn" title="Settings & Device Pairing">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Main View Area -->
+  <main class="main-layout">
+    
+    <!-- Anchors (Daily 3 Rhythm) -->
+    <section class="anchors-card" aria-label="Daily 3 Anchors">
+      <div class="anchors-title">Daily 3 Rhythm</div>
+      <div class="anchors-pills">
+        <div class="anchor-chip" id="anchor-home" data-anchor="home">
+          <span>🏠</span> <span>Home</span>
+        </div>
+        <div class="anchor-chip" id="anchor-body" data-anchor="body">
+          <span>⚡</span> <span>Body</span>
+        </div>
+        <div class="anchor-chip" id="anchor-spark" data-anchor="spark">
+          <span>✨</span> <span>Spark</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Emergent Workbench Suggestion Banner (Rule-of-5 Taxonomy) -->
+    <section id="desk-suggestion-banner" class="desk-card" style="display: none; border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.05);"></section>
+
+    <!-- Active Workbenches (4-Desk Grid) -->
+    <section class="workbench-section">
+      <div class="workbench-header">
+        <div class="workbench-title-group">
+          <h2 class="workbench-title">Active Workbenches</h2>
+        </div>
+        <button type="button" id="btn-open-swap-modal" class="btn-swap-desks">⇄ Swap Desks</button>
+      </div>
+
+      <div id="workbench-grid" class="workbench-grid" style="margin-top: 14px;">
+        <!-- Dynamically rendered by js/desks/desk-manager.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Quick Capture Dock -->
+  <footer class="capture-dock">
+    <div class="capture-dock-inner">
+      <input type="url" id="capture-input" class="capture-input" placeholder="Drop URL or paste link (Reel, Blog, Book, Project)..." autocomplete="off">
+      <button type="button" id="btn-capture-submit" class="btn-capture-submit">Capture</button>
+      <button type="button" id="btn-toggle-drawer" class="btn-drawer-toggle">
+        <span>📦 Captures</span>
+        <span id="captures-count-badge" style="font-size: 0.75rem; opacity: 0.7;">(0)</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- Captures Slide-Over Drawer -->
+  <div id="drawer-backdrop" class="drawer-backdrop"></div>
+  <aside id="captures-drawer" class="captures-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">Inbox &amp; Captures</div>
+      <button type="button" id="btn-close-drawer" class="drawer-close-btn">✕</button>
+    </div>
+
+    <!-- Domain Filter Bar -->
+    <div class="drawer-filter-bar">
+      <button type="button" class="filter-pill active" data-domain="all">All</button>
+      <button type="button" class="filter-pill" data-domain="recipe">Recipe</button>
+      <button type="button" class="filter-pill" data-domain="book">Book</button>
+      <button type="button" class="filter-pill" data-domain="tech">Tech</button>
+      <button type="button" class="filter-pill" data-domain="game">Game</button>
+      <button type="button" class="filter-pill" data-domain="fiber">Fiber</button>
+      <button type="button" class="filter-pill" data-domain="misc">Misc</button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="drawer-search-bar">
+      <input type="text" id="drawer-search-input" class="drawer-search-input" placeholder="Search captures by title, creator, or topic...">
+    </div>
+
+    <!-- Captures List Container -->
+    <div id="drawer-captures-list" class="drawer-captures-list">
+      <!-- Cards rendered dynamically by js/captures/drawer.js -->
+    </div>
+  </aside>
+
+  <!-- Modal: Capture 3-Tier Detail View -->
+  <div id="capture-detail-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="modal-capture-domain-badge" class="desk-domain-tag"></span>
+          <span id="modal-capture-creator" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+        </div>
+        <button type="button" class="drawer-close-btn" data-close-modal="capture-detail-modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <h3 id="modal-capture-title" style="font-size: 1.25rem; font-weight: 700;"></h3>
+        <p id="modal-capture-summary" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;"></p>
+
+        <!-- Tier 3 Deep Payload Area -->
+        <div id="modal-capture-tier3" style="background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 14px; border: 1px solid var(--border-subtle); display: none;"></div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button type="button" id="btn-modal-delete-capture" class="desk-action-btn" style="color: var(--accent-rose); border-color: rgba(251, 113, 133, 0.3);">🗑️ Delete</button>
+        <div style="display: flex; gap: 8px;">
+          <a id="modal-capture-source-link" href="#" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="display: none;">🔗 Source ↗</a>
+          <button type="button" class="desk-action-btn" data-close-modal="capture-detail-modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Workbench Desk Swapper -->
+  <div id="workbench-swap-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="font-size: 1.1rem; font-weight: 700;">⇄ Select Active Workbenches (Max 4)</h3>
+        <button type="button" class="drawer-close-btn" data-close-modal="workbench-swap-modal">✕</button>
+      </div>
+      <div class="modal-body" id="swap-modal-list">
+        <!-- Rendered by desk-manager.js -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="desk-action-btn" data-close-modal="workbench-swap-modal">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings & Device QR Pairing -->
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.1rem; font-weight: 700;">⚙️ Settings &amp; Device Pairing</h3>
+        <button type="button" class="drawer-close-btn" data-close-modal="settings-modal">✕</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- On-Screen QR Code Pairing -->
+        <div style="background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: var(--radius-md); padding: 16px; text-align: center;">
+          <div style="font-weight: 700; font-size: 0.95rem; color: var(--accent-cyan); margin-bottom: 4px;">📱 Instant Phone Pairing (QR Code)</div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 14px;">
+            Scan this code with your phone's camera to instantly pair and load keys without typing.
+          </div>
+          
+          <div style="display: flex; justify-content: center; margin: 10px 0;">
+            <canvas id="qr-canvas" style="background: #ffffff; padding: 12px; border-radius: var(--radius-md); box-shadow: 0 4px 20px rgba(0,0,0,0.5);"></canvas>
+          </div>
+          
+          <button type="button" id="btn-refresh-qr" class="desk-action-btn" style="margin-top: 8px;">🔄 Refresh Pairing QR</button>
+        </div>
+
+        <!-- Firebase Cloud Status -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px;">
+          <div style="font-weight: 700; font-size: 0.88rem; margin-bottom: 6px;">🔥 Firebase Firestore Database</div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">
+            Project: <span id="settings-firebase-project" style="color: var(--text-primary);">active-desks-v3</span>
+          </div>
+          <div id="settings-firebase-status" style="font-size: 0.78rem; margin-top: 6px; color: var(--accent-emerald);">🟢 Real-time listener active</div>
+        </div>
+
+        <!-- Optional Gemini API Key -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px;">
+          <label for="cfg-gemini-key" style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 4px;">Google Gemini API Key (Optional client fallback)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="password" id="cfg-gemini-key" class="capture-input" style="padding: 8px 12px; font-size: 0.82rem; border-radius: var(--radius-sm);" placeholder="AIzaSy...">
+            <button type="button" id="btn-save-gemini-key" class="desk-action-btn" style="white-space: nowrap;">Save Key</button>
+          </div>
+        </div>
+
+        <!-- Optional GitHub PAT (for triggering GitHub Actions extractor) -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px;">
+          <label for="cfg-github-token" style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 4px;">GitHub Personal Access Token (PAT)</label>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">Used to trigger the server-side media extractor workflow.</div>
+          <div style="display: flex; gap: 8px;">
+            <input type="password" id="cfg-github-token" class="capture-input" style="padding: 8px 12px; font-size: 0.82rem; border-radius: var(--radius-sm);" placeholder="ghp_... or github_pat_...">
+            <button type="button" id="btn-save-github-token" class="desk-action-btn" style="white-space: nowrap;">Save Token</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="desk-action-btn" data-close-modal="settings-modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Local QR Code Library -->
+  <script src="qrious.min.js"></script>
+
+  <!-- Main ES Module Entry Point -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>

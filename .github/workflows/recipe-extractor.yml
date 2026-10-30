@@ -1,0 +1,43 @@
+name: Autonomous Universal Extractor & Classifier
+
+on:
+  repository_dispatch:
+    types: [extract_capture]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'URL of the recipe, reel, or link to extract'
+        required: true
+      captureId:
+        description: 'Firestore Capture Document ID'
+        required: true
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Media Tools (ffmpeg & yt-dlp)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+          python3 -m pip install --upgrade yt-dlp
+
+      - name: Install Firebase Client
+        run: |
+          npm install firebase
+
+      - name: Run Autonomous Extractor
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TARGET_URL: ${{ github.event.client_payload.url || github.event.inputs.url }}
+          CAPTURE_ID: ${{ github.event.client_payload.captureId || github.event.inputs.captureId }}
+        run: |
+          node scripts/universal-extractor.js
