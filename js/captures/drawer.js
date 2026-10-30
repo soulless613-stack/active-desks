@@ -155,7 +155,7 @@ export function renderCapturesList() {
         <div class="capture-card-footer">
           <span>${c.creator ? `by ${escapeHtml(c.creator)}` : (c.topic || '')}</span>
           <div style="display: flex; gap: 6px; align-items: center;">
-            ${c.blogUrl && c.blogUrl !== c.sourceUrl ? `<a href="${c.blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;" onclick="event.stopPropagation()">Destination ↗</a>` : ''}
+            ${c.blogUrl && c.blogUrl !== c.sourceUrl ? `<a href="${c.blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;" onclick="event.stopPropagation()">Blog ↗</a>` : ''}
             ${c.sourceUrl ? `<a href="${c.sourceUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" onclick="event.stopPropagation()">Source ↗</a>` : ''}
           </div>
         </div>
@@ -205,6 +205,7 @@ export function openCaptureDetailModal(capture) {
   const summaryEl = document.getElementById('modal-capture-summary');
   const tier3El = document.getElementById('modal-capture-tier3');
   const sourceLink = document.getElementById('modal-capture-source-link');
+  const blogLink = document.getElementById('modal-capture-blog-link');
   const deleteBtn = document.getElementById('btn-modal-delete-capture');
 
   if (domainBadge) {
@@ -214,6 +215,15 @@ export function openCaptureDetailModal(capture) {
   if (creatorEl) creatorEl.textContent = capture.creator ? `by ${capture.creator}` : '';
   if (titleEl) titleEl.textContent = capture.title || 'Untitled Capture';
   if (summaryEl) summaryEl.textContent = capture.summary || '';
+
+  if (blogLink) {
+    if (capture.blogUrl && capture.blogUrl !== capture.sourceUrl) {
+      blogLink.href = capture.blogUrl;
+      blogLink.style.display = 'inline-flex';
+    } else {
+      blogLink.style.display = 'none';
+    }
+  }
 
   if (sourceLink) {
     if (capture.sourceUrl) {
