@@ -109,27 +109,46 @@ Requirements:
 }
 `;
 
+  const CANDIDATE_MODELS = [
+    'gemini-3.8-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash-lite'
+  ];
+
   let structuredPayload = null;
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json' }
-      })
-    });
 
-    if (!res.ok) {
-      throw new Error(`Gemini API HTTP ${res.status}: ${res.statusText}`);
+  for (const model of CANDIDATE_MODELS) {
+    try {
+      console.log(`Querying Gemini model [${model}]...`);
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'application/json' }
+        })
+      });
+
+      if (!res.ok) {
+        const errorBody = await res.text();
+        console.warn(`[${model}] HTTP ${res.status}: ${errorBody}`);
+        continue;
+      }
+
+      const json = await res.json();
+      const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (rawText) {
+        structuredPayload = JSON.parse(rawText);
+        console.log(`✓ Successfully generated 3-tier payload via [${model}]:`, structuredPayload.title);
+        break;
+      }
+    } catch (err) {
+      console.warn(`Model [${model}] query error:`, err.message);
     }
+  }
 
-    const json = await res.json();
-    const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
-    structuredPayload = JSON.parse(rawText);
-    console.log('✓ Successfully generated 3-tier payload:', structuredPayload.title);
-  } catch (err) {
-    console.error('Gemini extraction failed:', err);
+  if (!structuredPayload) {
+    console.error('All candidate Gemini models failed. Engaging safe fallback payload.');
     structuredPayload = {
       domain: 'misc',
       topic: 'Unclassified',

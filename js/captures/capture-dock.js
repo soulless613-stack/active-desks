@@ -148,18 +148,22 @@ async function dispatchExtractionWorker(captureId, url) {
  * Client-side heuristic fallback for standard blog posts or when offline.
  */
 async function triggerClientFallback(captureId, url, apiKey) {
-  try {
-    const prompt = `Analyze this URL for Active Desks: ${url}. Return JSON with { domain: "recipe"|"book"|"tech"|"game"|"fiber"|"misc", topic: string, title: string, summary: string, creator: string }`;
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: 'application/json' }
-      })
-    });
+  const CANDIDATE_MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
+  const prompt = `Analyze this URL for Active Desks: ${url}. Return JSON with { domain: "recipe"|"book"|"tech"|"game"|"fiber"|"misc", topic: string, title: string, summary: string, creator: string }`;
 
-    if (res.ok) {
+  for (const model of CANDIDATE_MODELS) {
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'application/json' }
+        })
+      });
+
+      if (!res.ok) continue;
+
       const data = await res.json();
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (rawText) {
@@ -168,10 +172,11 @@ async function triggerClientFallback(captureId, url, apiKey) {
           ...parsed,
           status: 'ready'
         });
+        return;
       }
+    } catch (err) {
+      console.warn(`Client fallback model [${model}] error:`, err);
     }
-  } catch (err) {
-    console.warn('Client fallback extraction error:', err);
   }
 }
 
