@@ -6,7 +6,7 @@
 
 import { saveDoc, deleteDocById } from './firebase.js';
 
-export const APP_VERSION = 'v3.0.13';
+export const APP_VERSION = 'v3.0.14';
 
 /**
  * In-memory global state cache.

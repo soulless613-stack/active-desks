@@ -51,7 +51,8 @@ export function renderReadingDesk(desk) {
 
       <div class="desk-card-footer">
         <div style="display: flex; gap: 6px; align-items: center;">
-          <button type="button" class="desk-action-btn btn-reading-step" data-step="5">+5 pgs</button>
+          <button type="button" class="desk-action-btn btn-reading-step" data-step="1">+1</button>
+          <button type="button" class="desk-action-btn btn-reading-step" data-step="5">+5</button>
           <button type="button" class="desk-action-btn btn-reading-step" data-step="10">+10</button>
           <button type="button" class="desk-action-btn btn-desk-open-card" data-desk="reading">✏️ Details</button>
         </div>
