@@ -116,15 +116,18 @@
       </div>
 
       <!-- Domain Filter Bar -->
-      <div class="captures-filter-bar">
-        <button type="button" class="filter-pill active" data-domain="all">All</button>
-        <button type="button" class="filter-pill" data-domain="recipe">Recipe</button>
-        <button type="button" class="filter-pill" data-domain="book">Book</button>
-        <button type="button" class="filter-pill" data-domain="tech">Tech</button>
-        <button type="button" class="filter-pill" data-domain="game">Game</button>
-        <button type="button" class="filter-pill" data-domain="fiber">Fiber</button>
-        <button type="button" class="filter-pill" data-domain="misc">Misc</button>
+      <div class="captures-filter-bar" id="captures-domain-filters">
+        <button type="button" class="filter-pill active" data-domain="all">All <span class="capture-pill-count" data-count-domain="all">0</span></button>
+        <button type="button" class="filter-pill" data-domain="recipe">Recipe <span class="capture-pill-count" data-count-domain="recipe">0</span></button>
+        <button type="button" class="filter-pill" data-domain="book">Book <span class="capture-pill-count" data-count-domain="book">0</span></button>
+        <button type="button" class="filter-pill" data-domain="tech">Tech <span class="capture-pill-count" data-count-domain="tech">0</span></button>
+        <button type="button" class="filter-pill" data-domain="game">Game <span class="capture-pill-count" data-count-domain="game">0</span></button>
+        <button type="button" class="filter-pill" data-domain="fiber">Fiber <span class="capture-pill-count" data-count-domain="fiber">0</span></button>
+        <button type="button" class="filter-pill" data-domain="misc">Misc <span class="capture-pill-count" data-count-domain="misc">0</span></button>
       </div>
+
+      <!-- Row 2: Dynamic Scoped Topic Filter Pills Container -->
+      <div id="captures-topic-filter-bar" class="captures-topic-filter-bar" style="display: none;"></div>
 
       <!-- Search Bar -->
       <div class="captures-search-bar">
@@ -146,8 +149,16 @@
   <div id="capture-detail-modal" class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span id="modal-capture-domain-badge" class="desk-domain-tag"></span>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <select id="modal-capture-domain-select" class="domain-reassign-select" title="Reassign Domain">
+            <option value="recipe">Recipe</option>
+            <option value="book">Book</option>
+            <option value="tech">Tech</option>
+            <option value="game">Game</option>
+            <option value="fiber">Fiber</option>
+            <option value="misc">Misc</option>
+          </select>
+          <input type="text" id="modal-capture-topic-input" class="topic-inline-input" placeholder="Edit topic..." title="Click to edit topic">
           <span id="modal-capture-creator" style="font-size: 0.8rem; color: var(--text-muted);"></span>
         </div>
         <button type="button" class="drawer-close-btn" data-close-modal="capture-detail-modal">✕</button>

@@ -622,37 +622,167 @@ body {
   box-shadow: 0 4px 15px rgba(56, 189, 248, 0.35);
 }
 
-/* Centered Universal Captures Modal Filter Bar & Lists */
+/* Centered Universal Captures Modal Filter Bar & Anti-Squish Pills */
 .captures-filter-bar {
-  padding: 12px 20px;
+  padding: 12px 18px 8px;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.captures-filter-bar::-webkit-scrollbar {
-  display: none;
+  align-items: center;
 }
 
 .filter-pill {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  padding: 4px 12px;
+  padding: 6px 14px;
+  min-height: 32px;
   border-radius: var(--radius-pill);
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .filter-pill.active {
-  background: rgba(56, 189, 248, 0.15);
+  background: rgba(56, 189, 248, 0.16);
   border-color: var(--accent-cyan);
   color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.capture-pill-count {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  border-radius: 9999px;
+  padding: 1px 7px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.filter-pill.active .capture-pill-count {
+  background: rgba(56, 189, 248, 0.3);
+  color: #ffffff;
+}
+
+/* Row 2: Dynamic Scoped Topic Filter Pills */
+.captures-topic-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 18px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.15);
+  align-items: center;
+}
+
+.topic-filter-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  min-height: 26px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.topic-filter-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.topic-filter-pill.active {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: var(--accent-purple);
+  color: #d8b4fe;
+  font-weight: 700;
+}
+
+.topic-pill-count {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  padding: 0 5px;
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+}
+
+/* Domain Reassignment Selector Badge */
+.domain-reassign-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.domain-reassign-select:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.domain-reassign-select option {
+  background: #18181b;
+  color: var(--text-primary);
+  text-transform: capitalize;
+}
+
+/* Inline Topic Editing on Cards & Modal */
+.topic-inline-editable {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+  padding-bottom: 1px;
+}
+
+.topic-inline-editable:hover {
+  color: var(--accent-cyan);
+  border-bottom-color: var(--accent-cyan);
+}
+
+.topic-inline-input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  padding: 2px 6px;
+  outline: none;
+  width: 140px;
 }
 
 .captures-search-bar {

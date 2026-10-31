@@ -1,13 +1,15 @@
 /**
  * @file drawer.js
  * @description Centered Universal Captures Stream and 3-Tier Detail Modal for Active Desks v3.0.
- * Recreates the centered modal viewport from v1 while retaining Firestore real-time synchronization.
+ * Recreates the centered modal viewport from v1 while retaining Firestore real-time synchronization,
+ * dynamic scoped topic sub-filtering, anti-squish pill geometry, and inline topic/domain updates.
  */
 
 import { state, subscribe } from '../state.js';
-import { deleteDocById } from '../firebase.js';
+import { deleteDocById, saveDoc } from '../firebase.js';
 
 let activeDomainFilter = 'all';
+let activeTopicFilter = 'all';
 let searchQuery = '';
 
 /**
@@ -36,12 +38,14 @@ export function initCapturesDrawer() {
   }
 
   // Wire domain filter pills
-  const filterPills = document.querySelectorAll('.filter-pill');
+  const filterPills = document.querySelectorAll('#captures-domain-filters .filter-pill');
   filterPills.forEach(pill => {
     pill.addEventListener('click', () => {
       filterPills.forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       activeDomainFilter = pill.getAttribute('data-domain') || 'all';
+      // Reset topic filter whenever domain changes
+      activeTopicFilter = 'all';
       renderCapturesList();
     });
   });
@@ -93,18 +97,94 @@ export function closeCapturesModal() {
 }
 
 /**
- * Updates the counter badge in the centered captures modal.
+ * Updates the counter badge in the centered captures modal header and domain filter pills.
+ * 
+ * @purpose Keeps item counts on modal header and domain pills synchronized with Firestore state.
+ * @inputs None.
+ * @outputs {void}
  */
 function updateBadgeCount() {
+  const allCaptures = state.captures || [];
   const badge = document.getElementById('captures-count-badge');
   if (badge) {
-    const count = (state.captures || []).length;
-    badge.textContent = `${count} Items`;
+    badge.textContent = `${allCaptures.length} Items`;
   }
+
+  // Update domain filter pill badge counts
+  const domainBadges = document.querySelectorAll('[data-count-domain]');
+  domainBadges.forEach(el => {
+    const domainKey = el.getAttribute('data-count-domain');
+    if (domainKey === 'all') {
+      el.textContent = allCaptures.length;
+    } else {
+      const matchCount = allCaptures.filter(c => (c.domain || 'misc').toLowerCase() === domainKey).length;
+      el.textContent = matchCount;
+    }
+  });
 }
 
 /**
- * Renders the filtered capture cards inside the modal list.
+ * Renders dynamic row-2 topic sub-filter pills scoped to the currently active domain.
+ * 
+ * @purpose Allows granular topic browsing within a domain without leaving the modal.
+ * @inputs {Array<object>} domainCaptures - Captures belonging to the active domain filter.
+ * @outputs {void}
+ */
+function renderTopicFilterBar(domainCaptures) {
+  const topicBar = document.getElementById('captures-topic-filter-bar');
+  if (!topicBar) return;
+
+  // Only display topic sub-filters when a specific domain is active and contains topics
+  if (activeDomainFilter === 'all') {
+    topicBar.style.display = 'none';
+    topicBar.innerHTML = '';
+    return;
+  }
+
+  const topicCounts = {};
+  domainCaptures.forEach(c => {
+    const rawTopic = (c.topic || '').trim();
+    if (rawTopic) {
+      topicCounts[rawTopic] = (topicCounts[rawTopic] || 0) + 1;
+    }
+  });
+
+  const topics = Object.keys(topicCounts).sort((a, b) => a.localeCompare(b));
+
+  if (topics.length === 0) {
+    topicBar.style.display = 'none';
+    topicBar.innerHTML = '';
+    return;
+  }
+
+  topicBar.style.display = 'flex';
+  topicBar.innerHTML = `
+    <button type="button" class="topic-filter-pill ${activeTopicFilter === 'all' ? 'active' : ''}" data-topic="all">
+      All Topics <span class="topic-pill-count">${domainCaptures.length}</span>
+    </button>
+    ${topics.map(topic => `
+      <button type="button" class="topic-filter-pill ${activeTopicFilter.toLowerCase() === topic.toLowerCase() ? 'active' : ''}" data-topic="${escapeHtml(topic)}">
+        ${escapeHtml(topic)} <span class="topic-pill-count">${topicCounts[topic]}</span>
+      </button>
+    `).join('')}
+  `;
+
+  topicBar.querySelectorAll('.topic-filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      topicBar.querySelectorAll('.topic-filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeTopicFilter = pill.getAttribute('data-topic') || 'all';
+      renderCapturesList();
+    });
+  });
+}
+
+/**
+ * Renders the filtered capture cards inside the modal list, wiring inline topic editing and domain reassignment.
+ * 
+ * @purpose Displays cards with interactive reassignment dropdowns, inline topic editors, and detail modal openers.
+ * @inputs None.
+ * @outputs {void}
  */
 export function renderCapturesList() {
   const listEl = document.getElementById('drawer-captures-list');
@@ -116,9 +196,20 @@ export function renderCapturesList() {
     return tA - tB;
   });
 
-  const filtered = allCaptures.filter(c => {
-    const domainMatch = activeDomainFilter === 'all' || (c.domain || 'misc').toLowerCase() === activeDomainFilter;
-    if (!domainMatch) return false;
+  // Step 1: Filter by domain
+  const domainCaptures = allCaptures.filter(c => {
+    return activeDomainFilter === 'all' || (c.domain || 'misc').toLowerCase() === activeDomainFilter;
+  });
+
+  // Step 2: Render dynamic topic sub-filter bar based on domain scoped items
+  renderTopicFilterBar(domainCaptures);
+
+  // Step 3: Filter by topic and search query
+  const filtered = domainCaptures.filter(c => {
+    if (activeTopicFilter !== 'all') {
+      const topic = (c.topic || '').trim().toLowerCase();
+      if (topic !== activeTopicFilter.toLowerCase()) return false;
+    }
     if (!searchQuery) return true;
 
     const haystack = `${c.title || ''} ${c.creator || ''} ${c.topic || ''} ${c.summary || ''}`.toLowerCase();
@@ -141,8 +232,17 @@ export function renderCapturesList() {
       <div class="capture-card" data-capture-id="${c.id}">
         <div class="capture-card-header">
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-            <span class="desk-domain-tag ${domain}">${domain}</span>
-            ${c.topic ? `<span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">· ${escapeHtml(c.topic)}</span>` : ''}
+            <select class="domain-reassign-select" data-reassign-id="${c.id}" title="Reassign Domain" onclick="event.stopPropagation()">
+              <option value="recipe" ${domain === 'recipe' ? 'selected' : ''}>Recipe</option>
+              <option value="book" ${domain === 'book' ? 'selected' : ''}>Book</option>
+              <option value="tech" ${domain === 'tech' ? 'selected' : ''}>Tech</option>
+              <option value="game" ${domain === 'game' ? 'selected' : ''}>Game</option>
+              <option value="fiber" ${domain === 'fiber' ? 'selected' : ''}>Fiber</option>
+              <option value="misc" ${domain === 'misc' ? 'selected' : ''}>Misc</option>
+            </select>
+            <span class="topic-inline-editable" data-edit-topic-id="${c.id}" title="Click to edit topic" onclick="event.stopPropagation()">
+              ${c.topic ? escapeHtml(c.topic) : '<span style="opacity: 0.6; font-style: italic;">+ Add Topic</span>'} ✏️
+            </span>
             ${isExtracting ? `<span class="brand-badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);">⏳ Extracting...</span>` : ''}
           </div>
           <button type="button" class="btn-delete-capture" data-delete-id="${c.id}" title="Delete capture">🗑️</button>
@@ -173,6 +273,61 @@ export function renderCapturesList() {
     });
   });
 
+  // Wire domain reassignment selector on cards
+  listEl.querySelectorAll('.domain-reassign-select').forEach(select => {
+    select.addEventListener('change', async (e) => {
+      e.stopPropagation();
+      const id = select.getAttribute('data-reassign-id');
+      const newDomain = select.value;
+      if (id && newDomain) {
+        await saveDoc('captures', id, { domain: newDomain });
+      }
+    });
+  });
+
+  // Wire inline topic editing on cards
+  listEl.querySelectorAll('.topic-inline-editable').forEach(span => {
+    span.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = span.getAttribute('data-edit-topic-id');
+      const target = allCaptures.find(c => String(c.id) === String(id));
+      const currentTopic = target?.topic || '';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'topic-inline-input';
+      input.value = currentTopic;
+      input.placeholder = 'Topic...';
+      input.style.width = '130px';
+      input.style.fontSize = '0.78rem';
+      input.style.padding = '2px 6px';
+
+      const commitTopic = async () => {
+        const newTopic = input.value.trim();
+        if (newTopic !== currentTopic) {
+          await saveDoc('captures', id, { topic: newTopic });
+        } else {
+          renderCapturesList();
+        }
+      };
+
+      input.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter') {
+          ev.preventDefault();
+          input.blur();
+        } else if (ev.key === 'Escape') {
+          ev.preventDefault();
+          renderCapturesList();
+        }
+      });
+
+      input.addEventListener('blur', commitTopic, { once: true });
+      span.replaceWith(input);
+      input.focus();
+      input.select();
+    });
+  });
+
   // Wire delete button (atomic Firestore delete)
   listEl.querySelectorAll('[data-delete-id]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
@@ -182,7 +337,6 @@ export function renderCapturesList() {
       const title = target?.title || 'this capture';
       if (confirm(`Delete "${title.slice(0, 40)}"?`)) {
         await deleteDocById('captures', id);
-        // Firestore real-time listener will trigger automatic UI re-render!
       }
     });
   });
@@ -191,7 +345,7 @@ export function renderCapturesList() {
 /**
  * Opens and populates the 3-Tier Detail Modal for a capture.
  * 
- * @purpose Displays complete structured payload (ingredients, steps, specs).
+ * @purpose Displays complete structured payload (ingredients, steps, specs) with domain reassignment & inline topic editing.
  * @inputs {object} capture - Capture record.
  * @outputs {void}
  */
@@ -200,7 +354,8 @@ export function openCaptureDetailModal(capture) {
   if (!modal) return;
 
   const domain = (capture.domain || 'misc').toLowerCase();
-  const domainBadge = document.getElementById('modal-capture-domain-badge');
+  const domainSelect = document.getElementById('modal-capture-domain-select');
+  const topicInput = document.getElementById('modal-capture-topic-input');
   const creatorEl = document.getElementById('modal-capture-creator');
   const titleEl = document.getElementById('modal-capture-title');
   const summaryEl = document.getElementById('modal-capture-summary');
@@ -209,10 +364,32 @@ export function openCaptureDetailModal(capture) {
   const blogLink = document.getElementById('modal-capture-blog-link');
   const deleteBtn = document.getElementById('btn-modal-delete-capture');
 
-  if (domainBadge) {
-    domainBadge.className = `desk-domain-tag ${domain}`;
-    domainBadge.textContent = capture.topic ? `[${domain}] · ${capture.topic}` : domain;
+  if (domainSelect) {
+    domainSelect.value = domain;
+    domainSelect.onchange = async () => {
+      const newDomain = domainSelect.value;
+      await saveDoc('captures', capture.id, { domain: newDomain });
+      capture.domain = newDomain;
+    };
   }
+
+  if (topicInput) {
+    topicInput.value = capture.topic || '';
+    topicInput.onchange = async () => {
+      const newTopic = topicInput.value.trim();
+      if (newTopic !== (capture.topic || '')) {
+        await saveDoc('captures', capture.id, { topic: newTopic });
+        capture.topic = newTopic;
+      }
+    };
+    topicInput.onkeydown = (ev) => {
+      if (ev.key === 'Enter') {
+        ev.preventDefault();
+        topicInput.blur();
+      }
+    };
+  }
+
   if (creatorEl) creatorEl.textContent = capture.creator ? `by ${capture.creator}` : '';
   if (titleEl) titleEl.textContent = capture.title || 'Untitled Capture';
   if (summaryEl) summaryEl.textContent = capture.summary || '';
@@ -298,6 +475,13 @@ export function openCaptureDetailModal(capture) {
   modal.classList.add('active');
 }
 
+/**
+ * Escapes unsafe HTML characters to prevent XSS.
+ * 
+ * @purpose HTML sanitization helper for user-generated capture strings.
+ * @inputs {string} str - Unsanitized string.
+ * @outputs {string} Sanitized string safe for DOM interpolation.
+ */
 function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/[&<>"']/g, m => ({
