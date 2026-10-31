@@ -6,8 +6,13 @@
 
 import { state, updateDesk } from '../state.js';
 import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { openCaptureDetailModal } from '../captures/drawer.js';
 
 export function renderGamingDesk(desk) {
+  const activeCap = (state.captures || []).find(c => String(c.id) === String(desk.activeCaptureId));
+  const blogUrl = activeCap?.blogUrl;
+  const sourceUrl = activeCap?.sourceUrl || desk.linkUrl;
+
   return `
     <div class="desk-card" data-desk-id="gaming">
       <div class="desk-card-header">
@@ -26,8 +31,13 @@ export function renderGamingDesk(desk) {
       </div>
 
       <div class="desk-card-footer">
-        <button type="button" class="desk-action-btn btn-gaming-edit">✏️ Update Quest</button>
-        ${desk.linkUrl ? `<a href="${desk.linkUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Wiki ↗</a>` : ''}
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button type="button" class="desk-action-btn btn-desk-open-card" data-desk="gaming">✏️ Details</button>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          ${blogUrl && blogUrl !== sourceUrl ? `<a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;">Blog ↗</a>` : ''}
+          ${sourceUrl ? `<a href="${sourceUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Source ↗</a>` : ''}
+        </div>
       </div>
     </div>
   `;
@@ -55,12 +65,23 @@ export function bindGamingEvents(root, desk) {
     });
   }
 
-  const editBtn = root.querySelector('.btn-gaming-edit');
-  if (editBtn) {
-    editBtn.addEventListener('click', async () => {
-      const newQuest = prompt('Update current game quest objective:', desk.quest || '');
-      if (newQuest !== null) {
-        await updateDesk('gaming', { quest: newQuest.trim() });
+  const detailsBtn = root.querySelector('.btn-desk-open-card[data-desk="gaming"]');
+  if (detailsBtn) {
+    detailsBtn.addEventListener('click', () => {
+      const activeCap = (state.captures || []).find(c => String(c.id) === String(desk.activeCaptureId));
+      if (activeCap) {
+        openCaptureDetailModal(activeCap);
+      } else {
+        openCaptureDetailModal({
+          id: desk.activeCaptureId || 'gaming-active',
+          title: desk.title || 'Baldurs Gate 3',
+          domain: 'game',
+          topic: 'Gaming',
+          summary: desk.quest || '',
+          sourceUrl: desk.linkUrl || '',
+          platform: desk.platform || 'PC',
+          quest: desk.quest || ''
+        });
       }
     });
   }

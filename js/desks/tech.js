@@ -6,8 +6,13 @@
 
 import { state, updateDesk } from '../state.js';
 import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { openCaptureDetailModal } from '../captures/drawer.js';
 
 export function renderTechDesk(desk) {
+  const activeCap = (state.captures || []).find(c => String(c.id) === String(desk.activeCaptureId));
+  const blogUrl = activeCap?.blogUrl;
+  const sourceUrl = activeCap?.sourceUrl || desk.linkUrl;
+
   return `
     <div class="desk-card" data-desk-id="tech">
       <div class="desk-card-header">
@@ -26,8 +31,13 @@ export function renderTechDesk(desk) {
       </div>
 
       <div class="desk-card-footer">
-        <button type="button" class="desk-action-btn btn-tech-edit">✏️ Update Focus</button>
-        ${desk.linkUrl ? `<a href="${desk.linkUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">GitHub ↗</a>` : ''}
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button type="button" class="desk-action-btn btn-desk-open-card" data-desk="tech">✏️ Details</button>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          ${blogUrl && blogUrl !== sourceUrl ? `<a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;">Blog ↗</a>` : ''}
+          ${sourceUrl ? `<a href="${sourceUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Source ↗</a>` : ''}
+        </div>
       </div>
     </div>
   `;
@@ -55,12 +65,23 @@ export function bindTechEvents(root, desk) {
     });
   }
 
-  const editBtn = root.querySelector('.btn-tech-edit');
-  if (editBtn) {
-    editBtn.addEventListener('click', async () => {
-      const newFocus = prompt('Update current project focus:', desk.focus || '');
-      if (newFocus !== null) {
-        await updateDesk('tech', { focus: newFocus.trim() });
+  const detailsBtn = root.querySelector('.btn-desk-open-card[data-desk="tech"]');
+  if (detailsBtn) {
+    detailsBtn.addEventListener('click', () => {
+      const activeCap = (state.captures || []).find(c => String(c.id) === String(desk.activeCaptureId));
+      if (activeCap) {
+        openCaptureDetailModal(activeCap);
+      } else {
+        openCaptureDetailModal({
+          id: desk.activeCaptureId || 'tech-active',
+          title: desk.title || 'PressPrint Lab Parametric Boxes',
+          domain: 'tech',
+          topic: desk.stack || 'Development',
+          summary: desk.focus || '',
+          sourceUrl: desk.linkUrl || '',
+          stack: desk.stack || 'Development',
+          focus: desk.focus || ''
+        });
       }
     });
   }

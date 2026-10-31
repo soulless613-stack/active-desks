@@ -171,11 +171,14 @@
       </div>
 
       <div class="modal-body">
-        <h3 id="modal-capture-title" style="font-size: 1.25rem; font-weight: 700;"></h3>
-        <p id="modal-capture-summary" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;"></p>
+        <input type="text" id="modal-capture-title-input" class="modal-card-title-input" placeholder="Title..." title="Click to edit title">
+        <textarea id="modal-capture-summary-input" class="modal-card-summary-input" placeholder="Summary & notes..." rows="3" title="Click to edit summary"></textarea>
+
+        <!-- Domain Workbench Interactive Controls (Pages, Rows, Quests, Focus) -->
+        <div id="modal-capture-workbench-fields" style="margin-top: 10px;"></div>
 
         <!-- Tier 3 Deep Payload Area -->
-        <div id="modal-capture-tier3" style="background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 14px; border: 1px solid var(--border-subtle); display: none;"></div>
+        <div id="modal-capture-tier3" style="background: rgba(0,0,0,0.3); border-radius: var(--radius-md); padding: 14px; border: 1px solid var(--border-subtle); display: none; margin-top: 12px;"></div>
       </div>
 
       <div class="modal-footer" style="justify-content: space-between;">

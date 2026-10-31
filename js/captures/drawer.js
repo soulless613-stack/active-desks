@@ -6,7 +6,7 @@
  * dynamic domain discovery, and scoped detail modal editing.
  */
 
-import { state, subscribe } from '../state.js';
+import { state, subscribe, updateDesk } from '../state.js';
 import { deleteDocById, saveDoc } from '../firebase.js';
 import { runTopicCohesionEvaluation, activeTopicEvolutionNotice } from './taxonomy.js';
 
@@ -387,8 +387,9 @@ export function openCaptureDetailModal(capture) {
   const domainSelect = document.getElementById('modal-capture-domain-select');
   const topicInput = document.getElementById('modal-capture-topic-input');
   const creatorEl = document.getElementById('modal-capture-creator');
-  const titleEl = document.getElementById('modal-capture-title');
-  const summaryEl = document.getElementById('modal-capture-summary');
+  const titleInput = document.getElementById('modal-capture-title-input');
+  const summaryInput = document.getElementById('modal-capture-summary-input');
+  const workbenchFieldsEl = document.getElementById('modal-capture-workbench-fields');
   const tier3El = document.getElementById('modal-capture-tier3');
   const sourceLink = document.getElementById('modal-capture-source-link');
   const blogLink = document.getElementById('modal-capture-blog-link');
@@ -434,8 +435,194 @@ export function openCaptureDetailModal(capture) {
   }
 
   if (creatorEl) creatorEl.textContent = capture.creator ? `by ${capture.creator}` : '';
-  if (titleEl) titleEl.textContent = capture.title || 'Untitled Capture';
-  if (summaryEl) summaryEl.textContent = capture.summary || '';
+
+  if (titleInput) {
+    titleInput.value = capture.title || '';
+    titleInput.onchange = async () => {
+      const newTitle = titleInput.value.trim();
+      if (newTitle !== (capture.title || '')) {
+        await saveDoc('captures', capture.id, { title: newTitle });
+        capture.title = newTitle;
+        await syncActiveDesk(domain, { title: newTitle });
+      }
+    };
+    titleInput.onkeydown = (ev) => {
+      if (ev.key === 'Enter') {
+        ev.preventDefault();
+        titleInput.blur();
+      }
+    };
+  }
+
+  if (summaryInput) {
+    summaryInput.value = capture.summary || '';
+    summaryInput.onchange = async () => {
+      const newSummary = summaryInput.value.trim();
+      if (newSummary !== (capture.summary || '')) {
+        await saveDoc('captures', capture.id, { summary: newSummary });
+        capture.summary = newSummary;
+        await syncActiveDesk(domain, { summary: newSummary });
+      }
+    };
+  }
+
+  // Populate dynamic workbench fields based on domain
+  if (workbenchFieldsEl) {
+    workbenchFieldsEl.innerHTML = '';
+    if (domain === 'book') {
+      const curPage = capture.currentPage || 0;
+      const totPages = capture.totalPages || 100;
+      workbenchFieldsEl.innerHTML = `
+        <div style="background: rgba(56, 189, 248, 0.05); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: var(--radius-md); padding: 10px 14px;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--domain-book); text-transform: uppercase; margin-bottom: 6px;">📖 Reading Progress</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Current Page</label>
+              <input type="number" id="modal-card-page-input" class="capture-input" style="width: 100%; padding: 4px 8px; font-size: 0.85rem;" value="${curPage}" min="0">
+              <div class="btn-stepper-group" style="margin-top: 4px;">
+                <button type="button" class="btn-stepper-pill modal-page-step" data-step="-10">-10</button>
+                <button type="button" class="btn-stepper-pill modal-page-step" data-step="-1">-1</button>
+                <button type="button" class="btn-stepper-pill modal-page-step" data-step="1">+1</button>
+                <button type="button" class="btn-stepper-pill modal-page-step" data-step="10">+10</button>
+              </div>
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Total Pages</label>
+              <input type="number" id="modal-card-total-input" class="capture-input" style="width: 100%; padding: 4px 8px; font-size: 0.85rem;" value="${totPages}" min="1">
+            </div>
+          </div>
+        </div>
+      `;
+
+      const pInput = document.getElementById('modal-card-page-input');
+      const tInput = document.getElementById('modal-card-total-input');
+      const savePages = async () => {
+        const p = parseInt(pInput?.value || '0', 10);
+        const t = parseInt(tInput?.value || '100', 10);
+        await saveDoc('captures', capture.id, { currentPage: p, totalPages: t });
+        capture.currentPage = p;
+        capture.totalPages = t;
+        await syncActiveDesk('book', { currentPage: p, totalPages: t });
+      };
+
+      if (pInput) pInput.onchange = savePages;
+      if (tInput) tInput.onchange = savePages;
+      workbenchFieldsEl.querySelectorAll('.modal-page-step').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const step = parseInt(btn.getAttribute('data-step') || '0', 10);
+          const currentVal = parseInt(pInput?.value || '0', 10);
+          const newVal = Math.max(0, currentVal + step);
+          if (pInput) pInput.value = newVal;
+          await savePages();
+        });
+      });
+    } else if (domain === 'fiber') {
+      const curRows = capture.rows || 0;
+      const totRows = capture.targetRows || 100;
+      workbenchFieldsEl.innerHTML = `
+        <div style="background: rgba(236, 72, 153, 0.05); border: 1px solid rgba(236, 72, 153, 0.2); border-radius: var(--radius-md); padding: 10px 14px;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--domain-fiber); text-transform: uppercase; margin-bottom: 6px;">🧶 Fiber WIP Tracker</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Current Rows</label>
+              <input type="number" id="modal-card-rows-input" class="capture-input" style="width: 100%; padding: 4px 8px; font-size: 0.85rem;" value="${curRows}" min="0">
+              <div class="btn-stepper-group" style="margin-top: 4px;">
+                <button type="button" class="btn-stepper-pill modal-row-step" data-step="-1">-1</button>
+                <button type="button" class="btn-stepper-pill modal-row-step" data-step="1">+1</button>
+              </div>
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Target Rows</label>
+              <input type="number" id="modal-card-target-rows-input" class="capture-input" style="width: 100%; padding: 4px 8px; font-size: 0.85rem;" value="${totRows}" min="1">
+            </div>
+          </div>
+        </div>
+      `;
+
+      const rInput = document.getElementById('modal-card-rows-input');
+      const trInput = document.getElementById('modal-card-target-rows-input');
+      const saveRows = async () => {
+        const r = parseInt(rInput?.value || '0', 10);
+        const tr = parseInt(trInput?.value || '100', 10);
+        await saveDoc('captures', capture.id, { rows: r, targetRows: tr });
+        capture.rows = r;
+        capture.targetRows = tr;
+        await syncActiveDesk('fiber', { rows: r, targetRows: tr });
+      };
+
+      if (rInput) rInput.onchange = saveRows;
+      if (trInput) trInput.onchange = saveRows;
+      workbenchFieldsEl.querySelectorAll('.modal-row-step').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const step = parseInt(btn.getAttribute('data-step') || '0', 10);
+          const currentVal = parseInt(rInput?.value || '0', 10);
+          const newVal = Math.max(0, currentVal + step);
+          if (rInput) rInput.value = newVal;
+          await saveRows();
+        });
+      });
+    } else if (domain === 'game') {
+      workbenchFieldsEl.innerHTML = `
+        <div style="background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: var(--radius-md); padding: 10px 14px;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--domain-game); text-transform: uppercase; margin-bottom: 6px;">🎮 Active Quest &amp; Platform</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Platform</label>
+              <input type="text" id="modal-card-platform-input" class="capture-input" style="width: 100%; padding: 4px 8px; font-size: 0.85rem;" value="${escapeHtml(capture.platform || 'PC')}">
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Current Quest / Objective</label>
+              <input type="text" id="modal-card-quest-input" class="capture-input" style="width: 100%; padding: 4px 8px; font-size: 0.85rem;" value="${escapeHtml(capture.quest || capture.summary || '')}">
+            </div>
+          </div>
+        </div>
+      `;
+
+      const platInput = document.getElementById('modal-card-platform-input');
+      const questInput = document.getElementById('modal-card-quest-input');
+      const saveGaming = async () => {
+        const platform = platInput?.value.trim() || 'PC';
+        const quest = questInput?.value.trim() || '';
+        await saveDoc('captures', capture.id, { platform, quest });
+        capture.platform = platform;
+        capture.quest = quest;
+        await syncActiveDesk('game', { platform, quest });
+      };
+
+      if (platInput) platInput.onchange = saveGaming;
+      if (questInput) questInput.onchange = saveGaming;
+    } else if (domain === 'tech') {
+      workbenchFieldsEl.innerHTML = `
+        <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-md); padding: 10px 14px;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--domain-tech); text-transform: uppercase; margin-bottom: 6px;">💻 Tech Focus &amp; Stack</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Tech Stack / Tools</label>
+              <input type="text" id="modal-card-stack-input" class="capture-input" style="width: 100%; padding: 4px 8px; font-size: 0.85rem;" value="${escapeHtml(capture.stack || capture.topic || 'Development')}">
+            </div>
+            <div>
+              <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Current Focus / Sprint Task</label>
+              <input type="text" id="modal-card-focus-input" class="capture-input" style="width: 100%; padding: 4px 8px; font-size: 0.85rem;" value="${escapeHtml(capture.focus || capture.summary || '')}">
+            </div>
+          </div>
+        </div>
+      `;
+
+      const stackInput = document.getElementById('modal-card-stack-input');
+      const focusInput = document.getElementById('modal-card-focus-input');
+      const saveTech = async () => {
+        const stack = stackInput?.value.trim() || 'Development';
+        const focus = focusInput?.value.trim() || '';
+        await saveDoc('captures', capture.id, { stack, focus });
+        capture.stack = stack;
+        capture.focus = focus;
+        await syncActiveDesk('tech', { stack, focus });
+      };
+
+      if (stackInput) stackInput.onchange = saveTech;
+      if (focusInput) focusInput.onchange = saveTech;
+    }
+  }
 
   if (blogLink) {
     if (capture.blogUrl && capture.blogUrl !== capture.sourceUrl) {
@@ -516,6 +703,20 @@ export function openCaptureDetailModal(capture) {
   }
 
   modal.classList.add('active');
+}
+
+/**
+ * Synchronizes capture property changes with active workbench state if currently mounted.
+ * 
+ * @param {string} deskDomain - Domain ('book', 'recipe', 'game', 'fiber', 'tech').
+ * @param {object} patch - Fields to sync to desk state.
+ */
+async function syncActiveDesk(deskDomain, patch) {
+  const deskIdMap = { book: 'reading', recipe: 'kitchen', game: 'gaming', fiber: 'fiber', tech: 'tech' };
+  const deskId = deskIdMap[deskDomain] || deskDomain;
+  if (state.desks?.[deskId]) {
+    await updateDesk(deskId, patch);
+  }
 }
 
 function capitalize(s) {

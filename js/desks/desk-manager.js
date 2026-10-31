@@ -135,10 +135,13 @@ export function renderGenericDesk(id, desk) {
       </div>
 
       <div class="desk-card-footer" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; gap: 6px;">
+        <div style="display: flex; gap: 6px; align-items: center;">
+          ${activeCap ? `<button type="button" class="desk-action-btn btn-generic-view-details" data-generic-cap-id="${activeCap.id}">📋 Details</button>` : ''}
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          ${activeCap?.blogUrl && activeCap.blogUrl !== activeCap.sourceUrl ? `<a href="${activeCap.blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;">Blog ↗</a>` : ''}
           ${activeCap?.sourceUrl ? `<a href="${activeCap.sourceUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Source ↗</a>` : ''}
         </div>
-        ${activeCap ? `<button type="button" class="desk-action-btn btn-generic-view-details" data-generic-cap-id="${activeCap.id}">View Details</button>` : ''}
       </div>
     </div>
   `;

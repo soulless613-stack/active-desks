@@ -839,6 +839,49 @@ body {
   color: var(--text-muted);
 }
 
+/* Modal In-Place Title & Summary Editor */
+.modal-card-title-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.modal-card-title-input:hover, .modal-card-title-input:focus {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: var(--accent-cyan);
+}
+
+.modal-card-summary-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  font-family: inherit;
+  padding: 6px;
+  resize: vertical;
+  outline: none;
+  margin-top: 6px;
+  transition: all 0.2s;
+}
+
+.modal-card-summary-input:hover, .modal-card-summary-input:focus {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text-primary);
+}
+
 /* Inline Topic Editing on Cards & Modal */
 .topic-inline-editable {
   font-size: 0.78rem;

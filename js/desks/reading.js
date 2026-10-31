@@ -1,11 +1,13 @@
 /**
  * @file reading.js
  * @description Reading Workbench card renderer for Active Desks v3.0.
- * Tracks book progress, pages read, completion percentage, and StoryGraph link.
+ * Tracks book progress, pages read, completion percentage, standardized Source/Blog links,
+ * and unified 3-Tier Detail Card opening.
  */
 
 import { state, updateDesk } from '../state.js';
 import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { openCaptureDetailModal } from '../captures/drawer.js';
 import { saveDoc } from '../firebase.js';
 
 /**
@@ -19,6 +21,7 @@ export function renderReadingDesk(desk) {
   const current = desk.currentPage || 0;
   const total = desk.totalPages || 1;
   const pct = Math.min(100, Math.max(0, Math.round((current / total) * 100)));
+  const activeCap = (state.captures || []).find(c => String(c.id) === String(desk.activeCaptureId));
 
   return `
     <div class="desk-card" data-desk-id="reading">
@@ -31,8 +34,8 @@ export function renderReadingDesk(desk) {
       </div>
 
       <div>
-        <div class="desk-card-title">${desk.title || 'Untitled Book'}</div>
-        <div class="desk-card-meta">by ${desk.author || 'Unknown Author'}</div>
+        <div class="desk-card-title">${escapeHtml(desk.title || 'Untitled Book')}</div>
+        <div class="desk-card-meta">by ${escapeHtml(desk.author || 'Unknown Author')}</div>
         
         <div class="progress-bar-bg" style="margin-top: 10px;">
           <div class="progress-bar-fill" style="width: ${pct}%;"></div>
@@ -45,21 +48,24 @@ export function renderReadingDesk(desk) {
       </div>
 
       <div class="desk-card-footer">
-        <div style="display: flex; gap: 6px;">
+        <div style="display: flex; gap: 6px; align-items: center;">
           <button type="button" class="desk-action-btn btn-reading-step" data-step="5">+5 pgs</button>
           <button type="button" class="desk-action-btn btn-reading-step" data-step="10">+10</button>
-          <button type="button" class="desk-action-btn btn-reading-edit">✏️ Edit</button>
+          <button type="button" class="desk-action-btn btn-desk-open-card" data-desk="reading">✏️ Details</button>
         </div>
-        ${desk.storygraphUrl ? `<a href="${desk.storygraphUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">StoryGraph ↗</a>` : ''}
+        <div style="display: flex; gap: 6px; align-items: center;">
+          ${activeCap?.blogUrl && activeCap.blogUrl !== activeCap.sourceUrl ? `<a href="${activeCap.blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;">Blog ↗</a>` : ''}
+          ${activeCap?.sourceUrl || desk.storygraphUrl ? `<a href="${activeCap?.sourceUrl || desk.storygraphUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Source ↗</a>` : ''}
+        </div>
       </div>
     </div>
   `;
 }
 
 /**
- * Binds click events for reading desk progress incrementers.
+ * Binds click events for reading desk progress incrementers and card detail opener.
  * 
- * @purpose Handles quick page adds and inline page prompt.
+ * @purpose Handles quick page adds and opens the unified 3-tier card detail modal.
  * @inputs {HTMLElement} root - Desk container.
  * @inputs {object} desk - Reading desk state.
  * @outputs {void}
@@ -100,72 +106,31 @@ export function bindReadingEvents(root, desk) {
     });
   }
 
-  const editBtn = root.querySelector('.btn-reading-edit');
-  if (editBtn) {
-    editBtn.addEventListener('click', () => {
-      openReadingEditModal(desk);
+  // Open Unified 3-Tier Card View & Editor
+  const detailsBtn = root.querySelector('.btn-desk-open-card[data-desk="reading"]');
+  if (detailsBtn) {
+    detailsBtn.addEventListener('click', () => {
+      const activeCap = (state.captures || []).find(c => String(c.id) === String(desk.activeCaptureId)) || {
+        id: desk.activeCaptureId || 'default',
+        domain: 'book',
+        title: desk.title || 'Oathbringer',
+        creator: desk.author || '',
+        currentPage: desk.currentPage || 0,
+        totalPages: desk.totalPages || 100,
+        sourceUrl: desk.storygraphUrl || ''
+      };
+      openCaptureDetailModal(activeCap);
     });
   }
 }
 
-/**
- * Opens the Reading Edit Modal and populates inputs with current book data.
- * 
- * @purpose Provides a responsive, scrollable editing interface for book progress.
- * @inputs {object} desk - Reading desk state.
- * @outputs {void}
- */
-export function openReadingEditModal(desk) {
-  const modal = document.getElementById('reading-edit-modal');
-  const form = document.getElementById('form-edit-reading');
-  if (!modal || !form) return;
-
-  const titleInput = document.getElementById('input-reading-title');
-  const authorInput = document.getElementById('input-reading-author');
-  const pageInput = document.getElementById('input-reading-page');
-  const totalInput = document.getElementById('input-reading-total');
-  const storygraphInput = document.getElementById('input-reading-storygraph');
-
-  if (titleInput) titleInput.value = desk.title || '';
-  if (authorInput) authorInput.value = desk.author || '';
-  if (pageInput) pageInput.value = desk.currentPage || 0;
-  if (totalInput) totalInput.value = desk.totalPages || 100;
-  if (storygraphInput) storygraphInput.value = desk.storygraphUrl || '';
-
-  // Wire quick steppers in modal
-  modal.querySelectorAll('#reading-modal-steppers .btn-stepper-pill').forEach(btn => {
-    btn.onclick = () => {
-      const step = parseInt(btn.getAttribute('data-step') || '0', 10);
-      const cur = parseInt(pageInput?.value || '0', 10);
-      const tot = parseInt(totalInput?.value || '100', 10);
-      if (pageInput) {
-        pageInput.value = Math.max(0, Math.min(tot, cur + step));
-      }
-    };
-  });
-
-  // Wire form submit once
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    const newPage = parseInt(pageInput?.value || '0', 10);
-    const newTotal = Math.max(1, parseInt(totalInput?.value || '1', 10));
-    const patch = {
-      title: titleInput?.value.trim() || 'Untitled Book',
-      author: authorInput?.value.trim() || '',
-      currentPage: newPage,
-      totalPages: newTotal,
-      storygraphUrl: storygraphInput?.value.trim() || ''
-    };
-
-    await updateDesk('reading', patch);
-    if (desk.activeCaptureId && desk.activeCaptureId !== 'default') {
-      await saveDoc('captures', desk.activeCaptureId, {
-        currentPage: newPage,
-        totalPages: newTotal
-      });
-    }
-    modal.classList.remove('active');
-  };
-
-  modal.classList.add('active');
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[m]);
 }

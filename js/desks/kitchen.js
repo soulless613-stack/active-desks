@@ -48,11 +48,15 @@ export function renderKitchenDesk(desk) {
       </div>
 
       <div class="desk-card-footer">
-        <div style="display: flex; gap: 6px;">
+        <div style="display: flex; gap: 6px; align-items: center;">
           <button type="button" class="desk-action-btn btn-kitchen-prev" ${activeIdx <= 0 ? 'disabled style="opacity: 0.3;"' : ''}>← Prev</button>
           <button type="button" class="desk-action-btn btn-kitchen-next" ${activeIdx >= allRecipes.length - 1 ? 'disabled style="opacity: 0.3;"' : ''}>Next →</button>
+          <button type="button" class="desk-action-btn btn-desk-open-card" data-desk="kitchen">📋 Details</button>
         </div>
-        <button type="button" class="desk-action-btn btn-kitchen-view" data-recipe-id="${recipe.id || ''}">📋 View Details</button>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          ${recipe.blogUrl && recipe.blogUrl !== recipe.sourceUrl ? `<a href="${recipe.blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;">Blog ↗</a>` : ''}
+          ${recipe.sourceUrl || (recipe.source && recipe.source.startsWith('http') ? recipe.source : '') ? `<a href="${recipe.sourceUrl || recipe.source}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Source ↗</a>` : ''}
+        </div>
       </div>
     </div>
   `;
@@ -98,7 +102,7 @@ export function bindKitchenEvents(root, desk) {
     });
   }
 
-  const viewBtn = root.querySelector('.btn-kitchen-view');
+  const viewBtn = root.querySelector('.btn-desk-open-card[data-desk="kitchen"]') || root.querySelector('.btn-kitchen-view');
   if (viewBtn) {
     viewBtn.addEventListener('click', () => {
       const activeRecipe = allRecipes[activeIdx];

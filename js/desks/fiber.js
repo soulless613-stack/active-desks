@@ -6,11 +6,15 @@
 
 import { state, updateDesk } from '../state.js';
 import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { openCaptureDetailModal } from '../captures/drawer.js';
 
 export function renderFiberDesk(desk) {
   const current = desk.rows || 0;
   const target = desk.targetRows || 1;
   const pct = Math.min(100, Math.max(0, Math.round((current / target) * 100)));
+  const activeCap = (state.captures || []).find(c => String(c.id) === String(desk.activeCaptureId));
+  const blogUrl = activeCap?.blogUrl;
+  const sourceUrl = activeCap?.sourceUrl || desk.linkUrl;
 
   return `
     <div class="desk-card" data-desk-id="fiber">
@@ -32,12 +36,15 @@ export function renderFiberDesk(desk) {
       </div>
 
       <div class="desk-card-footer">
-        <div style="display: flex; gap: 5px;">
+        <div style="display: flex; gap: 5px; align-items: center;">
           <button type="button" class="desk-action-btn btn-fiber-step" data-step="-1">-1 Row</button>
           <button type="button" class="desk-action-btn btn-fiber-step" data-step="1">+1 Row</button>
-          <button type="button" class="desk-action-btn btn-fiber-edit">✏️ Edit</button>
+          <button type="button" class="desk-action-btn btn-desk-open-card" data-desk="fiber">✏️ Details</button>
         </div>
-        ${desk.linkUrl ? `<a href="${desk.linkUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Ravelry ↗</a>` : ''}
+        <div style="display: flex; gap: 6px; align-items: center;">
+          ${blogUrl && blogUrl !== sourceUrl ? `<a href="${blogUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;">Blog ↗</a>` : ''}
+          ${sourceUrl ? `<a href="${sourceUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Source ↗</a>` : ''}
+        </div>
       </div>
     </div>
   `;
@@ -73,15 +80,23 @@ export function bindFiberEvents(root, desk) {
     });
   }
 
-  const editBtn = root.querySelector('.btn-fiber-edit');
-  if (editBtn) {
-    editBtn.addEventListener('click', async () => {
-      const input = prompt('Enter current row number:', String(desk.rows || 0));
-      if (input !== null) {
-        const parsed = parseInt(input, 10);
-        if (!isNaN(parsed) && parsed >= 0) {
-          await updateDesk('fiber', { rows: parsed });
-        }
+  const detailsBtn = root.querySelector('.btn-desk-open-card[data-desk="fiber"]');
+  if (detailsBtn) {
+    detailsBtn.addEventListener('click', () => {
+      const activeCap = (state.captures || []).find(c => String(c.id) === String(desk.activeCaptureId));
+      if (activeCap) {
+        openCaptureDetailModal(activeCap);
+      } else {
+        openCaptureDetailModal({
+          id: desk.activeCaptureId || 'fiber-active',
+          title: desk.name || 'Autumn Cardigan',
+          domain: 'fiber',
+          topic: desk.type || 'Knitting / Crochet',
+          summary: desk.specs || 'Standard Pattern',
+          sourceUrl: desk.linkUrl || '',
+          rows: desk.rows || 0,
+          targetRows: desk.targetRows || 100
+        });
       }
     });
   }
