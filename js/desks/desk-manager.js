@@ -13,6 +13,14 @@ import { renderGamingDesk, bindGamingEvents } from './gaming.js';
 import { renderFiberDesk, bindFiberEvents } from './fiber.js';
 import { renderTechDesk, bindTechEvents } from './tech.js';
 
+export const CANONICAL_DESK_MAP = {
+  book: 'reading',
+  recipe: 'kitchen',
+  game: 'gaming',
+  fiber: 'fiber',
+  tech: 'tech'
+};
+
 const DESK_RENDERERS = {
   reading: { render: renderReadingDesk, bind: bindReadingEvents },
   kitchen: { render: renderKitchenDesk, bind: bindKitchenEvents },
@@ -46,6 +54,21 @@ export function initDeskManager() {
     });
   }
 
+  // Sanitize activeDeskIds on startup: deduplicate and map legacy capture domains (e.g. 'book')
+  // to canonical specialized desks (e.g. 'reading'), strictly preserving the desk with the progress bar.
+  if (Array.isArray(state.activeDeskIds)) {
+    const sanitized = [];
+    for (const rawId of state.activeDeskIds) {
+      const canonicalId = CANONICAL_DESK_MAP[rawId] || rawId;
+      if (!sanitized.includes(canonicalId)) {
+        sanitized.push(canonicalId);
+      }
+    }
+    if (sanitized.length > 0 && JSON.stringify(sanitized) !== JSON.stringify(state.activeDeskIds)) {
+      setActiveDeskIds(sanitized);
+    }
+  }
+
   // Subscribe to changes in active selection or desks
   subscribe('activeDeskIds', renderWorkbenchGrid);
   subscribe('desks', renderWorkbenchGrid);
@@ -66,12 +89,19 @@ export function renderWorkbenchGrid() {
   const gridEl = document.getElementById('workbench-grid');
   if (!gridEl) return;
 
-  const activeIds = state.activeDeskIds || ['reading', 'kitchen', 'gaming', 'fiber'];
+  const rawActiveIds = state.activeDeskIds || ['reading', 'kitchen', 'gaming', 'fiber'];
+  const activeIds = [];
+  for (const rawId of rawActiveIds) {
+    const canonicalId = CANONICAL_DESK_MAP[rawId] || rawId;
+    if (!activeIds.includes(canonicalId)) {
+      activeIds.push(canonicalId);
+    }
+  }
   const deskMap = state.desks || {};
 
   let html = '';
   for (const id of activeIds) {
-    const desk = deskMap[id] || { id, title: `${capitalize(id)} Workbench`, domain: id };
+    const desk = deskMap[id] || { id, title: `${capitalize(id)} Desk`, domain: id };
     const renderer = DESK_RENDERERS[id];
     if (renderer) {
       html += renderer.render(desk);
@@ -198,14 +228,21 @@ export function openSwapModal(targetId = null) {
 
   const knownKeys = new Set(['reading', 'kitchen', 'gaming', 'fiber', 'tech']);
   Object.keys(state.desks || {}).forEach(k => {
-    if (k !== 'active_selection') knownKeys.add(k);
+    if (k !== 'active_selection') {
+      const canonical = CANONICAL_DESK_MAP[k] || k;
+      knownKeys.add(canonical);
+    }
   });
   (state.captures || []).forEach(c => {
     const d = (c.domain || 'misc').toLowerCase();
-    if (d !== 'misc' && d !== 'link') knownKeys.add(d);
+    const canonical = CANONICAL_DESK_MAP[d] || d;
+    if (canonical !== 'misc' && canonical !== 'link') {
+      knownKeys.add(canonical);
+    }
   });
 
-  const activeSet = new Set(state.activeDeskIds || []);
+  // Ensure active IDs are sanitized through canonical map
+  const activeSet = new Set((state.activeDeskIds || []).map(id => CANONICAL_DESK_MAP[id] || id));
 
   const sortedKeys = Array.from(knownKeys).sort((a, b) => {
     const aActive = activeSet.has(a) ? 1 : 0;
@@ -215,14 +252,17 @@ export function openSwapModal(targetId = null) {
   });
 
   listEl.innerHTML = sortedKeys.map(key => {
-    const desk = state.desks[key] || { id: key, title: `${capitalize(key)} Workbench`, domain: key };
+    const desk = state.desks[key] || { id: key, title: `${capitalize(key)} Desk`, domain: key };
     const isChecked = activeSet.has(key);
     const isTarget = targetId && key === targetId;
+    const displayTitle = desk.title || desk.name || `${capitalize(key)} Desk`;
+    const subtitle = key === 'reading' ? 'Reading Nook · Page Progress Bar' : `${desk.domain || key} Desk`;
+
     return `
       <label style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: ${isTarget ? 'rgba(56, 189, 248, 0.12)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isTarget ? 'var(--accent-cyan)' : 'var(--border-subtle)'}; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
         <div>
-          <div style="font-weight: 700; font-size: 0.95rem;">${escapeHtml(desk.title || desk.name || capitalize(key))}</div>
-          <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: capitalize;">${escapeHtml(desk.domain || key)} Workbench</div>
+          <div style="font-weight: 700; font-size: 0.95rem;">${escapeHtml(displayTitle)}</div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: capitalize;">${escapeHtml(subtitle)}</div>
         </div>
         <input type="checkbox" class="swap-desk-checkbox" data-desk-id="${key}" ${isChecked ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-cyan);">
       </label>
@@ -235,7 +275,7 @@ export function openSwapModal(targetId = null) {
       const selected = Array.from(listEl.querySelectorAll('.swap-desk-checkbox:checked')).map(el => el.getAttribute('data-desk-id'));
       if (selected.length > 4) {
         cb.checked = false;
-        alert('You can select a maximum of 4 active workbenches.');
+        alert('You can select a maximum of 4 active desks.');
         return;
       }
       await setActiveDeskIds(selected);
