@@ -119,3 +119,59 @@ function openSwapModal() {
 
   modal.classList.add('active');
 }
+
+/**
+ * Escapes special HTML characters for injection into templates.
+ * 
+ * @param {string} str - Raw text.
+ * @returns {string} Sanitized string.
+ */
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Renders a standardized <select class="desk-item-select"> populated with all captures matching the desk's domain.
+ * 
+ * @param {string} deskId - Target workbench identifier ('reading', 'kitchen', 'gaming', 'fiber', 'tech').
+ * @param {string} domain - Domain filter ('book', 'recipe', 'game', 'fiber', 'tech').
+ * @param {string} activeId - Currently selected captureId or 'default'.
+ * @param {Array<object>} captures - Global captures array.
+ * @param {string} fallbackTitle - Fallback/seeded card title.
+ * @returns {string} HTML string.
+ */
+export function renderDeskSwitcherHtml(deskId, domain, activeId, captures = [], fallbackTitle = 'Default') {
+  const matchingCaptures = (captures || []).filter(c => (c.domain || '').toLowerCase() === domain.toLowerCase());
+  
+  if (matchingCaptures.length === 0) {
+    return `
+      <select class="desk-item-select" data-desk="${deskId}" title="Select active card">
+        <option value="default" selected>${escapeHtml(fallbackTitle.slice(0, 22))}</option>
+      </select>
+    `;
+  }
+
+  const hasDefault = fallbackTitle && !matchingCaptures.some(c => String(c.id) === String(activeId));
+  let optionsHtml = '';
+  if (hasDefault) {
+    optionsHtml += `<option value="default" ${(!activeId || activeId === 'default') ? 'selected' : ''}>${escapeHtml(fallbackTitle.slice(0, 22))}</option>`;
+  }
+
+  optionsHtml += matchingCaptures.map(c => {
+    const isSelected = String(c.id) === String(activeId);
+    const label = (c.title || c.topic || 'Untitled').slice(0, 22);
+    return `<option value="${c.id}" ${isSelected ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+  }).join('');
+
+  return `
+    <select class="desk-item-select" data-desk="${deskId}" title="Select active card">
+      ${optionsHtml}
+    </select>
+  `;
+}

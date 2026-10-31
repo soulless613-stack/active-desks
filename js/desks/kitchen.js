@@ -6,6 +6,7 @@
 
 import { state, updateDesk } from '../state.js';
 import { openCaptureDetailModal } from '../captures/drawer.js';
+import { renderDeskSwitcherHtml } from './desk-manager.js';
 
 /**
  * Generates the HTML string for the Kitchen workbench card.
@@ -20,6 +21,7 @@ export function renderKitchenDesk(desk) {
   const allRecipes = recipeCaptures.length > 0 ? recipeCaptures : (desk.recipes || []);
   const activeIdx = Math.max(0, Math.min(allRecipes.length - 1, desk.selectedIndex || 0));
   const recipe = allRecipes[activeIdx] || {
+    id: 'default',
     title: 'No Recipes Saved Yet',
     summary: 'Drop a recipe reel, TikTok, or food blog link into the capture bar!',
     source: ''
@@ -28,9 +30,12 @@ export function renderKitchenDesk(desk) {
   return `
     <div class="desk-card" data-desk-id="kitchen">
       <div class="desk-card-header">
-        <span class="desk-domain-tag recipe">Kitchen Shelf</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="desk-domain-tag recipe">Kitchen</span>
+          ${renderDeskSwitcherHtml('kitchen', 'recipe', recipe.id, allRecipes, recipe.title || 'Butter Chicken Mac')}
+        </div>
         <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">
-          ${allRecipes.length > 0 ? `${activeIdx + 1} of ${allRecipes.length}` : 'Empty'}
+          ${allRecipes.length > 0 ? `${activeIdx + 1}/${allRecipes.length}` : '0/0'}
         </span>
       </div>
 
@@ -56,7 +61,7 @@ export function renderKitchenDesk(desk) {
 /**
  * Binds click events for kitchen navigation and detail modal trigger.
  * 
- * @purpose Handles carousel arrows and opens 3-tier recipe modal.
+ * @purpose Handles carousel arrows, dropdown selection, and opens 3-tier recipe modal.
  * @inputs {HTMLElement} root - Desk container.
  * @inputs {object} desk - Kitchen desk state.
  * @outputs {void}
@@ -65,6 +70,19 @@ export function bindKitchenEvents(root, desk) {
   const recipeCaptures = (state.captures || []).filter(c => (c.domain || '').toLowerCase() === 'recipe');
   const allRecipes = recipeCaptures.length > 0 ? recipeCaptures : (desk.recipes || []);
   const activeIdx = Math.max(0, Math.min(allRecipes.length - 1, desk.selectedIndex || 0));
+
+  const select = root.querySelector('.desk-item-select[data-desk="kitchen"]');
+  if (select) {
+    select.addEventListener('change', async (e) => {
+      const val = e.target.value;
+      const targetIdx = allRecipes.findIndex(r => String(r.id) === String(val));
+      if (targetIdx !== -1) {
+        await updateDesk('kitchen', { selectedIndex: targetIdx, activeCaptureId: val });
+      } else if (val === 'default') {
+        await updateDesk('kitchen', { selectedIndex: 0, activeCaptureId: 'default' });
+      }
+    });
+  }
 
   const prevBtn = root.querySelector('.btn-kitchen-prev');
   if (prevBtn && activeIdx > 0) {

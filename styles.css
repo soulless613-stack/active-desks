@@ -407,6 +407,75 @@ body {
 .desk-domain-tag.fiber { color: var(--domain-fiber); background: rgba(236, 72, 153, 0.1); }
 .desk-domain-tag.tech { color: var(--domain-tech); background: rgba(16, 185, 129, 0.1); }
 
+/* Universal Desk Item Switcher Dropdown */
+.desk-item-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 3px 6px;
+  max-width: 150px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desk-item-select:hover, .desk-item-select:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.desk-item-select option {
+  background: #18181b;
+  color: var(--text-primary);
+}
+
+/* Tactile Quick Stepper Buttons in Modals & Cards */
+.btn-stepper-group {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.btn-stepper-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-stepper-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Checkable Ingredient Strikethrough */
+.ingredient-check-item {
+  transition: opacity 0.2s ease;
+}
+
+.ingredient-checkbox {
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+}
+
+.ingredient-check-item input[type="checkbox"]:checked ~ .ingredient-label {
+  text-decoration: line-through;
+  opacity: 0.45;
+  color: var(--text-muted);
+}
+
 .desk-card-title {
   font-size: 1.15rem;
   font-weight: 700;

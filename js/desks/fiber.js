@@ -4,7 +4,8 @@
  * Tracks knitting/crochet WIP rows, target rows, specs, and Ravelry pattern links.
  */
 
-import { updateDesk } from '../state.js';
+import { state, updateDesk } from '../state.js';
+import { renderDeskSwitcherHtml } from './desk-manager.js';
 
 export function renderFiberDesk(desk) {
   const current = desk.rows || 0;
@@ -14,8 +15,11 @@ export function renderFiberDesk(desk) {
   return `
     <div class="desk-card" data-desk-id="fiber">
       <div class="desk-card-header">
-        <span class="desk-domain-tag fiber">Fiber Arts</span>
-        <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-rose);">${pct}% (${current}/${target} rows)</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="desk-domain-tag fiber">Fiber</span>
+          ${renderDeskSwitcherHtml('fiber', 'fiber', desk.activeCaptureId, state.captures, desk.name || 'Autumn Cardigan')}
+        </div>
+        <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-rose);">${pct}% (${current}/${target})</span>
       </div>
 
       <div>
@@ -28,8 +32,9 @@ export function renderFiberDesk(desk) {
       </div>
 
       <div class="desk-card-footer">
-        <div style="display: flex; gap: 6px;">
-          <button type="button" class="desk-action-btn btn-fiber-add-row">+1 Row</button>
+        <div style="display: flex; gap: 5px;">
+          <button type="button" class="desk-action-btn btn-fiber-step" data-step="-1">-1 Row</button>
+          <button type="button" class="desk-action-btn btn-fiber-step" data-step="1">+1 Row</button>
           <button type="button" class="desk-action-btn btn-fiber-edit">✏️ Edit</button>
         </div>
         ${desk.linkUrl ? `<a href="${desk.linkUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Ravelry ↗</a>` : ''}
@@ -39,10 +44,32 @@ export function renderFiberDesk(desk) {
 }
 
 export function bindFiberEvents(root, desk) {
-  const addBtn = root.querySelector('.btn-fiber-add-row');
-  if (addBtn) {
-    addBtn.addEventListener('click', async () => {
-      await updateDesk('fiber', { rows: (desk.rows || 0) + 1 });
+  root.querySelectorAll('.btn-fiber-step').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const step = parseInt(btn.getAttribute('data-step') || '1', 10);
+      const newRows = Math.max(0, (desk.rows || 0) + step);
+      await updateDesk('fiber', { rows: newRows });
+    });
+  });
+
+  const select = root.querySelector('.desk-item-select[data-desk="fiber"]');
+  if (select) {
+    select.addEventListener('change', async (e) => {
+      const val = e.target.value;
+      if (val === 'default') {
+        await updateDesk('fiber', { activeCaptureId: 'default' });
+        return;
+      }
+      const cap = (state.captures || []).find(c => String(c.id) === String(val));
+      if (cap) {
+        await updateDesk('fiber', {
+          activeCaptureId: cap.id,
+          name: cap.title || 'Fiber Project',
+          type: cap.topic || 'Knitting / Crochet',
+          specs: cap.summary || 'Standard Pattern',
+          linkUrl: cap.sourceUrl || ''
+        });
+      }
     });
   }
 

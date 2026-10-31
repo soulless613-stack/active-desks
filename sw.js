@@ -5,7 +5,7 @@
  * to manage its own multi-tab IndexedDB replication natively.
  */
 
-const CACHE_NAME = 'active-desks-v3-1.0.5';
+const CACHE_NAME = 'active-desks-v3-1.0.6';
 
 const PRECACHE_ASSETS = [
   './',

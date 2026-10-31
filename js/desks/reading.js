@@ -4,7 +4,9 @@
  * Tracks book progress, pages read, completion percentage, and StoryGraph link.
  */
 
-import { updateDesk } from '../state.js';
+import { state, updateDesk } from '../state.js';
+import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { saveDoc } from '../firebase.js';
 
 /**
  * Generates the HTML string for the Reading workbench card.
@@ -21,8 +23,11 @@ export function renderReadingDesk(desk) {
   return `
     <div class="desk-card" data-desk-id="reading">
       <div class="desk-card-header">
-        <span class="desk-domain-tag book">Book</span>
-        <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-cyan);">${pct}% complete</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="desk-domain-tag book">Book</span>
+          ${renderDeskSwitcherHtml('reading', 'book', desk.activeCaptureId, state.captures, desk.title || 'Oathbringer')}
+        </div>
+        <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-cyan);">${pct}%</span>
       </div>
 
       <div>
@@ -65,8 +70,35 @@ export function bindReadingEvents(root, desk) {
       const step = parseInt(btn.getAttribute('data-step') || '5', 10);
       const newPage = Math.min(desk.totalPages || 9999, (desk.currentPage || 0) + step);
       await updateDesk('reading', { currentPage: newPage });
+      if (desk.activeCaptureId && desk.activeCaptureId !== 'default') {
+        await saveDoc('captures', desk.activeCaptureId, { currentPage: newPage });
+      }
     });
   });
+
+  const select = root.querySelector('.desk-item-select[data-desk="reading"]');
+  if (select) {
+    select.addEventListener('change', async (e) => {
+      const val = e.target.value;
+      if (val === 'default') {
+        await updateDesk('reading', {
+          activeCaptureId: 'default'
+        });
+        return;
+      }
+      const cap = (state.captures || []).find(c => String(c.id) === String(val));
+      if (cap) {
+        await updateDesk('reading', {
+          activeCaptureId: cap.id,
+          title: cap.title || 'Untitled Book',
+          author: cap.creator || '',
+          currentPage: cap.currentPage || 0,
+          totalPages: cap.totalPages || 100,
+          storygraphUrl: cap.sourceUrl || ''
+        });
+      }
+    });
+  }
 
   const editBtn = root.querySelector('.btn-reading-edit');
   if (editBtn) {
@@ -100,18 +132,38 @@ export function openReadingEditModal(desk) {
   if (totalInput) totalInput.value = desk.totalPages || 100;
   if (storygraphInput) storygraphInput.value = desk.storygraphUrl || '';
 
+  // Wire quick steppers in modal
+  modal.querySelectorAll('#reading-modal-steppers .btn-stepper-pill').forEach(btn => {
+    btn.onclick = () => {
+      const step = parseInt(btn.getAttribute('data-step') || '0', 10);
+      const cur = parseInt(pageInput?.value || '0', 10);
+      const tot = parseInt(totalInput?.value || '100', 10);
+      if (pageInput) {
+        pageInput.value = Math.max(0, Math.min(tot, cur + step));
+      }
+    };
+  });
+
   // Wire form submit once
   form.onsubmit = async (e) => {
     e.preventDefault();
+    const newPage = parseInt(pageInput?.value || '0', 10);
+    const newTotal = Math.max(1, parseInt(totalInput?.value || '1', 10));
     const patch = {
       title: titleInput?.value.trim() || 'Untitled Book',
       author: authorInput?.value.trim() || '',
-      currentPage: parseInt(pageInput?.value || '0', 10),
-      totalPages: Math.max(1, parseInt(totalInput?.value || '1', 10)),
+      currentPage: newPage,
+      totalPages: newTotal,
       storygraphUrl: storygraphInput?.value.trim() || ''
     };
 
     await updateDesk('reading', patch);
+    if (desk.activeCaptureId && desk.activeCaptureId !== 'default') {
+      await saveDoc('captures', desk.activeCaptureId, {
+        currentPage: newPage,
+        totalPages: newTotal
+      });
+    }
     modal.classList.remove('active');
   };
 

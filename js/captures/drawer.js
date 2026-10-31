@@ -238,15 +238,18 @@ export function openCaptureDetailModal(capture) {
   // Render Tier 3 payload if present
   if (tier3El) {
     let payloadHtml = '';
-    // Recipe Ingredients with Exact Gram Weights
+    // Recipe Ingredients with Exact Gram Weights & Checklists
     if (Array.isArray(capture.ingredients) && capture.ingredients.length > 0) {
       payloadHtml += `
-        <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">🥣 Ingredients (Exact Grams)</div>
+        <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">🥣 Ingredients (Check to Strike)</div>
         <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
           ${capture.ingredients.map(ing => `
-            <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 2px 0;">
-              <span>${escapeHtml(typeof ing === 'string' ? ing : ing.item || '')}</span>
-              <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">${ing.grams ? `${ing.grams}g` : (ing.amount || '')}</span>
+            <li class="ingredient-check-item" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 4px 0;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+                <input type="checkbox" class="ingredient-checkbox">
+                <span class="ingredient-label">${escapeHtml(typeof ing === 'string' ? ing : ing.item || '')}</span>
+              </label>
+              <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600; margin-left: 8px;">${ing.grams ? `${ing.grams}g` : (ing.amount || '')}</span>
             </li>
           `).join('')}
         </ul>
