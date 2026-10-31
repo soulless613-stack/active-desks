@@ -456,6 +456,15 @@ export function openCaptureDetailModal(capture) {
 
   if (summaryInput) {
     summaryInput.value = capture.summary || '';
+    
+    // Auto-fit height to text content with a solid 76px floor
+    const resizeSummary = () => {
+      summaryInput.style.height = 'auto';
+      summaryInput.style.height = `${Math.max(76, summaryInput.scrollHeight)}px`;
+    };
+    resizeSummary();
+    summaryInput.oninput = resizeSummary;
+
     summaryInput.onchange = async () => {
       const newSummary = summaryInput.value.trim();
       if (newSummary !== (capture.summary || '')) {

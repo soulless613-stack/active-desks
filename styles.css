@@ -842,6 +842,7 @@ body {
 /* Modal In-Place Title & Summary Editor */
 .modal-card-title-input {
   width: 100%;
+  flex-shrink: 0;
   background: transparent;
   border: 1px solid transparent;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
@@ -852,6 +853,7 @@ body {
   padding: 4px 6px;
   border-radius: var(--radius-sm);
   outline: none;
+  box-sizing: border-box;
   transition: all 0.2s;
 }
 
@@ -862,24 +864,31 @@ body {
 
 .modal-card-summary-input {
   width: 100%;
-  background: transparent;
-  border: 1px solid transparent;
+  flex-shrink: 0;
+  min-height: 76px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   font-size: 0.88rem;
   line-height: 1.5;
   font-family: inherit;
-  padding: 6px;
+  padding: 8px 10px;
   resize: vertical;
   outline: none;
-  margin-top: 6px;
-  transition: all 0.2s;
+  margin-top: 4px;
+  box-sizing: border-box;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .modal-card-summary-input:hover, .modal-card-summary-input:focus {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.4);
+  border-color: var(--accent-cyan);
   color: var(--text-primary);
+}
+
+#modal-capture-workbench-fields {
+  flex-shrink: 0;
 }
 
 /* Inline Topic Editing on Cards & Modal */
@@ -1056,14 +1065,20 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .modal-body {
   padding: 20px;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .modal-footer {
@@ -1072,4 +1087,5 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  flex-shrink: 0;
 }
