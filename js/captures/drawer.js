@@ -2,11 +2,13 @@
  * @file drawer.js
  * @description Centered Universal Captures Stream and 3-Tier Detail Modal for Active Desks v3.0.
  * Recreates the centered modal viewport from v1 while retaining Firestore real-time synchronization,
- * dynamic scoped topic sub-filtering, anti-squish pill geometry, and inline topic/domain updates.
+ * dynamic scoped topic sub-filtering, anti-squish pill geometry, autonomous Rule of 3 topic notices,
+ * dynamic domain discovery, and scoped detail modal editing.
  */
 
 import { state, subscribe } from '../state.js';
 import { deleteDocById, saveDoc } from '../firebase.js';
+import { runTopicCohesionEvaluation, activeTopicEvolutionNotice } from './taxonomy.js';
 
 let activeDomainFilter = 'all';
 let activeTopicFilter = 'all';
@@ -23,6 +25,7 @@ export function initCapturesDrawer() {
   const toggleBtn = document.getElementById('btn-toggle-captures');
   const modal = document.getElementById('captures-modal');
   const searchInput = document.getElementById('drawer-search-input');
+  const tidyBtn = document.getElementById('btn-tidy-topics');
 
   if (toggleBtn) toggleBtn.addEventListener('click', toggleCapturesModal);
 
@@ -37,19 +40,6 @@ export function initCapturesDrawer() {
     });
   }
 
-  // Wire domain filter pills
-  const filterPills = document.querySelectorAll('#captures-domain-filters .filter-pill');
-  filterPills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      filterPills.forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      activeDomainFilter = pill.getAttribute('data-domain') || 'all';
-      // Reset topic filter whenever domain changes
-      activeTopicFilter = 'all';
-      renderCapturesList();
-    });
-  });
-
   // Wire search input
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
@@ -58,13 +48,34 @@ export function initCapturesDrawer() {
     });
   }
 
+  // Wire AI Topic Tidy button
+  if (tidyBtn) {
+    tidyBtn.addEventListener('click', async () => {
+      tidyBtn.disabled = true;
+      tidyBtn.textContent = 'Analyzing Topics...';
+      try {
+        await runTopicCohesionEvaluation(activeDomainFilter);
+      } finally {
+        tidyBtn.disabled = false;
+        tidyBtn.textContent = '✨ Tidy Topics';
+        renderDrawerEvolutionNotice();
+        renderDomainFilterBar();
+        renderCapturesList();
+      }
+    });
+  }
+
   // Subscribe to captures updates from Firestore
   subscribe('captures', () => {
     updateBadgeCount();
+    renderDomainFilterBar();
+    renderDrawerEvolutionNotice();
     renderCapturesList();
   });
 
   updateBadgeCount();
+  renderDomainFilterBar();
+  renderDrawerEvolutionNotice();
   renderCapturesList();
 }
 
@@ -85,6 +96,8 @@ export function toggleCapturesModal() {
 export function openCapturesModal() {
   const modal = document.getElementById('captures-modal');
   if (modal) modal.classList.add('active');
+  renderDomainFilterBar();
+  renderDrawerEvolutionNotice();
   renderCapturesList();
 }
 
@@ -109,18 +122,99 @@ function updateBadgeCount() {
   if (badge) {
     badge.textContent = `${allCaptures.length} Items`;
   }
+}
 
-  // Update domain filter pill badge counts
-  const domainBadges = document.querySelectorAll('[data-count-domain]');
-  domainBadges.forEach(el => {
-    const domainKey = el.getAttribute('data-count-domain');
-    if (domainKey === 'all') {
-      el.textContent = allCaptures.length;
-    } else {
-      const matchCount = allCaptures.filter(c => (c.domain || 'misc').toLowerCase() === domainKey).length;
-      el.textContent = matchCount;
-    }
+/**
+ * Dynamically renders the domain filter bar with base domains plus any custom emerged domains.
+ * 
+ * @purpose Discovers new domains from captures so they appear with anti-squish geometry and live count badges.
+ * @inputs None.
+ * @outputs {void}
+ */
+export function renderDomainFilterBar() {
+  const container = document.getElementById('captures-domain-filters');
+  if (!container) return;
+
+  const baseDomains = ['all', 'recipe', 'book', 'tech', 'game', 'fiber', 'misc'];
+  const allDomains = new Set(baseDomains);
+  (state.captures || []).forEach(c => {
+    const d = (c.domain || 'misc').toLowerCase();
+    if (d && d !== 'link') allDomains.add(d);
   });
+
+  const allCaptures = state.captures || [];
+
+  container.innerHTML = Array.from(allDomains).map(d => {
+    const isActive = activeDomainFilter === d;
+    const count = d === 'all'
+      ? allCaptures.length
+      : allCaptures.filter(c => (c.domain || 'misc').toLowerCase() === d).length;
+    return `
+      <button type="button" class="filter-pill ${isActive ? 'active' : ''}" data-domain="${d}">
+        ${capitalize(d)} <span class="capture-pill-count" data-count-domain="${d}">${count}</span>
+      </button>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      container.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeDomainFilter = pill.getAttribute('data-domain') || 'all';
+      activeTopicFilter = 'all';
+      renderCapturesList();
+    });
+  });
+}
+
+/**
+ * Renders the Rule of 3 topic evolution notice banner inside the drawer if an event is active.
+ */
+export function renderDrawerEvolutionNotice() {
+  const noticeContainer = document.getElementById('drawer-evolution-insights');
+  if (!noticeContainer) return;
+
+  if (!activeTopicEvolutionNotice) {
+    noticeContainer.style.display = 'none';
+    noticeContainer.innerHTML = '';
+    return;
+  }
+
+  const { domain, text, cardIds } = activeTopicEvolutionNotice;
+  noticeContainer.innerHTML = `
+    <span>✨ <strong>Topic Evolution:</strong> ${escapeHtml(text)}</span>
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <button type="button" class="evolution-action-chip btn-view-cluster">View Cards</button>
+      <button type="button" class="evolution-action-chip dismiss btn-dismiss-cluster" title="Dismiss">✕</button>
+    </div>
+  `;
+  noticeContainer.style.display = 'flex';
+
+  const viewBtn = noticeContainer.querySelector('.btn-view-cluster');
+  if (viewBtn) {
+    viewBtn.onclick = () => {
+      if (domain && domain !== 'all') {
+        activeDomainFilter = domain;
+        activeTopicFilter = 'all';
+        renderDomainFilterBar();
+      }
+      if (cardIds && cardIds.length > 0) {
+        const firstCard = (state.captures || []).find(c => c.id === cardIds[0]);
+        if (firstCard?.topic) {
+          activeTopicFilter = firstCard.topic;
+        }
+      }
+      renderCapturesList();
+    };
+  }
+
+  const dismissBtn = noticeContainer.querySelector('.btn-dismiss-cluster');
+  if (dismissBtn) {
+    dismissBtn.onclick = () => {
+      noticeContainer.style.display = 'none';
+      noticeContainer.innerHTML = '';
+    };
+  }
 }
 
 /**
@@ -180,9 +274,9 @@ function renderTopicFilterBar(domainCaptures) {
 }
 
 /**
- * Renders the filtered capture cards inside the modal list, wiring inline topic editing and domain reassignment.
+ * Renders the filtered capture cards inside the modal list, keeping cards read-only with vibrant color coding.
  * 
- * @purpose Displays cards with interactive reassignment dropdowns, inline topic editors, and detail modal openers.
+ * @purpose Displays cards with color-coded domain tags, topic labels, and detail modal openers.
  * @inputs None.
  * @outputs {void}
  */
@@ -232,7 +326,7 @@ export function renderCapturesList() {
       <div class="capture-card" data-capture-id="${c.id}">
         <div class="capture-card-header">
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-            <span class="desk-domain-tag ${domain}">${domain}</span>
+            <span class="desk-domain-tag ${domain}">${escapeHtml(domain)}</span>
             ${c.topic ? `<span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">· ${escapeHtml(c.topic)}</span>` : ''}
             ${isExtracting ? `<span class="brand-badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);">⏳ Extracting...</span>` : ''}
           </div>
@@ -301,6 +395,17 @@ export function openCaptureDetailModal(capture) {
   const deleteBtn = document.getElementById('btn-modal-delete-capture');
 
   if (domainSelect) {
+    const baseDomains = ['recipe', 'book', 'tech', 'game', 'fiber', 'misc'];
+    const allDomains = new Set(baseDomains);
+    (state.captures || []).forEach(c => {
+      if (c.domain) allDomains.add(c.domain.toLowerCase());
+    });
+    if (capture.domain) allDomains.add(capture.domain.toLowerCase());
+
+    domainSelect.innerHTML = Array.from(allDomains).map(d => `
+      <option value="${d}" ${d === domain ? 'selected' : ''}>${capitalize(d)}</option>
+    `).join('');
+
     domainSelect.value = domain;
     domainSelect.className = `domain-reassign-select ${domain}`;
     domainSelect.onchange = async () => {
@@ -411,6 +516,11 @@ export function openCaptureDetailModal(capture) {
   }
 
   modal.classList.add('active');
+}
+
+function capitalize(s) {
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /**

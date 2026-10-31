@@ -1,10 +1,12 @@
 /**
  * @file desk-manager.js
  * @description Dynamic workbench coordinator and desk swapper for Active Desks v3.0.
- * Orchestrates the active 4-desk display cap, renders domain cards, and manages desk selection.
+ * Orchestrates the active 4-desk display cap, renders domain cards, provisions generic emergent
+ * workbenches, and manages real-time desk selection.
  */
 
-import { state, subscribe, setActiveDeskIds } from '../state.js';
+import { state, subscribe, setActiveDeskIds, updateDesk } from '../state.js';
+import { openCaptureDetailModal } from '../captures/drawer.js';
 import { renderReadingDesk, bindReadingEvents } from './reading.js';
 import { renderKitchenDesk, bindKitchenEvents } from './kitchen.js';
 import { renderGamingDesk, bindGamingEvents } from './gaming.js';
@@ -29,19 +31,32 @@ const DESK_RENDERERS = {
 export function initDeskManager() {
   const swapBtn = document.getElementById('btn-open-swap-modal');
   if (swapBtn) {
-    swapBtn.addEventListener('click', openSwapModal);
+    swapBtn.addEventListener('click', () => openSwapModal());
+  }
+
+  // Close buttons for swap modal
+  document.querySelectorAll('[data-close-modal="workbench-swap-modal"]').forEach(btn => {
+    btn.addEventListener('click', closeSwapModal);
+  });
+
+  const modal = document.getElementById('workbench-swap-modal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeSwapModal();
+    });
   }
 
   // Subscribe to changes in active selection or desks
   subscribe('activeDeskIds', renderWorkbenchGrid);
   subscribe('desks', renderWorkbenchGrid);
-  subscribe('captures', renderWorkbenchGrid); // Kitchen desk reacts to captures
+  subscribe('captures', renderWorkbenchGrid);
 
   renderWorkbenchGrid();
 }
 
 /**
  * Renders the active 4 workbench cards into the grid.
+ * Falls back to generic workbench renderer for newly emerged domains.
  * 
  * @purpose Synchronously updates DOM grid from in-memory state.
  * @inputs None.
@@ -56,10 +71,12 @@ export function renderWorkbenchGrid() {
 
   let html = '';
   for (const id of activeIds) {
-    const desk = deskMap[id] || { id, title: `Desk ${id}` };
+    const desk = deskMap[id] || { id, title: `${capitalize(id)} Workbench`, domain: id };
     const renderer = DESK_RENDERERS[id];
     if (renderer) {
       html += renderer.render(desk);
+    } else {
+      html += renderGenericDesk(id, desk);
     }
   }
 
@@ -69,35 +86,140 @@ export function renderWorkbenchGrid() {
   for (const id of activeIds) {
     const cardEl = gridEl.querySelector(`[data-desk-id="${id}"]`);
     const renderer = DESK_RENDERERS[id];
-    if (cardEl && renderer?.bind) {
-      renderer.bind(cardEl, deskMap[id] || { id });
+    if (cardEl) {
+      if (renderer?.bind) {
+        renderer.bind(cardEl, deskMap[id] || { id });
+      } else {
+        bindGenericDeskEvents(cardEl, id, deskMap[id] || { id });
+      }
     }
   }
 }
 
 /**
- * Opens the Workbench Swap Modal allowing the user to select which 4 desks are active.
+ * Generic workbench renderer for any emergent or custom domain.
  * 
- * @purpose Renders the available workbenches with checkboxes.
- * @inputs None.
+ * @param {string} id - Desk identifier.
+ * @param {object} desk - Desk state.
+ * @returns {string} HTML string.
+ */
+export function renderGenericDesk(id, desk) {
+  const domain = (desk.domain || id).toLowerCase();
+  const matchingCaptures = (state.captures || []).filter(c => (c.domain || '').toLowerCase() === domain);
+  const activeCap = matchingCaptures.find(c => String(c.id) === String(desk.activeCaptureId)) || matchingCaptures[0];
+  const title = activeCap?.title || desk.title || `${capitalize(domain)} Workbench`;
+  const summary = activeCap?.summary || 'Focus area active. Select a card from the dropdown or open details to inspect.';
+  const topic = activeCap?.topic ? `· ${activeCap.topic}` : '';
+
+  return `
+    <div class="desk-card" data-desk-id="${id}">
+      <div class="desk-card-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="desk-domain-tag ${domain}">${escapeHtml(domain)}</span>
+          ${renderDeskSwitcherHtml(id, domain, desk.activeCaptureId, state.captures, title)}
+        </div>
+        <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); font-weight: 600;">
+          ${matchingCaptures.length} Cards
+        </span>
+      </div>
+
+      <div class="desk-card-body" style="margin-top: 10px;">
+        <div class="desk-card-title">${escapeHtml(title)}</div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+          ${topic ? `<span style="color: var(--accent-cyan); font-weight: 600;">${escapeHtml(topic)}</span>` : ''}
+          ${activeCap?.creator ? ` <span>by ${escapeHtml(activeCap.creator)}</span>` : ''}
+        </div>
+        <div class="desk-card-summary" style="margin-top: 6px; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
+          ${escapeHtml(summary)}
+        </div>
+      </div>
+
+      <div class="desk-card-footer" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; gap: 6px;">
+          ${activeCap?.sourceUrl ? `<a href="${activeCap.sourceUrl}" target="_blank" rel="noopener noreferrer" class="desk-action-btn">Source ↗</a>` : ''}
+        </div>
+        ${activeCap ? `<button type="button" class="desk-action-btn btn-generic-view-details" data-generic-cap-id="${activeCap.id}">View Details</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Binds interactive events for generic emergent workbenches.
+ * 
+ * @param {HTMLElement} cardEl - Card container element.
+ * @param {string} id - Desk ID.
+ * @param {object} desk - Desk state.
+ */
+export function bindGenericDeskEvents(cardEl, id, desk) {
+  const domain = (desk.domain || id).toLowerCase();
+  const select = cardEl.querySelector(`.desk-item-select[data-desk="${id}"]`);
+  if (select) {
+    select.addEventListener('change', async (e) => {
+      const val = e.target.value;
+      if (val === 'default') {
+        await updateDesk(id, { activeCaptureId: 'default' });
+      } else {
+        const cap = (state.captures || []).find(c => String(c.id) === String(val));
+        if (cap) {
+          await updateDesk(id, {
+            activeCaptureId: cap.id,
+            title: cap.title || `${capitalize(domain)} Workbench`
+          });
+        }
+      }
+    });
+  }
+
+  const viewBtn = cardEl.querySelector('.btn-generic-view-details');
+  if (viewBtn) {
+    viewBtn.addEventListener('click', () => {
+      const capId = viewBtn.getAttribute('data-generic-cap-id');
+      const cap = (state.captures || []).find(c => String(c.id) === String(capId));
+      if (cap) openCaptureDetailModal(cap);
+    });
+  }
+}
+
+/**
+ * Opens the Workbench Swap Modal allowing the user to select which 4 desks are active.
+ * Discovers built-in desks and any newly emerged domains.
+ * 
+ * @param {string} [targetId] - Optional desk ID to highlight or focus.
  * @outputs {void}
  */
-function openSwapModal() {
+export function openSwapModal(targetId = null) {
   const modal = document.getElementById('workbench-swap-modal');
   const listEl = document.getElementById('swap-modal-list');
   if (!modal || !listEl) return;
 
-  const allDeskKeys = Object.keys(state.desks || DESK_RENDERERS);
+  const knownKeys = new Set(['reading', 'kitchen', 'gaming', 'fiber', 'tech']);
+  Object.keys(state.desks || {}).forEach(k => {
+    if (k !== 'active_selection') knownKeys.add(k);
+  });
+  (state.captures || []).forEach(c => {
+    const d = (c.domain || 'misc').toLowerCase();
+    if (d !== 'misc' && d !== 'link') knownKeys.add(d);
+  });
+
   const activeSet = new Set(state.activeDeskIds || []);
 
-  listEl.innerHTML = allDeskKeys.map(key => {
-    const desk = state.desks[key] || { id: key, title: key };
+  const sortedKeys = Array.from(knownKeys).sort((a, b) => {
+    const aActive = activeSet.has(a) ? 1 : 0;
+    const bActive = activeSet.has(b) ? 1 : 0;
+    if (aActive !== bActive) return bActive - aActive;
+    return a.localeCompare(b);
+  });
+
+  listEl.innerHTML = sortedKeys.map(key => {
+    const desk = state.desks[key] || { id: key, title: `${capitalize(key)} Workbench`, domain: key };
     const isChecked = activeSet.has(key);
+    const isTarget = targetId && key === targetId;
     return `
-      <label style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); cursor: pointer;">
+      <label style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: ${isTarget ? 'rgba(56, 189, 248, 0.12)' : 'rgba(255,255,255,0.02)'}; border: 1px solid ${isTarget ? 'var(--accent-cyan)' : 'var(--border-subtle)'}; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
         <div>
-          <div style="font-weight: 700; font-size: 0.95rem;">${desk.title || desk.name || key}</div>
-          <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: capitalize;">${desk.domain || key} Workbench</div>
+          <div style="font-weight: 700; font-size: 0.95rem;">${escapeHtml(desk.title || desk.name || capitalize(key))}</div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); text-transform: capitalize;">${escapeHtml(desk.domain || key)} Workbench</div>
         </div>
         <input type="checkbox" class="swap-desk-checkbox" data-desk-id="${key}" ${isChecked ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-cyan);">
       </label>
@@ -121,26 +243,18 @@ function openSwapModal() {
 }
 
 /**
- * Escapes special HTML characters for injection into templates.
- * 
- * @param {string} str - Raw text.
- * @returns {string} Sanitized string.
+ * Closes the Workbench Swap Modal.
  */
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+export function closeSwapModal() {
+  const modal = document.getElementById('workbench-swap-modal');
+  if (modal) modal.classList.remove('active');
 }
 
 /**
  * Renders a standardized <select class="desk-item-select"> populated with all captures matching the desk's domain.
  * 
- * @param {string} deskId - Target workbench identifier ('reading', 'kitchen', 'gaming', 'fiber', 'tech').
- * @param {string} domain - Domain filter ('book', 'recipe', 'game', 'fiber', 'tech').
+ * @param {string} deskId - Target workbench identifier.
+ * @param {string} domain - Domain filter.
  * @param {string} activeId - Currently selected captureId or 'default'.
  * @param {Array<object>} captures - Global captures array.
  * @param {string} fallbackTitle - Fallback/seeded card title.
@@ -174,4 +288,20 @@ export function renderDeskSwitcherHtml(deskId, domain, activeId, captures = [], 
       ${optionsHtml}
     </select>
   `;
+}
+
+function capitalize(s) {
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[m]);
 }

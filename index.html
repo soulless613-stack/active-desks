@@ -74,7 +74,7 @@
     </section>
 
     <!-- Emergent Workbench Suggestion Banner (Rule-of-5 Taxonomy) -->
-    <section id="desk-suggestion-banner" class="desk-card" style="display: none; border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.05);"></section>
+    <section id="desk-suggestion-banner" class="desk-card desk-evolution-banner" style="display: none;"></section>
 
     <!-- Active Workbenches (4-Desk Grid) -->
     <section class="workbench-section">
@@ -112,8 +112,14 @@
           <h3 style="font-size: 1.1rem; font-weight: 700;">Universal Captures</h3>
           <span id="captures-count-badge" class="brand-badge" style="font-size: 0.72rem;">0 Items</span>
         </div>
-        <button type="button" class="drawer-close-btn" data-close-modal="captures-modal">✕</button>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button type="button" id="btn-tidy-topics" class="desk-action-btn" title="Re-evaluate topic cohesion with Gemini" style="font-size: 0.72rem; padding: 3px 8px;">✨ Tidy Topics</button>
+          <button type="button" class="drawer-close-btn" data-close-modal="captures-modal">✕</button>
+        </div>
       </div>
+
+      <!-- Rule of 3: Adaptive Topic Evolution Notice Container -->
+      <div id="drawer-evolution-insights" class="drawer-evolution-insights" style="display: none;"></div>
 
       <!-- Domain Filter Bar -->
       <div class="captures-filter-bar" id="captures-domain-filters">
