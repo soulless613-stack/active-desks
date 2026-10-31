@@ -6,7 +6,7 @@
  */
 
 import { initFirebase, onCollection, onDoc } from './firebase.js';
-import { state, emit, seedDefaultDesksIfEmpty } from './state.js';
+import { state, emit, seedDefaultDesksIfEmpty, APP_VERSION } from './state.js';
 import { initAnchors } from './anchors.js';
 import { initDeskManager } from './desks/desk-manager.js';
 import { initCaptureDock } from './captures/capture-dock.js';
@@ -18,7 +18,10 @@ import { initSettingsModal, consumeSetupHashIfPresent } from './settings-modal.j
  * Boots the Active Desks v3 runtime.
  */
 async function bootApp() {
-  console.log('🚀 Booting Active Desks v3.0 (Firebase Engine)...');
+  console.log(`🚀 Booting Active Desks ${APP_VERSION} (Firebase Engine)...`);
+
+  const versionBadge = document.getElementById('brand-version-badge');
+  if (versionBadge) versionBadge.textContent = APP_VERSION;
 
   // 1. Consume QR Setup Hash if scanned from mobile camera
   consumeSetupHashIfPresent();

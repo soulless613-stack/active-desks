@@ -104,7 +104,7 @@ async function handleCaptureSubmission(inputEl) {
  * @inputs {string} url - Target reel or blog URL.
  * @outputs {Promise<void>}
  */
-async function dispatchExtractionWorker(captureId, url) {
+export async function dispatchExtractionWorker(captureId, url) {
   const token = (state.settings?.github_token || localStorage.getItem('active_desks_github_token') || '').trim();
 
   // If a GitHub PAT is configured, trigger the server-side runner

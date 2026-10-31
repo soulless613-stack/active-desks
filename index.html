@@ -18,7 +18,7 @@
   <header class="app-header">
     <div class="brand-section">
       <h1 class="brand-title">ACTIVE DESKS</h1>
-      <span class="brand-badge">v3.0</span>
+      <span id="brand-version-badge" class="brand-badge">v3.0.13</span>
     </div>
 
     <div class="header-actions">
@@ -167,10 +167,10 @@
           <input type="text" id="modal-capture-topic-input" class="topic-inline-input" placeholder="Edit topic..." title="Click to edit topic">
           <span id="modal-capture-creator" style="font-size: 0.8rem; color: var(--text-muted);"></span>
         </div>
-        <button type="button" class="drawer-close-btn" data-close-modal="capture-detail-modal">✕</button>
       </div>
 
       <div class="modal-body">
+        <div id="modal-extraction-fallback-notice" style="display: none;"></div>
         <input type="text" id="modal-capture-title-input" class="modal-card-title-input" placeholder="Title..." title="Click to edit title">
         <textarea id="modal-capture-summary-input" class="modal-card-summary-input" placeholder="Summary & notes..." rows="3" title="Click to edit summary"></textarea>
 
@@ -197,7 +197,6 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3 style="font-size: 1.1rem; font-weight: 700;">⇄ Select Active Desks (Max 4)</h3>
-        <button type="button" class="drawer-close-btn" data-close-modal="workbench-swap-modal">✕</button>
       </div>
       <div class="modal-body" id="swap-modal-list">
         <!-- Rendered by desk-manager.js -->

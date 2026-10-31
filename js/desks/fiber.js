@@ -5,7 +5,7 @@
  */
 
 import { state, updateDesk } from '../state.js';
-import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { renderProjectionTrayHtml } from './desk-manager.js';
 import { openCaptureDetailModal } from '../captures/drawer.js';
 
 export function renderFiberDesk(desk) {
@@ -21,7 +21,7 @@ export function renderFiberDesk(desk) {
       <div class="desk-card-header">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="desk-domain-tag fiber">Fiber</span>
-          ${renderDeskSwitcherHtml('fiber', 'fiber', desk.activeCaptureId, state.captures, desk.name || 'Autumn Cardigan')}
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary);">Fiber Arts</span>
         </div>
         <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-rose);">${pct}% (${current}/${target})</span>
       </div>
@@ -33,6 +33,8 @@ export function renderFiberDesk(desk) {
         <div class="progress-bar-bg" style="margin-top: 10px;">
           <div class="progress-bar-fill" style="width: ${pct}%; background: linear-gradient(90deg, var(--accent-rose), var(--accent-purple));"></div>
         </div>
+
+        ${renderProjectionTrayHtml('fiber', 'fiber', desk.activeCaptureId)}
       </div>
 
       <div class="desk-card-footer">
@@ -58,27 +60,6 @@ export function bindFiberEvents(root, desk) {
       await updateDesk('fiber', { rows: newRows });
     });
   });
-
-  const select = root.querySelector('.desk-item-select[data-desk="fiber"]');
-  if (select) {
-    select.addEventListener('change', async (e) => {
-      const val = e.target.value;
-      if (val === 'default') {
-        await updateDesk('fiber', { activeCaptureId: 'default' });
-        return;
-      }
-      const cap = (state.captures || []).find(c => String(c.id) === String(val));
-      if (cap) {
-        await updateDesk('fiber', {
-          activeCaptureId: cap.id,
-          name: cap.title || 'Fiber Project',
-          type: cap.topic || 'Knitting / Crochet',
-          specs: cap.summary || 'Standard Pattern',
-          linkUrl: cap.sourceUrl || ''
-        });
-      }
-    });
-  }
 
   const detailsBtn = root.querySelector('.btn-desk-open-card[data-desk="fiber"]');
   if (detailsBtn) {

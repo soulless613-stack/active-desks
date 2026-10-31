@@ -9,6 +9,7 @@
 import { state, subscribe, updateDesk } from '../state.js';
 import { deleteDocById, saveDoc } from '../firebase.js';
 import { runTopicCohesionEvaluation, activeTopicEvolutionNotice } from './taxonomy.js';
+import { dispatchExtractionWorker } from './capture-dock.js';
 
 let activeDomainFilter = 'all';
 let activeTopicFilter = 'all';
@@ -435,6 +436,30 @@ export function openCaptureDetailModal(capture) {
   }
 
   if (creatorEl) creatorEl.textContent = capture.creator ? `by ${capture.creator}` : '';
+
+  const fallbackEl = document.getElementById('modal-extraction-fallback-notice');
+  if (fallbackEl) {
+    if (capture.status === 'fallback') {
+      fallbackEl.style.display = 'flex';
+      fallbackEl.className = 'modal-fallback-alert';
+      fallbackEl.innerHTML = `
+        <span>⚠️ Video skipped/throttled. Using caption &amp; search grounding.</span>
+        <button type="button" class="btn-rerun-extraction">🔄 Re-run</button>
+      `;
+      const rerunBtn = fallbackEl.querySelector('.btn-rerun-extraction');
+      if (rerunBtn) {
+        rerunBtn.onclick = async () => {
+          await saveDoc('captures', capture.id, { status: 'extracting' });
+          capture.status = 'extracting';
+          fallbackEl.innerHTML = '<span>⏳ Re-extraction dispatched to cloud runner...</span>';
+          await dispatchExtractionWorker(capture.id, capture.sourceUrl);
+        };
+      }
+    } else {
+      fallbackEl.style.display = 'none';
+      fallbackEl.innerHTML = '';
+    }
+  }
 
   if (titleInput) {
     titleInput.value = capture.title || '';

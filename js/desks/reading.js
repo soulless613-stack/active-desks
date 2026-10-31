@@ -6,7 +6,7 @@
  */
 
 import { state, updateDesk } from '../state.js';
-import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { renderProjectionTrayHtml } from './desk-manager.js';
 import { openCaptureDetailModal } from '../captures/drawer.js';
 import { saveDoc } from '../firebase.js';
 
@@ -28,7 +28,7 @@ export function renderReadingDesk(desk) {
       <div class="desk-card-header">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="desk-domain-tag book">Book</span>
-          ${renderDeskSwitcherHtml('reading', 'book', desk.activeCaptureId, state.captures, desk.title || 'Oathbringer')}
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary);">Reading Nook</span>
         </div>
         <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-cyan);">${pct}%</span>
       </div>
@@ -45,6 +45,8 @@ export function renderReadingDesk(desk) {
           <span>Page ${current} of ${total}</span>
           <span>${total - current > 0 ? `${total - current} pages left` : 'Finished!'}</span>
         </div>
+
+        ${renderProjectionTrayHtml('reading', 'book', desk.activeCaptureId)}
       </div>
 
       <div class="desk-card-footer">
@@ -81,30 +83,6 @@ export function bindReadingEvents(root, desk) {
       }
     });
   });
-
-  const select = root.querySelector('.desk-item-select[data-desk="reading"]');
-  if (select) {
-    select.addEventListener('change', async (e) => {
-      const val = e.target.value;
-      if (val === 'default') {
-        await updateDesk('reading', {
-          activeCaptureId: 'default'
-        });
-        return;
-      }
-      const cap = (state.captures || []).find(c => String(c.id) === String(val));
-      if (cap) {
-        await updateDesk('reading', {
-          activeCaptureId: cap.id,
-          title: cap.title || 'Untitled Book',
-          author: cap.creator || '',
-          currentPage: cap.currentPage || 0,
-          totalPages: cap.totalPages || 100,
-          storygraphUrl: cap.sourceUrl || ''
-        });
-      }
-    });
-  }
 
   // Open Unified 3-Tier Card View & Editor
   const detailsBtn = root.querySelector('.btn-desk-open-card[data-desk="reading"]');

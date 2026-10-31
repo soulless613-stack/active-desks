@@ -5,7 +5,7 @@
  */
 
 import { state, updateDesk } from '../state.js';
-import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { renderProjectionTrayHtml } from './desk-manager.js';
 import { openCaptureDetailModal } from '../captures/drawer.js';
 
 export function renderGamingDesk(desk) {
@@ -18,7 +18,7 @@ export function renderGamingDesk(desk) {
       <div class="desk-card-header">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="desk-domain-tag game">Gaming</span>
-          ${renderDeskSwitcherHtml('gaming', 'game', desk.activeCaptureId, state.captures, desk.title || 'Baldurs Gate 3')}
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary);">Gaming Rig</span>
         </div>
         <span style="font-size: 0.75rem; color: var(--text-muted);">${desk.platform || 'PC'}</span>
       </div>
@@ -28,6 +28,8 @@ export function renderGamingDesk(desk) {
         <div class="desk-card-meta" style="margin-top: 6px;">
           <strong style="color: var(--accent-purple);">Current Quest:</strong> ${desk.quest || 'None set'}
         </div>
+
+        ${renderProjectionTrayHtml('gaming', 'game', desk.activeCaptureId)}
       </div>
 
       <div class="desk-card-footer">
@@ -44,27 +46,6 @@ export function renderGamingDesk(desk) {
 }
 
 export function bindGamingEvents(root, desk) {
-  const select = root.querySelector('.desk-item-select[data-desk="gaming"]');
-  if (select) {
-    select.addEventListener('change', async (e) => {
-      const val = e.target.value;
-      if (val === 'default') {
-        await updateDesk('gaming', { activeCaptureId: 'default' });
-        return;
-      }
-      const cap = (state.captures || []).find(c => String(c.id) === String(val));
-      if (cap) {
-        await updateDesk('gaming', {
-          activeCaptureId: cap.id,
-          title: cap.title || 'Untitled Game',
-          quest: cap.summary || cap.topic || 'Active quest',
-          platform: cap.platform || desk.platform || 'PC',
-          linkUrl: cap.sourceUrl || desk.linkUrl || ''
-        });
-      }
-    });
-  }
-
   const detailsBtn = root.querySelector('.btn-desk-open-card[data-desk="gaming"]');
   if (detailsBtn) {
     detailsBtn.addEventListener('click', () => {

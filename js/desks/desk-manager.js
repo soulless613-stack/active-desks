@@ -69,6 +69,69 @@ export function initDeskManager() {
     }
   }
 
+  // Delegated click handler for 1-tap "Set Active" from universal collapsible projection trays
+  const gridEl = document.getElementById('workbench-grid');
+  if (gridEl) {
+    gridEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.btn-set-active');
+      if (!btn) return;
+      const deskId = btn.getAttribute('data-desk');
+      const capId = btn.getAttribute('data-cap-id');
+      const cap = (state.captures || []).find(c => String(c.id) === String(capId));
+      if (!cap) return;
+
+      if (deskId === 'reading') {
+        await updateDesk('reading', {
+          activeCaptureId: cap.id,
+          title: cap.title || 'Untitled Book',
+          author: cap.creator || '',
+          currentPage: cap.currentPage || 0,
+          totalPages: cap.totalPages || 100,
+          storygraphUrl: cap.sourceUrl || ''
+        });
+      } else if (deskId === 'kitchen') {
+        const recipeCaptures = (state.captures || []).filter(c => (c.domain || '').toLowerCase() === 'recipe');
+        const targetIdx = recipeCaptures.findIndex(r => String(r.id) === String(cap.id));
+        await updateDesk('kitchen', {
+          activeCaptureId: cap.id,
+          selectedIndex: targetIdx !== -1 ? targetIdx : 0
+        });
+      } else if (deskId === 'gaming') {
+        await updateDesk('gaming', {
+          activeCaptureId: cap.id,
+          title: cap.title || 'Untitled Game',
+          quest: cap.summary || cap.topic || 'Active quest',
+          platform: cap.platform || 'PC',
+          linkUrl: cap.sourceUrl || ''
+        });
+      } else if (deskId === 'fiber') {
+        await updateDesk('fiber', {
+          activeCaptureId: cap.id,
+          name: cap.title || 'Fiber Project',
+          type: cap.topic || 'Knitting / Crochet',
+          specs: cap.summary || 'Standard Pattern',
+          linkUrl: cap.sourceUrl || '',
+          rows: cap.rows || 0,
+          targetRows: cap.targetRows || 100
+        });
+      } else if (deskId === 'tech') {
+        await updateDesk('tech', {
+          activeCaptureId: cap.id,
+          title: cap.title || 'Untitled Project',
+          focus: cap.summary || cap.topic || 'Active sprint',
+          stack: cap.topic || 'Development',
+          linkUrl: cap.sourceUrl || ''
+        });
+      } else {
+        await updateDesk(deskId, {
+          activeCaptureId: cap.id,
+          title: cap.title || `${capitalize(deskId)} Desk`,
+          linkUrl: cap.sourceUrl || ''
+        });
+      }
+    });
+  }
+
   // Subscribe to changes in active selection or desks
   subscribe('activeDeskIds', renderWorkbenchGrid);
   subscribe('desks', renderWorkbenchGrid);
@@ -137,8 +200,8 @@ export function renderGenericDesk(id, desk) {
   const domain = (desk.domain || id).toLowerCase();
   const matchingCaptures = (state.captures || []).filter(c => (c.domain || '').toLowerCase() === domain);
   const activeCap = matchingCaptures.find(c => String(c.id) === String(desk.activeCaptureId)) || matchingCaptures[0];
-  const title = activeCap?.title || desk.title || `${capitalize(domain)} Workbench`;
-  const summary = activeCap?.summary || 'Focus area active. Select a card from the dropdown or open details to inspect.';
+  const title = activeCap?.title || desk.title || `${capitalize(domain)} Desk`;
+  const summary = activeCap?.summary || 'Focus area active. Open details to inspect or select from backlog below.';
   const topic = activeCap?.topic ? `· ${activeCap.topic}` : '';
 
   return `
@@ -146,7 +209,6 @@ export function renderGenericDesk(id, desk) {
       <div class="desk-card-header">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="desk-domain-tag ${domain}">${escapeHtml(domain)}</span>
-          ${renderDeskSwitcherHtml(id, domain, desk.activeCaptureId, state.captures, title)}
         </div>
         <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); font-weight: 600;">
           ${matchingCaptures.length} Cards
@@ -162,6 +224,7 @@ export function renderGenericDesk(id, desk) {
         <div class="desk-card-summary" style="margin-top: 6px; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
           ${escapeHtml(summary)}
         </div>
+        ${renderProjectionTrayHtml(id, domain, activeCap?.id)}
       </div>
 
       <div class="desk-card-footer" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
@@ -185,25 +248,6 @@ export function renderGenericDesk(id, desk) {
  * @param {object} desk - Desk state.
  */
 export function bindGenericDeskEvents(cardEl, id, desk) {
-  const domain = (desk.domain || id).toLowerCase();
-  const select = cardEl.querySelector(`.desk-item-select[data-desk="${id}"]`);
-  if (select) {
-    select.addEventListener('change', async (e) => {
-      const val = e.target.value;
-      if (val === 'default') {
-        await updateDesk(id, { activeCaptureId: 'default' });
-      } else {
-        const cap = (state.captures || []).find(c => String(c.id) === String(val));
-        if (cap) {
-          await updateDesk(id, {
-            activeCaptureId: cap.id,
-            title: cap.title || `${capitalize(domain)} Workbench`
-          });
-        }
-      }
-    });
-  }
-
   const viewBtn = cardEl.querySelector('.btn-generic-view-details');
   if (viewBtn) {
     viewBtn.addEventListener('click', () => {
@@ -293,43 +337,51 @@ export function closeSwapModal() {
   if (modal) modal.classList.remove('active');
 }
 
+const TRAY_LABELS = {
+  reading: '📚 Up Next / TBR',
+  kitchen: '🍲 Saved Recipes',
+  gaming: '🎮 Backlog & Watchlist',
+  fiber: '🧶 Project Queue',
+  tech: '💻 Tools & Repos'
+};
+
 /**
- * Renders a standardized <select class="desk-item-select"> populated with all captures matching the desk's domain.
+ * Renders a standardized collapsible projection tray for any workbench domain.
  * 
  * @param {string} deskId - Target workbench identifier.
  * @param {string} domain - Domain filter.
  * @param {string} activeId - Currently selected captureId or 'default'.
- * @param {Array<object>} captures - Global captures array.
- * @param {string} fallbackTitle - Fallback/seeded card title.
  * @returns {string} HTML string.
  */
-export function renderDeskSwitcherHtml(deskId, domain, activeId, captures = [], fallbackTitle = 'Default') {
-  const matchingCaptures = (captures || []).filter(c => (c.domain || '').toLowerCase() === domain.toLowerCase());
-  
-  if (matchingCaptures.length === 0) {
-    return `
-      <select class="desk-item-select" data-desk="${deskId}" title="Select active card">
-        <option value="default" selected>${escapeHtml(fallbackTitle.slice(0, 22))}</option>
-      </select>
-    `;
-  }
+export function renderProjectionTrayHtml(deskId, domain, activeId) {
+  const matches = (state.captures || []).filter(c => 
+    (c.domain || '').toLowerCase() === domain.toLowerCase() && String(c.id) !== String(activeId)
+  );
 
-  const hasDefault = fallbackTitle && !matchingCaptures.some(c => String(c.id) === String(activeId));
-  let optionsHtml = '';
-  if (hasDefault) {
-    optionsHtml += `<option value="default" ${(!activeId || activeId === 'default') ? 'selected' : ''}>${escapeHtml(fallbackTitle.slice(0, 22))}</option>`;
-  }
-
-  optionsHtml += matchingCaptures.map(c => {
-    const isSelected = String(c.id) === String(activeId);
-    const label = (c.title || c.topic || 'Untitled').slice(0, 22);
-    return `<option value="${c.id}" ${isSelected ? 'selected' : ''}>${escapeHtml(label)}</option>`;
-  }).join('');
+  const label = TRAY_LABELS[deskId] || `📋 ${capitalize(domain)} Backlog`;
+  if (matches.length === 0) return '';
 
   return `
-    <select class="desk-item-select" data-desk="${deskId}" title="Select active card">
-      ${optionsHtml}
-    </select>
+    <details class="desk-projection-tray" data-tray-desk="${deskId}">
+      <summary class="projection-summary">
+        <span style="display: flex; align-items: center; gap: 6px;">
+          <span>${label}</span>
+          <span class="projection-badge">${matches.length}</span>
+        </span>
+        <span class="projection-summary-arrow">▾</span>
+      </summary>
+      <div class="projection-items-list">
+        ${matches.map(c => `
+          <div class="projection-item">
+            <div style="display: flex; flex-direction: column; min-width: 0; flex: 1;">
+              <span style="font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary);">${escapeHtml(c.title || 'Untitled')}</span>
+              <span style="font-size: 0.7rem; color: var(--text-muted);">${escapeHtml(c.creator ? `by ${c.creator}` : (c.topic || ''))}</span>
+            </div>
+            <button type="button" class="btn-set-active" data-desk="${deskId}" data-cap-id="${c.id}">Set Active</button>
+          </div>
+        `).join('')}
+      </div>
+    </details>
   `;
 }
 

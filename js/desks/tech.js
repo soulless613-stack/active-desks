@@ -5,7 +5,7 @@
  */
 
 import { state, updateDesk } from '../state.js';
-import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { renderProjectionTrayHtml } from './desk-manager.js';
 import { openCaptureDetailModal } from '../captures/drawer.js';
 
 export function renderTechDesk(desk) {
@@ -18,7 +18,7 @@ export function renderTechDesk(desk) {
       <div class="desk-card-header">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="desk-domain-tag tech">Tech</span>
-          ${renderDeskSwitcherHtml('tech', 'tech', desk.activeCaptureId, state.captures, desk.title || 'PressPrint Lab Parametric Boxes')}
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary);">Tech Workbench</span>
         </div>
         <span style="font-size: 0.75rem; color: var(--text-muted);">${desk.stack || 'Development'}</span>
       </div>
@@ -28,6 +28,8 @@ export function renderTechDesk(desk) {
         <div class="desk-card-meta" style="margin-top: 6px;">
           <strong style="color: var(--domain-tech);">Current Focus:</strong> ${desk.focus || 'Active sprint'}
         </div>
+
+        ${renderProjectionTrayHtml('tech', 'tech', desk.activeCaptureId)}
       </div>
 
       <div class="desk-card-footer">
@@ -44,27 +46,6 @@ export function renderTechDesk(desk) {
 }
 
 export function bindTechEvents(root, desk) {
-  const select = root.querySelector('.desk-item-select[data-desk="tech"]');
-  if (select) {
-    select.addEventListener('change', async (e) => {
-      const val = e.target.value;
-      if (val === 'default') {
-        await updateDesk('tech', { activeCaptureId: 'default' });
-        return;
-      }
-      const cap = (state.captures || []).find(c => String(c.id) === String(val));
-      if (cap) {
-        await updateDesk('tech', {
-          activeCaptureId: cap.id,
-          title: cap.title || 'Untitled Project',
-          focus: cap.summary || cap.topic || 'Active sprint',
-          stack: cap.topic || desk.stack || 'Development',
-          linkUrl: cap.sourceUrl || desk.linkUrl || ''
-        });
-      }
-    });
-  }
-
   const detailsBtn = root.querySelector('.btn-desk-open-card[data-desk="tech"]');
   if (detailsBtn) {
     detailsBtn.addEventListener('click', () => {

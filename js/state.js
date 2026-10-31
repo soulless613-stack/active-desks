@@ -6,7 +6,7 @@
 
 import { saveDoc, deleteDocById } from './firebase.js';
 
-export const APP_VERSION = 'active-desks-v3-1.0.0';
+export const APP_VERSION = 'v3.0.13';
 
 /**
  * In-memory global state cache.

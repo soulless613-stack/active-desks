@@ -6,7 +6,7 @@
 
 import { state, updateDesk } from '../state.js';
 import { openCaptureDetailModal } from '../captures/drawer.js';
-import { renderDeskSwitcherHtml } from './desk-manager.js';
+import { renderProjectionTrayHtml } from './desk-manager.js';
 
 /**
  * Generates the HTML string for the Kitchen workbench card.
@@ -32,7 +32,7 @@ export function renderKitchenDesk(desk) {
       <div class="desk-card-header">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="desk-domain-tag recipe">Kitchen</span>
-          ${renderDeskSwitcherHtml('kitchen', 'recipe', recipe.id, allRecipes, recipe.title || 'Butter Chicken Mac')}
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-secondary);">Kitchen Shelf</span>
         </div>
         <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">
           ${allRecipes.length > 0 ? `${activeIdx + 1}/${allRecipes.length}` : '0/0'}
@@ -45,6 +45,8 @@ export function renderKitchenDesk(desk) {
           ${recipe.creator || recipe.source ? `<span style="color: var(--accent-cyan);">by ${recipe.creator || recipe.source}</span> · ` : ''}
           ${recipe.summary || recipe.highlight || 'No summary available.'}
         </div>
+
+        ${renderProjectionTrayHtml('kitchen', 'recipe', recipe.id)}
       </div>
 
       <div class="desk-card-footer">
@@ -74,19 +76,6 @@ export function bindKitchenEvents(root, desk) {
   const recipeCaptures = (state.captures || []).filter(c => (c.domain || '').toLowerCase() === 'recipe');
   const allRecipes = recipeCaptures.length > 0 ? recipeCaptures : (desk.recipes || []);
   const activeIdx = Math.max(0, Math.min(allRecipes.length - 1, desk.selectedIndex || 0));
-
-  const select = root.querySelector('.desk-item-select[data-desk="kitchen"]');
-  if (select) {
-    select.addEventListener('change', async (e) => {
-      const val = e.target.value;
-      const targetIdx = allRecipes.findIndex(r => String(r.id) === String(val));
-      if (targetIdx !== -1) {
-        await updateDesk('kitchen', { selectedIndex: targetIdx, activeCaptureId: val });
-      } else if (val === 'default') {
-        await updateDesk('kitchen', { selectedIndex: 0, activeCaptureId: 'default' });
-      }
-    });
-  }
 
   const prevBtn = root.querySelector('.btn-kitchen-prev');
   if (prevBtn && activeIdx > 0) {
