@@ -658,14 +658,6 @@ body {
   width: 100%;
   max-width: 900px;
   display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.capture-dock-inner {
-  width: 100%;
-  max-width: 900px;
-  display: flex;
   gap: 8px;
   align-items: center;
   background: rgba(22, 30, 46, 0.9);
@@ -996,23 +988,6 @@ body {
 }
 
 /* Inline Topic Editing on Cards & Modal */
-.topic-inline-editable {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
-  padding-bottom: 1px;
-}
-
-.topic-inline-editable:hover {
-  color: var(--accent-cyan);
-  border-bottom-color: var(--accent-cyan);
-}
-
 .topic-inline-input {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--accent-cyan);
@@ -1077,14 +1052,6 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.capture-domain-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: var(--radius-sm);
 }
 
 .capture-card-title {

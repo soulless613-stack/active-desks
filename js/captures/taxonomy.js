@@ -8,11 +8,10 @@
  *     re-evaluates 1-off strays for genuine semantic fit, writes to Firestore, and notifies user).
  */
 
-import { state, subscribe, setActiveDeskIds } from '../state.js';
+import { state, subscribe, setActiveDeskIds, escapeHtml, capitalize, getSetting, callGeminiJson } from '../state.js';
 import { saveDoc } from '../firebase.js';
 
 const DISMISSED_PROMOTIONS_KEY = 'active_desks_dismissed_promotions';
-const CANDIDATE_MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
 
 /** Active topic evolution event for notification banner */
 export let activeTopicEvolutionNotice = null;
@@ -165,12 +164,12 @@ export function evaluateRuleOf5() {
  */
 export async function executeDomainPromotion(oldDomain, topicName, cards) {
   const newSlug = topicName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-');
-  const apiKey = (state.settings?.gemini_api_key || localStorage.getItem('active_desks_gemini_key') || '').trim();
+  const apiKey = getSetting('gemini_api_key', 'active_desks_gemini_key');
 
   let subTopicMap = {};
   if (apiKey) {
     try {
-      subTopicMap = await generateSubTopicsWithGemini(topicName, cards, apiKey);
+      subTopicMap = await generateSubTopicsWithGemini(topicName, cards);
     } catch (err) {
       console.warn('Gemini sub-topic generation failed; using fallback topic names:', err);
     }
@@ -223,10 +222,9 @@ export async function executeDomainPromotion(oldDomain, topicName, cards) {
  * 
  * @param {string} domainTitle - Name of the new domain (e.g. '3D Printing').
  * @param {Array<object>} cards - Cards moving into this domain.
- * @param {string} apiKey - Gemini API Key.
  * @returns {Promise<Record<string, string>>} Map of cardId -> newTopic.
  */
-async function generateSubTopicsWithGemini(domainTitle, cards, apiKey) {
+async function generateSubTopicsWithGemini(domainTitle, cards) {
   const cardsSummary = cards.map(c => ({
     id: String(c.id),
     title: c.title || 'Untitled',
@@ -246,41 +244,16 @@ Return strictly valid JSON with no markdown formatting:
   ]
 }`;
 
-  for (const model of CANDIDATE_MODELS) {
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json"
-          }
-        })
-      });
-
-      if (!res.ok) continue;
-      const data = await res.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) continue;
-
-      const parsed = JSON.parse(rawText);
-      const map = {};
-      if (Array.isArray(parsed.cardTopics)) {
-        for (const item of parsed.cardTopics) {
-          if (item.id && item.newTopic) {
-            map[item.id] = item.newTopic.trim();
-          }
-        }
+  const parsed = await callGeminiJson(prompt);
+  const map = {};
+  if (Array.isArray(parsed?.cardTopics)) {
+    for (const item of parsed.cardTopics) {
+      if (item.id && item.newTopic) {
+        map[item.id] = item.newTopic.trim();
       }
-      return map;
-    } catch (e) {
-      console.warn(`Model ${model} failed for sub-topic generation:`, e);
     }
   }
-
-  return {};
+  return map;
 }
 
 /**
@@ -295,7 +268,7 @@ Return strictly valid JSON with no markdown formatting:
  */
 export async function runTopicCohesionEvaluation(domain = 'all') {
   const targetDomain = domain === 'all' ? 'recipe' : domain.toLowerCase();
-  const apiKey = (state.settings?.gemini_api_key || localStorage.getItem('active_desks_gemini_key') || '').trim();
+  const apiKey = getSetting('gemini_api_key', 'active_desks_gemini_key');
 
   if (!apiKey) {
     alert('Please save your Gemini API key in Settings (⚙️) to enable Autonomous Topic Cohesion.');
@@ -338,35 +311,8 @@ Return strictly valid JSON with no markdown wrapping:
   ]
 }`;
 
-  let changes = [];
-  for (const model of CANDIDATE_MODELS) {
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json"
-          }
-        })
-      });
-
-      if (!res.ok) continue;
-      const data = await res.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) continue;
-
-      const parsed = JSON.parse(rawText);
-      if (Array.isArray(parsed.changes)) {
-        changes = parsed.changes;
-        break;
-      }
-    } catch (err) {
-      console.warn(`Model ${model} failed for topic cohesion evaluation:`, err);
-    }
-  }
+  const parsed = await callGeminiJson(prompt);
+  const changes = Array.isArray(parsed?.changes) ? parsed.changes : [];
 
   if (changes.length === 0) {
     alert(`✨ All topics in ${capitalize(targetDomain)} are well-formed and cohesive. Zero changes needed.`);
@@ -380,13 +326,10 @@ Return strictly valid JSON with no markdown wrapping:
     }
   }
 
-  // Format human-readable notification text
-  let summaryText = '';
-  if (changes.length === 1) {
-    summaryText = `1 card re-assigned from "${changes[0].oldTopic}" to "${changes[0].newTopic}"`;
-  } else {
-    summaryText = `${changes.length} cards re-organized into topics: ${[...new Set(changes.map(c => c.newTopic))].join(', ')}`;
-  }
+  // Format human-readable notification text (rendered by drawer.js finally block)
+  const summaryText = changes.length === 1
+    ? `1 card re-assigned from "${changes[0].oldTopic}" to "${changes[0].newTopic}"`
+    : `${changes.length} cards re-organized into topics: ${[...new Set(changes.map(c => c.newTopic))].join(', ')}`;
 
   activeTopicEvolutionNotice = {
     domain: targetDomain,
@@ -394,63 +337,5 @@ Return strictly valid JSON with no markdown wrapping:
     cardIds: changes.map(ch => ch.id)
   };
 
-  // Re-render evolution notice in drawer if drawer is open
-  const noticeContainer = document.getElementById('drawer-evolution-insights');
-  if (noticeContainer) {
-    noticeContainer.innerHTML = `
-      <span>✨ <strong>Topic Evolution:</strong> ${escapeHtml(summaryText)}</span>
-      <div style="display: flex; gap: 6px; align-items: center;">
-        <button type="button" class="evolution-action-chip btn-view-cluster">View Cards</button>
-        <button type="button" class="evolution-action-chip dismiss btn-dismiss-cluster" title="Dismiss">✕</button>
-      </div>
-    `;
-    noticeContainer.style.display = 'flex';
-
-    // Wire buttons
-    const viewBtn = noticeContainer.querySelector('.btn-view-cluster');
-    if (viewBtn) {
-      viewBtn.onclick = () => {
-        const searchInput = document.getElementById('drawer-search-input');
-        if (searchInput && changes[0]) {
-          searchInput.value = changes[0].newTopic;
-          searchInput.dispatchEvent(new Event('input'));
-        }
-      };
-    }
-
-    const dismissBtn = noticeContainer.querySelector('.btn-dismiss-cluster');
-    if (dismissBtn) {
-      dismissBtn.onclick = () => {
-        noticeContainer.style.display = 'none';
-        activeTopicEvolutionNotice = null;
-      };
-    }
-  }
-
   return changes.length;
-}
-
-/**
- * Dismisses the active topic evolution notice.
- */
-export function dismissTopicEvolutionNotice() {
-  activeTopicEvolutionNotice = null;
-  const el = document.getElementById('drawer-evolution-insights');
-  if (el) el.style.display = 'none';
-}
-
-function capitalize(s) {
-  if (!s) return '';
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>"']/g, m => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  })[m]);
 }

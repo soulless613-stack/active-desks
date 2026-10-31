@@ -6,7 +6,7 @@
  */
 
 import { saveDoc } from '../firebase.js';
-import { state } from '../state.js';
+import { getSetting, callGeminiJson } from '../state.js';
 import { openCapturesModal } from './drawer.js';
 
 /**
@@ -105,7 +105,7 @@ async function handleCaptureSubmission(inputEl) {
  * @outputs {Promise<void>}
  */
 export async function dispatchExtractionWorker(captureId, url) {
-  const token = (state.settings?.github_token || localStorage.getItem('active_desks_github_token') || '').trim();
+  const token = getSetting('github_token', 'active_desks_github_token');
 
   // If a GitHub PAT is configured, trigger the server-side runner
   if (token) {
@@ -119,10 +119,7 @@ export async function dispatchExtractionWorker(captureId, url) {
         },
         body: JSON.stringify({
           event_type: 'extract_capture',
-          client_payload: {
-            captureId,
-            url
-          }
+          client_payload: { captureId, url }
         })
       });
 
@@ -137,46 +134,11 @@ export async function dispatchExtractionWorker(captureId, url) {
     }
   }
 
-  // Fallback: If no GitHub PAT or dispatch failed, check if Gemini key is present for client-side heuristic
-  const geminiKey = (state.settings?.gemini_api_key || localStorage.getItem('active_desks_gemini_key') || '').trim();
-  if (geminiKey) {
-    triggerClientFallback(captureId, url, geminiKey);
-  }
-}
-
-/**
- * Client-side heuristic fallback for standard blog posts or when offline.
- */
-async function triggerClientFallback(captureId, url, apiKey) {
-  const CANDIDATE_MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
+  // Fallback: If no GitHub PAT or dispatch failed, use client-side Gemini heuristic
   const prompt = `Analyze this URL for Active Desks: ${url}. Return JSON with { domain: "recipe"|"book"|"tech"|"game"|"fiber"|"misc", topic: string, title: string, summary: string, creator: string }`;
-
-  for (const model of CANDIDATE_MODELS) {
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: 'application/json' }
-        })
-      });
-
-      if (!res.ok) continue;
-
-      const data = await res.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (rawText) {
-        const parsed = JSON.parse(rawText);
-        await saveDoc('captures', captureId, {
-          ...parsed,
-          status: 'ready'
-        });
-        return;
-      }
-    } catch (err) {
-      console.warn(`Client fallback model [${model}] error:`, err);
-    }
+  const parsed = await callGeminiJson(prompt);
+  if (parsed) {
+    await saveDoc('captures', captureId, { ...parsed, status: 'ready' });
   }
 }
 

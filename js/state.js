@@ -6,7 +6,17 @@
 
 import { saveDoc, deleteDocById } from './firebase.js';
 
-export const APP_VERSION = 'v3.0.14';
+export const APP_VERSION = 'v3.0.15';
+
+export const CANONICAL_DESK_MAP = {
+  book: 'reading',
+  recipe: 'kitchen',
+  game: 'gaming',
+  fiber: 'fiber',
+  tech: 'tech'
+};
+
+const CANDIDATE_MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
 
 /**
  * In-memory global state cache.
@@ -198,4 +208,105 @@ export async function seedDefaultDesksIfEmpty(existingDesks) {
 
   state.desks = deskMap;
   emit('desks');
+}
+
+/**
+ * Escapes unsafe HTML characters to prevent XSS.
+ * 
+ * @purpose HTML sanitization helper for user-generated capture and desk strings.
+ * @inputs {string} str - Unsanitized string.
+ * @outputs {string} Sanitized string safe for DOM interpolation.
+ */
+export function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[m]);
+}
+
+/**
+ * Capitalizes the first character of a string.
+ * 
+ * @purpose Formats domain and label slugs for UI display.
+ * @inputs {string} s - Input string.
+ * @outputs {string} Capitalized string.
+ */
+export function capitalize(s) {
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Retrieves a setting from in-memory state or localStorage fallback.
+ * 
+ * @purpose Centralizes credential and setting lookup across modules.
+ * @inputs {string} key - Property name in state.settings.
+ * @inputs {string} storageKey - Fallback localStorage key.
+ * @outputs {string} Trimmed setting value.
+ */
+export function getSetting(key, storageKey) {
+  return (state.settings?.[key] || localStorage.getItem(storageKey) || '').trim();
+}
+
+/**
+ * Renders standardized Blog and Source external link buttons for desk and capture cards.
+ * 
+ * @purpose Provides uniform footer link buttons across all workbenches and capture stream cards.
+ * @inputs {string} [blogUrl] - Optional secondary blog/article destination URL.
+ * @inputs {string} [sourceUrl] - Primary source URL.
+ * @inputs {boolean} [stopProp=false] - Whether to attach onclick="event.stopPropagation()".
+ * @outputs {string} HTML string of anchor buttons.
+ */
+export function renderExternalLinksHtml(blogUrl, sourceUrl, stopProp = false) {
+  const stopAttr = stopProp ? ' onclick="event.stopPropagation()"' : '';
+  const blogBtn = blogUrl && blogUrl !== sourceUrl
+    ? `<a href="${escapeHtml(blogUrl)}" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="color: var(--accent-cyan); font-weight: 600;"${stopAttr}>Blog ↗</a>`
+    : '';
+  const sourceBtn = sourceUrl
+    ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener noreferrer" class="desk-action-btn"${stopAttr}>Source ↗</a>`
+    : '';
+  return `${blogBtn}${sourceBtn}`;
+}
+
+/**
+ * Queries the Gemini API with automatic model fallback and returns parsed JSON.
+ * 
+ * @purpose Centralizes client-side Gemini JSON generation for taxonomy and fallback extraction.
+ * @inputs {string} prompt - Prompt text instructing JSON output.
+ * @inputs {number} [temperature=0.2] - Sampling temperature.
+ * @outputs {Promise<object|null>} Parsed JSON response or null if all candidate models fail.
+ */
+export async function callGeminiJson(prompt, temperature = 0.2) {
+  const apiKey = getSetting('gemini_api_key', 'active_desks_gemini_key');
+  if (!apiKey) return null;
+
+  for (const model of CANDIDATE_MODELS) {
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature,
+            responseMimeType: 'application/json'
+          }
+        })
+      });
+
+      if (!res.ok) continue;
+      const data = await res.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (rawText) {
+        return JSON.parse(rawText);
+      }
+    } catch (err) {
+      console.warn(`Gemini model [${model}] fallback error:`, err);
+    }
+  }
+  return null;
 }

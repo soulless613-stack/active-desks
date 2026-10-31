@@ -5,7 +5,7 @@
  * pairing from desktop to Google Pixel Fold / mobile phones.
  */
 
-import { state } from './state.js';
+import { state, getSetting } from './state.js';
 
 /**
  * Initializes the settings modal, input fields, save buttons, and QR pairing generator.
@@ -25,15 +25,14 @@ export function initSettingsModal() {
 
   if (openBtn) {
     openBtn.addEventListener('click', () => {
-      // Pre-fill existing keys
-      if (inputGemini) inputGemini.value = state.settings.gemini_api_key || localStorage.getItem('active_desks_gemini_key') || '';
-      if (inputGithub) inputGithub.value = state.settings.github_token || localStorage.getItem('active_desks_github_token') || '';
+      if (inputGemini) inputGemini.value = getSetting('gemini_api_key', 'active_desks_gemini_key');
+      if (inputGithub) inputGithub.value = getSetting('github_token', 'active_desks_github_token');
       generateDevicePairingQR();
       if (modal) modal.classList.add('active');
     });
   }
 
-  // Wire modal close buttons
+  // Global modal close buttons & backdrop dismissal across all modals
   document.querySelectorAll('[data-close-modal]').forEach(btn => {
     btn.addEventListener('click', () => {
       const targetId = btn.getAttribute('data-close-modal');
@@ -42,33 +41,41 @@ export function initSettingsModal() {
     });
   });
 
-  // Save Gemini Key
-  if (btnSaveGemini && inputGemini) {
-    btnSaveGemini.addEventListener('click', () => {
-      const val = inputGemini.value.trim();
-      state.settings.gemini_api_key = val;
-      localStorage.setItem('active_desks_gemini_key', val);
-      btnSaveGemini.textContent = '✓ Saved';
-      setTimeout(() => { btnSaveGemini.textContent = 'Save Key'; }, 1500);
-      generateDevicePairingQR();
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('active');
     });
-  }
+  });
 
-  // Save GitHub PAT
-  if (btnSaveGithub && inputGithub) {
-    btnSaveGithub.addEventListener('click', () => {
-      const val = inputGithub.value.trim();
-      state.settings.github_token = val;
-      localStorage.setItem('active_desks_github_token', val);
-      btnSaveGithub.textContent = '✓ Saved';
-      setTimeout(() => { btnSaveGithub.textContent = 'Save Token'; }, 1500);
-      generateDevicePairingQR();
-    });
-  }
+  bindKeySave(btnSaveGemini, inputGemini, 'gemini_api_key', 'active_desks_gemini_key', 'Save Key');
+  bindKeySave(btnSaveGithub, inputGithub, 'github_token', 'active_desks_github_token', 'Save Token');
 
   if (refreshQrBtn) {
     refreshQrBtn.addEventListener('click', generateDevicePairingQR);
   }
+}
+
+/**
+ * Wires an API key / token input and save button to state, localStorage, and QR refresh.
+ * 
+ * @purpose Deduplicates credential persistence logic in the settings modal.
+ * @inputs {HTMLElement|null} btn - Save button element.
+ * @inputs {HTMLInputElement|null} input - Text/password input element.
+ * @inputs {string} stateKey - Key inside state.settings.
+ * @inputs {string} storageKey - Key inside localStorage.
+ * @inputs {string} defaultLabel - Button label to restore after confirmation.
+ * @outputs {void}
+ */
+function bindKeySave(btn, input, stateKey, storageKey, defaultLabel) {
+  if (!btn || !input) return;
+  btn.addEventListener('click', () => {
+    const val = input.value.trim();
+    state.settings[stateKey] = val;
+    localStorage.setItem(storageKey, val);
+    btn.textContent = '✓ Saved';
+    setTimeout(() => { btn.textContent = defaultLabel; }, 1500);
+    generateDevicePairingQR();
+  });
 }
 
 /**
@@ -82,8 +89,8 @@ export function generateDevicePairingQR() {
   const canvas = document.getElementById('qr-canvas');
   if (!canvas || typeof QRious === 'undefined') return;
 
-  const gemini = (state.settings.gemini_api_key || localStorage.getItem('active_desks_gemini_key') || '').trim();
-  const github = (state.settings.github_token || localStorage.getItem('active_desks_github_token') || '').trim();
+  const gemini = getSetting('gemini_api_key', 'active_desks_gemini_key');
+  const github = getSetting('github_token', 'active_desks_github_token');
 
   const payload = {
     gemini,

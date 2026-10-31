@@ -14,8 +14,6 @@ import {
   collection,
   setDoc,
   deleteDoc,
-  getDoc,
-  getDocs,
   onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -156,20 +154,4 @@ export async function deleteDocById(colName, docId) {
   if (!db) await initFirebase();
   const docRef = doc(db, colName, String(docId));
   await deleteDoc(docRef);
-}
-
-/**
- * Fetches all documents currently in a collection (from cache or server).
- * 
- * @purpose One-time retrieval of a collection snapshot.
- * @inputs {string} colName - Collection name.
- * @outputs {Promise<Array<object>>} List of documents with id field.
- */
-export async function getCollection(colName) {
-  if (!db) await initFirebase();
-  const colRef = collection(db, colName);
-  const snap = await getDocs(colRef);
-  const records = [];
-  snap.forEach(d => records.push({ id: d.id, ...d.data() }));
-  return records;
 }
