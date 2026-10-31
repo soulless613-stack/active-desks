@@ -232,17 +232,8 @@ export function renderCapturesList() {
       <div class="capture-card" data-capture-id="${c.id}">
         <div class="capture-card-header">
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-            <select class="domain-reassign-select" data-reassign-id="${c.id}" title="Reassign Domain" onclick="event.stopPropagation()">
-              <option value="recipe" ${domain === 'recipe' ? 'selected' : ''}>Recipe</option>
-              <option value="book" ${domain === 'book' ? 'selected' : ''}>Book</option>
-              <option value="tech" ${domain === 'tech' ? 'selected' : ''}>Tech</option>
-              <option value="game" ${domain === 'game' ? 'selected' : ''}>Game</option>
-              <option value="fiber" ${domain === 'fiber' ? 'selected' : ''}>Fiber</option>
-              <option value="misc" ${domain === 'misc' ? 'selected' : ''}>Misc</option>
-            </select>
-            <span class="topic-inline-editable" data-edit-topic-id="${c.id}" title="Click to edit topic" onclick="event.stopPropagation()">
-              ${c.topic ? escapeHtml(c.topic) : '<span style="opacity: 0.6; font-style: italic;">+ Add Topic</span>'} ✏️
-            </span>
+            <span class="desk-domain-tag ${domain}">${domain}</span>
+            ${c.topic ? `<span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">· ${escapeHtml(c.topic)}</span>` : ''}
             ${isExtracting ? `<span class="brand-badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);">⏳ Extracting...</span>` : ''}
           </div>
           <button type="button" class="btn-delete-capture" data-delete-id="${c.id}" title="Delete capture">🗑️</button>
@@ -270,61 +261,6 @@ export function renderCapturesList() {
       const id = card.getAttribute('data-capture-id');
       const target = allCaptures.find(c => String(c.id) === String(id));
       if (target) openCaptureDetailModal(target);
-    });
-  });
-
-  // Wire domain reassignment selector on cards
-  listEl.querySelectorAll('.domain-reassign-select').forEach(select => {
-    select.addEventListener('change', async (e) => {
-      e.stopPropagation();
-      const id = select.getAttribute('data-reassign-id');
-      const newDomain = select.value;
-      if (id && newDomain) {
-        await saveDoc('captures', id, { domain: newDomain });
-      }
-    });
-  });
-
-  // Wire inline topic editing on cards
-  listEl.querySelectorAll('.topic-inline-editable').forEach(span => {
-    span.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = span.getAttribute('data-edit-topic-id');
-      const target = allCaptures.find(c => String(c.id) === String(id));
-      const currentTopic = target?.topic || '';
-
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'topic-inline-input';
-      input.value = currentTopic;
-      input.placeholder = 'Topic...';
-      input.style.width = '130px';
-      input.style.fontSize = '0.78rem';
-      input.style.padding = '2px 6px';
-
-      const commitTopic = async () => {
-        const newTopic = input.value.trim();
-        if (newTopic !== currentTopic) {
-          await saveDoc('captures', id, { topic: newTopic });
-        } else {
-          renderCapturesList();
-        }
-      };
-
-      input.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Enter') {
-          ev.preventDefault();
-          input.blur();
-        } else if (ev.key === 'Escape') {
-          ev.preventDefault();
-          renderCapturesList();
-        }
-      });
-
-      input.addEventListener('blur', commitTopic, { once: true });
-      span.replaceWith(input);
-      input.focus();
-      input.select();
     });
   });
 
@@ -366,8 +302,10 @@ export function openCaptureDetailModal(capture) {
 
   if (domainSelect) {
     domainSelect.value = domain;
+    domainSelect.className = `domain-reassign-select ${domain}`;
     domainSelect.onchange = async () => {
       const newDomain = domainSelect.value;
+      domainSelect.className = `domain-reassign-select ${newDomain}`;
       await saveDoc('captures', capture.id, { domain: newDomain });
       capture.domain = newDomain;
     };

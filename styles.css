@@ -756,6 +756,42 @@ body {
   text-transform: capitalize;
 }
 
+.domain-reassign-select.book {
+  color: var(--domain-book);
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.domain-reassign-select.recipe {
+  color: var(--domain-recipe);
+  background: rgba(251, 146, 60, 0.12);
+  border-color: rgba(251, 146, 60, 0.35);
+}
+
+.domain-reassign-select.game {
+  color: var(--domain-game);
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+.domain-reassign-select.fiber {
+  color: var(--domain-fiber);
+  background: rgba(236, 72, 153, 0.12);
+  border-color: rgba(236, 72, 153, 0.35);
+}
+
+.domain-reassign-select.tech {
+  color: var(--domain-tech);
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.domain-reassign-select.misc {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-subtle);
+}
+
 /* Inline Topic Editing on Cards & Modal */
 .topic-inline-editable {
   font-size: 0.78rem;
