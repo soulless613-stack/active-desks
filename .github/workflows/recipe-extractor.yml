@@ -17,22 +17,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24
+          package-manager-cache: false
 
-      - name: Setup Media Tools (ffmpeg & yt-dlp)
+      - name: Setup Media Tools (yt-dlp)
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y ffmpeg
-          python3 -m pip install --upgrade yt-dlp
+          python3 -m pip install --upgrade --quiet yt-dlp
 
       - name: Install Firebase Client
         run: |
-          npm install firebase
+          npm install --no-audit --no-fund --prefer-offline firebase
 
       - name: Run Autonomous Extractor
         env:

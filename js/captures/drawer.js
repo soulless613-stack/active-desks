@@ -23,7 +23,7 @@ let activeDomainFilter = 'all';
 let activeTopicFilter = 'all';
 let searchQuery = '';
 
-const EXTRACTION_DURATION_SEC = 120;
+const EXTRACTION_DURATION_SEC = 180;
 const extractionTimers = new Map();
 let countdownIntervalId = null;
 

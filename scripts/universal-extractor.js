@@ -4,7 +4,7 @@
  * @file universal-extractor.js
  * @description Autonomous Cloud Extractor for Active Desks v3.0.
  * Invoked by GitHub Actions on repository_dispatch or manual trigger.
- * Uses yt-dlp & ffmpeg to bypass Instagram/TikTok login walls, sends transcripts
+ * Uses yt-dlp & OpenGraph fallbacks to bypass Instagram/TikTok login walls, sends transcripts
  * to Gemini Multimodal, and writes rich 3-tier payloads directly to Cloud Firestore.
  */
 
@@ -243,6 +243,7 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
 
   await setDoc(doc(db, 'captures', String(CAPTURE_ID)), finalDocument, { merge: true });
   console.log('✓ Firestore document updated successfully. Real-time push dispatched to client devices!');
+  process.exit(0);
 }
 
 run().catch((err) => {
