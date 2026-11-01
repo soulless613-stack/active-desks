@@ -4,11 +4,14 @@
  * @file universal-extractor.js
  * @description Autonomous Cloud Extractor for Active Desks v3.0.
  * Invoked by GitHub Actions on repository_dispatch or manual trigger.
- * Uses yt-dlp & OpenGraph fallbacks to bypass Instagram/TikTok login walls, sends transcripts
- * to Gemini Multimodal, and writes rich 3-tier payloads directly to Cloud Firestore.
+ * Uses yt-dlp & ffmpeg to bypass Instagram/TikTok login walls, sends video/audio
+ * & transcripts to Gemini Multimodal, and writes rich 3-tier payloads directly to Cloud Firestore.
  */
 
-import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { execSync, execFileSync } from 'child_process';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
@@ -49,6 +52,110 @@ function parseJsonFromResponse(text) {
       }
     }
   }
+  return null;
+}
+
+/**
+ * Determines whether a target URL points to a video stream (Reels, TikTok, YouTube).
+ * 
+ * @purpose Distinguishes video streams needing yt-dlp extraction from static posts/articles.
+ * @inputs {string} url - Target capture URL.
+ * @outputs {boolean} True if video stream URL.
+ */
+function isVideoLink(url) {
+  if (!url || typeof url !== 'string') return false;
+  if (url.includes('instagram.com/reel/') || url.includes('instagram.com/reels/') || url.includes('instagram.com/tv/')) {
+    return true;
+  }
+  if (url.includes('tiktok.com') || url.includes('youtube.com') || url.includes('youtu.be')) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Tiered Media Downloader via yt-dlp & ffmpeg.
+ * 
+ * @purpose Downloads compressed 720p MP4 video (Tier 1) or MP3 voiceover audio (Tier 2) for Gemini Multimodal.
+ * @inputs {string} url - Target video URL.
+ * @outputs {{ mimeType: string, data: string, status: string } | null} Base64 media payload or null on fallback.
+ */
+function fetchMediaBuffer(url) {
+  if (!url || typeof url !== 'string' || !isVideoLink(url)) return null;
+
+  const cleanUrl = url.split('?')[0];
+
+  // Tier 1: Full Video (.mp4 <= 20MB, 720p)
+  const tempVideoFile = path.join(os.tmpdir(), `media-vid-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.mp4`);
+  try {
+    console.log(`-> [Tier 1] Attempting 720p video+audio extraction via yt-dlp: ${cleanUrl}`);
+    execFileSync('yt-dlp', [
+      '-S', 'res:720,ext:mp4:m4a',
+      '-f', 'bv*[height<=720][ext=mp4]+ba[ext=m4a]/b[height<=720][ext=mp4]/bestvideo[height<=720]+bestaudio/best',
+      '--max-filesize', '20M',
+      '--no-playlist',
+      '--no-warnings',
+      '-o', tempVideoFile,
+      cleanUrl
+    ], { timeout: 45000, stdio: ['ignore', 'pipe', 'pipe'] });
+
+    if (fs.existsSync(tempVideoFile)) {
+      const stats = fs.statSync(tempVideoFile);
+      if (stats.size > 1000 && stats.size <= 20 * 1024 * 1024) {
+        const videoBuffer = fs.readFileSync(tempVideoFile);
+        fs.unlinkSync(tempVideoFile);
+        console.log(`✓ [Tier 1 Success] Extracted full video (.mp4, ${Math.round(videoBuffer.length / 1024)} KB). Vision + Audio enabled!`);
+        return {
+          mimeType: 'video/mp4',
+          data: videoBuffer.toString('base64'),
+          status: 'video_extracted'
+        };
+      }
+      fs.unlinkSync(tempVideoFile);
+    }
+  } catch (err) {
+    console.warn(`Tier 1 video download skipped/failed (${err.message}). Trying Tier 2 audio fallback...`);
+    if (fs.existsSync(tempVideoFile)) {
+      try { fs.unlinkSync(tempVideoFile); } catch (e) {}
+    }
+  }
+
+  // Tier 2: Audio Only (.mp3 <= 15MB)
+  const tempAudioFile = path.join(os.tmpdir(), `media-aud-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.mp3`);
+  try {
+    console.log(`-> [Tier 2] Attempting audio-only extraction via yt-dlp: ${cleanUrl}`);
+    execFileSync('yt-dlp', [
+      '-x',
+      '--audio-format', 'mp3',
+      '--audio-quality', '5',
+      '--no-playlist',
+      '--no-warnings',
+      '-o', tempAudioFile,
+      cleanUrl
+    ], { timeout: 35000, stdio: ['ignore', 'pipe', 'pipe'] });
+
+    if (fs.existsSync(tempAudioFile)) {
+      const stats = fs.statSync(tempAudioFile);
+      if (stats.size > 500 && stats.size <= 15 * 1024 * 1024) {
+        const audioBuffer = fs.readFileSync(tempAudioFile);
+        fs.unlinkSync(tempAudioFile);
+        console.log(`✓ [Tier 2 Success] Extracted voiceover audio (.mp3, ${Math.round(audioBuffer.length / 1024)} KB). Narration listening enabled!`);
+        return {
+          mimeType: 'audio/mp3',
+          data: audioBuffer.toString('base64'),
+          status: 'audio_extracted'
+        };
+      }
+      fs.unlinkSync(tempAudioFile);
+    }
+  } catch (err) {
+    console.warn(`Tier 2 audio extraction skipped/failed (${err.message}). Falling back to Tier 3 text & web search.`);
+    if (fs.existsSync(tempAudioFile)) {
+      try { fs.unlinkSync(tempAudioFile); } catch (e) {}
+    }
+  }
+
+  console.log('-> [Tier 3] Relying on scraped creator caption & Google Search grounding.');
   return null;
 }
 
@@ -106,31 +213,65 @@ async function run() {
     }
   }
 
+  // 1b. Download Multimodal Video/Audio Stream if Video Link
+  const isVideo = isVideoLink(TARGET_URL);
+  let mediaResult = null;
+  let mediaStatus = 'text_images';
+  if (isVideo) {
+    mediaResult = fetchMediaBuffer(TARGET_URL);
+    mediaStatus = mediaResult ? mediaResult.status : 'fallback_text';
+  } else {
+    console.log('Static post/article detected. Using text_images modality.');
+  }
+
+  let mediaNotice = '';
+  if (mediaStatus === 'video_extracted') {
+    mediaNotice = 'Attached Media Track: FULL VIDEO (.mp4 video attached). Watch visual frames closely (read on-screen text overlays, title cards, book covers, board game boxes, 3D printer slicer temps/speeds/tolerances, ingredient measurement graphics) and simultaneously listen to the spoken voiceover narration.';
+  } else if (mediaStatus === 'audio_extracted') {
+    mediaNotice = 'Attached Media Track: AUDIO ONLY (.mp3 audio attached). Listen closely to transcribe all spoken recommendations, book titles/authors, rules, tolerances, and measurements.';
+  } else if (mediaStatus === 'text_images') {
+    mediaNotice = 'Attached Media Track: STATIC CONTENT (Post / Photo Carousel / Web Article). Extract information accurately from the post caption and Google Search grounding.';
+  } else {
+    mediaNotice = 'Attached Media Track: NONE (Media download unavailable; text fallback active. Rely on creator captions and live Google Search grounding).';
+  }
+
   // 2. Structured Extraction & Live Search Grounding via Google Gemini
-  console.log('Sending transcript & caption to Google Gemini with Search Grounding...');
+  console.log(`Sending payload (${mediaStatus}) & caption to Google Gemini...`);
   const prompt = `
 You are the Active Desks Autonomous Universal Extractor & Knowledge Grounding Engine.
 Extract rich, structured 3-tier data from this social media post or article:
 
 URL: ${TARGET_URL}
 Title / Caption: ${mediaTitle}
+Creator: ${creatorHandle}
 Description / Notes: ${captionText}
+${mediaNotice}
 
-CRITICAL ANTI-BAIT & LIVE SEARCH GROUNDING INSTRUCTIONS:
-1. INTERACTION BAIT RESOLUTION:
+CRITICAL MULTIMODAL, ANTI-BAIT & LIVE SEARCH GROUNDING INSTRUCTIONS:
+1. MULTIMODAL COMPREHENSION (CRITICAL):
+   - IF FULL VIDEO IS ATTACHED:
+     * READ ON-SCREEN TEXT (OCR): Look closely at on-screen text overlays, title cards, book covers held up or displayed, board game boxes, 3D printer slicer settings, yarn labels, and ingredient lists shown on screen.
+     * LISTEN TO SPOKEN VOICEOVER: Transcribe and integrate all spoken recommendations, book titles, authors, ingredient amounts, and creator tips.
+   - IF AUDIO IS ATTACHED:
+     * Listen closely to the speaker's voiceover for crucial details missing from captions (book titles, authors, rules, tolerances, exact measurements).
+
+2. INTERACTION BAIT RESOLUTION:
    - Creators frequently use engagement bait (e.g. "Comment RECIPE/LINK to get the link in your DMs", "Link in broadcast channel", "DM for guide", "Link in bio").
    - DO NOT leave the user with an incomplete teaser or placeholder!
    - Use Google Search grounding to search for the creator's actual food blog, GitHub repository, project site, Substack, or documentation.
    - If found, extract the FULL authentic recipe, code, steps, or article directly from the grounded web results and set "blogUrl" to the real destination URL.
 
-2. DOMAIN & METRIC ACCURACY:
+3. DOMAIN & METRIC ACCURACY:
    - Domain must strictly be one of: "recipe", "book", "tech", "game", "fiber", "misc".
    - If recipe:
      * Extract ALL ingredients with exact metric gram weights (grams: number) wherever stated or estimable.
-     * Step-by-step cooking instructions.
+     * Step-by-step cooking instructions in "steps".
      * Realistic macros (calories, protein, carbs, fat) if available.
+   - If book:
+     * Extract EVERY book recommended, shown on screen, or spoken in the voiceover into "steps" (formatted as "'Book Title' by Author — 1-sentence reason why it is recommended").
+     * Do NOT substitute generic web recommendations if specific books are shown or spoken in the attached media.
    - If tech / tool / game / fiber:
-     * Extract specific tools, steps, commands, and actionable insights.
+     * Extract specific tools, steps, commands, and actionable insights into "steps" and "keyInsights".
 
 Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ... \`\`\`):
 {
@@ -143,7 +284,7 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
   "ingredients": [
     { "item": "Chicken breast", "grams": 350, "amount": "350g" }
   ],
-  "steps": [ "Step 1...", "Step 2..." ],
+  "steps": [ "Step 1 or Book 1...", "Step 2 or Book 2..." ],
   "keyInsights": [ "Key takeaway 1", "Key takeaway 2" ]
 }
 `;
@@ -166,9 +307,20 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
 
     for (const attempt of attempts) {
       try {
-        console.log(`Querying Gemini [${model}] in ${attempt.name} mode...`);
+        console.log(`Querying Gemini [${model}] in ${attempt.name} mode (media: ${mediaStatus})...`);
+        const requestParts = [];
+        if (mediaResult && mediaResult.data) {
+          requestParts.push({
+            inlineData: {
+              mimeType: mediaResult.mimeType,
+              data: mediaResult.data
+            }
+          });
+        }
+        requestParts.push({ text: prompt });
+
         const bodyPayload = {
-          contents: [{ parts: [{ text: prompt }] }]
+          contents: [{ parts: requestParts }]
         };
         if (attempt.tools.length > 0) {
           bodyPayload.tools = attempt.tools;
@@ -230,13 +382,14 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
   }
 
   // 3. Write directly to Cloud Firestore document
-  console.log(`Writing result to Cloud Firestore captures/${CAPTURE_ID}...`);
+  console.log(`Writing result to Cloud Firestore captures/${CAPTURE_ID} (mediaStatus: ${mediaStatus})...`);
   const app = initializeApp(FIREBASE_CONFIG);
   const db = getFirestore(app);
 
   const finalDocument = {
     ...structuredPayload,
     status: 'ready',
+    mediaStatus,
     sourceUrl: TARGET_URL,
     updatedAt: new Date().toISOString()
   };

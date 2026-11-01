@@ -402,6 +402,7 @@ export function renderCapturesList() {
     } else {
       extractionTimers.delete(idKey);
     }
+    const isFallback = !isExtracting && (c.mediaStatus === 'fallback_text' || c.status === 'fallback');
     return `
       <div class="capture-card" data-capture-id="${c.id}">
         <div class="capture-card-header">
@@ -417,6 +418,13 @@ export function renderCapturesList() {
         <div class="capture-card-summary" ${isExtracting ? 'style="color: var(--accent-cyan); font-style: italic;"' : ''}>
           ${escapeHtml(c.summary || (isExtracting ? 'Autonomous extraction worker active...' : 'No summary.'))}
         </div>
+
+        ${isFallback ? `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 10px; border-radius: 6px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-size: 0.76rem; font-weight: 600;">
+            <span>⚠️ Video Skipped (Text Fallback)</span>
+            <button type="button" class="btn-rerun-extraction" data-rerun-id="${c.id}" style="padding: 2px 7px; font-size: 0.72rem;">🔄 Re-run</button>
+          </div>
+        ` : ''}
 
         <div class="capture-card-footer">
           <span>${c.creator ? `by ${escapeHtml(c.creator)}` : ''}</span>
@@ -434,6 +442,21 @@ export function renderCapturesList() {
       const id = card.getAttribute('data-capture-id');
       const target = allCaptures.find(c => String(c.id) === String(id));
       if (target) openCaptureDetailModal(target);
+    });
+  });
+
+  // Wire stream card fallback re-run button
+  listEl.querySelectorAll('[data-rerun-id]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-rerun-id');
+      const target = allCaptures.find(c => String(c.id) === String(id));
+      if (!target || !target.sourceUrl) return;
+      extractionTimers.set(String(id), EXTRACTION_DURATION_SEC);
+      await saveDoc('captures', id, { status: 'extracting', mediaStatus: null });
+      target.status = 'extracting';
+      target.mediaStatus = null;
+      await dispatchExtractionWorker(id, target.sourceUrl);
     });
   });
 
@@ -524,12 +547,13 @@ export function openCaptureDetailModal(capture, options = {}) {
     if (options.isDuplicate) {
       fallbackEl.style.display = 'flex';
       fallbackEl.className = 'modal-fallback-alert';
+      fallbackEl.style.cssText = 'display: flex;';
       fallbackEl.innerHTML = `
         <span>🔁 <strong>Duplicate URL:</strong> This link was already saved. Opened your existing card.</span>
       `;
-    } else if (capture.status === 'fallback') {
-      fallbackEl.style.display = 'flex';
+    } else if (capture.mediaStatus === 'fallback_text' || capture.status === 'fallback') {
       fallbackEl.className = 'modal-fallback-alert';
+      fallbackEl.style.cssText = 'display: flex;';
       fallbackEl.innerHTML = `
         <span>⚠️ Video skipped/throttled. Using caption &amp; search grounding.</span>
         <button type="button" class="btn-rerun-extraction">🔄 Re-run</button>
@@ -538,12 +562,25 @@ export function openCaptureDetailModal(capture, options = {}) {
       if (rerunBtn) {
         rerunBtn.onclick = async () => {
           extractionTimers.set(String(capture.id), EXTRACTION_DURATION_SEC);
-          await saveDoc('captures', capture.id, { status: 'extracting' });
+          await saveDoc('captures', capture.id, { status: 'extracting', mediaStatus: null });
           capture.status = 'extracting';
+          capture.mediaStatus = null;
           fallbackEl.innerHTML = '<span>⏳ Re-extraction dispatched to cloud runner...</span>';
           await dispatchExtractionWorker(capture.id, capture.sourceUrl);
         };
       }
+    } else if (capture.sourceUrl && capture.mediaStatus === 'video_extracted') {
+      fallbackEl.className = '';
+      fallbackEl.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-size: 0.76rem; font-weight: 600; width: fit-content;';
+      fallbackEl.innerHTML = '<span>🎬 Media: Video &amp; Audio Analyzed (720p OCR + Voiceover)</span>';
+    } else if (capture.sourceUrl && capture.mediaStatus === 'audio_extracted') {
+      fallbackEl.className = '';
+      fallbackEl.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background: rgba(99, 102, 241, 0.14); border: 1px solid rgba(99, 102, 241, 0.35); color: #a5b4fc; font-size: 0.76rem; font-weight: 600; width: fit-content;';
+      fallbackEl.innerHTML = '<span>🎙️ Media: Voiceover Audio Verified</span>';
+    } else if (capture.sourceUrl && capture.mediaStatus === 'text_images') {
+      fallbackEl.className = '';
+      fallbackEl.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #7dd3fc; font-size: 0.76rem; font-weight: 600; width: fit-content;';
+      fallbackEl.innerHTML = '<span>📚 Format: Static Text &amp; Images</span>';
     } else {
       fallbackEl.style.display = 'none';
       fallbackEl.innerHTML = '';
@@ -639,10 +676,15 @@ export function openCaptureDetailModal(capture, options = {}) {
       `;
     }
 
-    // Recipe Steps
+    // Domain-Aware Primary List (Recipe Instructions / Recommended Books / Action Steps)
     if (Array.isArray(capture.steps) && capture.steps.length > 0) {
+      const stepsHeading = domain === 'book'
+        ? '📚 Recommended Books'
+        : domain === 'recipe'
+          ? '👨‍🍳 Instructions'
+          : '🛠️ Steps & Action Items';
       payloadHtml += `
-        <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">👨‍🍳 Instructions</div>
+        <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">${stepsHeading}</div>
         <ol style="padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; color: var(--text-secondary);">
           ${capture.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}
         </ol>
