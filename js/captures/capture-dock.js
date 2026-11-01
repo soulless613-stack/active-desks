@@ -6,8 +6,8 @@
  */
 
 import { saveDoc } from '../firebase.js';
-import { getSetting, callGeminiJson } from '../state.js';
-import { openCapturesModal } from './drawer.js';
+import { state, getSetting, callGeminiJson } from '../state.js';
+import { openCapturesModal, openCaptureDetailModal } from './drawer.js';
 
 /**
  * Initializes the bottom capture bar input and submission handlers.
@@ -49,6 +49,18 @@ async function handleCaptureSubmission(inputEl) {
   const isUrl = /^https?:\/\//i.test(rawInput);
 
   if (isUrl) {
+    // 1A-0. Duplicate URL Check across sourceUrl and blogUrl
+    const targetNorm = normalizeUrlForDedup(rawInput);
+    const existing = (state.captures || []).find(c =>
+      (c.sourceUrl && normalizeUrlForDedup(c.sourceUrl) === targetNorm) ||
+      (c.blogUrl && normalizeUrlForDedup(c.blogUrl) === targetNorm)
+    );
+
+    if (existing) {
+      openCaptureDetailModal(existing, { isDuplicate: true });
+      return;
+    }
+
     // 1A. URL Link Intake: Save placeholder and trigger extraction worker
     const domain = inferDomainFromUrl(rawInput);
     const placeholder = {
@@ -176,4 +188,36 @@ function inferDomainFromUrl(url) {
     return 'game';
   }
   return 'misc';
+}
+
+/**
+ * Normalizes a URL for duplicate comparison by stripping tracking parameters, www, and trailing slashes.
+ * 
+ * @purpose Prevents duplicate captures when social links include tracking query params (e.g. ?igsh=...).
+ * @inputs {string} rawUrl - Unnormalized URL string.
+ * @outputs {string} Canonical URL key.
+ */
+export function normalizeUrlForDedup(rawUrl) {
+  if (!rawUrl) return '';
+  try {
+    const u = new URL(rawUrl.trim());
+    const host = u.hostname.toLowerCase().replace(/^www\./, '');
+    const path = u.pathname.replace(/\/reels\//i, '/reel/').replace(/\/+$/, '');
+    const stripParams = new Set([
+      'igsh', 'igshid', 'utm_source', 'utm_medium', 'utm_campaign',
+      'utm_term', 'utm_content', 'fbclid', 'si', 'feature',
+      'is_from_webapp', 'sender_device'
+    ]);
+    const keptParams = [];
+    u.searchParams.forEach((val, key) => {
+      if (!stripParams.has(key.toLowerCase())) {
+        keptParams.push(`${key.toLowerCase()}=${val}`);
+      }
+    });
+    keptParams.sort();
+    const query = keptParams.length > 0 ? `?${keptParams.join('&')}` : '';
+    return `${host}${path}${query}`;
+  } catch (e) {
+    return rawUrl.trim().toLowerCase().replace(/\/+$/, '');
+  }
 }

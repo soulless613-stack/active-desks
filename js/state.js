@@ -6,7 +6,7 @@
 
 import { saveDoc, deleteDocById } from './firebase.js';
 
-export const APP_VERSION = 'v3.0.15';
+export const APP_VERSION = 'v3.0.16';
 
 export const CANONICAL_DESK_MAP = {
   book: 'reading',

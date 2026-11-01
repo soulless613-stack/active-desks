@@ -23,6 +23,10 @@ let activeDomainFilter = 'all';
 let activeTopicFilter = 'all';
 let searchQuery = '';
 
+const EXTRACTION_DURATION_SEC = 120;
+const extractionTimers = new Map();
+let countdownIntervalId = null;
+
 /**
  * Declarative schema for domain-specific workbench editors inside the 3-tier detail modal.
  */
@@ -382,19 +386,28 @@ export function renderCapturesList() {
         No captures found under this filter.
       </div>
     `;
+    tickExtractionCountdowns();
     return;
   }
 
   listEl.innerHTML = filtered.map(c => {
     const domain = (c.domain || 'misc').toLowerCase();
     const isExtracting = c.status === 'extracting';
+    const idKey = String(c.id);
+    if (isExtracting) {
+      if (!extractionTimers.has(idKey)) {
+        extractionTimers.set(idKey, EXTRACTION_DURATION_SEC);
+      }
+    } else {
+      extractionTimers.delete(idKey);
+    }
     return `
       <div class="capture-card" data-capture-id="${c.id}">
         <div class="capture-card-header">
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
             <span class="desk-domain-tag ${domain}">${escapeHtml(domain)}</span>
             ${c.topic ? `<span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">· ${escapeHtml(c.topic)}</span>` : ''}
-            ${isExtracting ? `<span class="brand-badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);">⏳ Extracting...</span>` : ''}
+            ${isExtracting ? `<span class="brand-badge" data-countdown-id="${idKey}" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); font-family: var(--font-mono);">${formatCountdown(extractionTimers.get(idKey))}</span>` : ''}
           </div>
           <button type="button" class="btn-delete-capture" data-delete-id="${c.id}" title="Delete capture">🗑️</button>
         </div>
@@ -431,10 +444,13 @@ export function renderCapturesList() {
       const target = allCaptures.find(c => String(c.id) === String(id));
       const title = target?.title || 'this capture';
       if (confirm(`Delete "${title.slice(0, 40)}"?`)) {
+        extractionTimers.delete(String(id));
         await deleteDocById('captures', id);
       }
     });
   });
+
+  tickExtractionCountdowns();
 }
 
 /**
@@ -442,9 +458,10 @@ export function renderCapturesList() {
  * 
  * @purpose Displays complete structured payload (ingredients, steps, specs) with domain reassignment & inline topic editing.
  * @inputs {object} capture - Capture record.
+ * @inputs {object} [options={}] - Optional display flags (e.g. { isDuplicate: true }).
  * @outputs {void}
  */
-export function openCaptureDetailModal(capture) {
+export function openCaptureDetailModal(capture, options = {}) {
   const modal = document.getElementById('capture-detail-modal');
   if (!modal) return;
 
@@ -503,7 +520,13 @@ export function openCaptureDetailModal(capture) {
 
   const fallbackEl = document.getElementById('modal-extraction-fallback-notice');
   if (fallbackEl) {
-    if (capture.status === 'fallback') {
+    if (options.isDuplicate) {
+      fallbackEl.style.display = 'flex';
+      fallbackEl.className = 'modal-fallback-alert';
+      fallbackEl.innerHTML = `
+        <span>🔁 <strong>Duplicate URL:</strong> This link was already saved. Opened your existing card.</span>
+      `;
+    } else if (capture.status === 'fallback') {
       fallbackEl.style.display = 'flex';
       fallbackEl.className = 'modal-fallback-alert';
       fallbackEl.innerHTML = `
@@ -513,6 +536,7 @@ export function openCaptureDetailModal(capture) {
       const rerunBtn = fallbackEl.querySelector('.btn-rerun-extraction');
       if (rerunBtn) {
         rerunBtn.onclick = async () => {
+          extractionTimers.set(String(capture.id), EXTRACTION_DURATION_SEC);
           await saveDoc('captures', capture.id, { status: 'extracting' });
           capture.status = 'extracting';
           fallbackEl.innerHTML = '<span>⏳ Re-extraction dispatched to cloud runner...</span>';
@@ -763,5 +787,54 @@ async function syncActiveDesk(deskDomain, patch) {
   const deskId = CANONICAL_DESK_MAP[deskDomain] || deskDomain;
   if (state.desks?.[deskId]) {
     await updateDesk(deskId, patch);
+  }
+}
+
+/**
+ * Formats an ephemeral countdown value (seconds) into M:SS badge text.
+ * 
+ * @purpose Renders a live 2-minute countdown label while a card is extracting.
+ * @inputs {number} [seconds=120] - Remaining seconds.
+ * @outputs {string} Formatted badge label.
+ */
+function formatCountdown(seconds = EXTRACTION_DURATION_SEC) {
+  const rem = Math.max(0, seconds);
+  const mins = Math.floor(rem / 60);
+  const secs = String(rem % 60).padStart(2, '0');
+  return `⏳ Extracting · ${mins}:${secs}`;
+}
+
+/**
+ * Starts or stops the ephemeral 1-second interval updating extracting card countdown badges.
+ * 
+ * @purpose Decrements active in-memory 2-minute countdown clocks and clears when none remain.
+ * @inputs None.
+ * @outputs {void}
+ */
+function tickExtractionCountdowns() {
+  const badges = document.querySelectorAll('[data-countdown-id]');
+  if (badges.length === 0) {
+    if (countdownIntervalId) {
+      clearInterval(countdownIntervalId);
+      countdownIntervalId = null;
+    }
+    return;
+  }
+
+  if (!countdownIntervalId) {
+    countdownIntervalId = setInterval(() => {
+      const activeBadges = document.querySelectorAll('[data-countdown-id]');
+      if (activeBadges.length === 0) {
+        clearInterval(countdownIntervalId);
+        countdownIntervalId = null;
+        return;
+      }
+      activeBadges.forEach(el => {
+        const id = el.getAttribute('data-countdown-id');
+        const nextSec = Math.max(0, (extractionTimers.get(id) ?? EXTRACTION_DURATION_SEC) - 1);
+        extractionTimers.set(id, nextSec);
+        el.textContent = formatCountdown(nextSec);
+      });
+    }, 1000);
   }
 }
