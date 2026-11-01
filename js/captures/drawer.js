@@ -16,7 +16,7 @@ import {
   renderExternalLinksHtml
 } from '../state.js';
 import { deleteDocById, saveDoc } from '../firebase.js';
-import { runTopicCohesionEvaluation, activeTopicEvolutionNotice } from './taxonomy.js';
+import { runTopicCohesionEvaluation, activeTopicEvolutionNotice, clearTopicEvolutionNotice } from './taxonomy.js';
 import { dispatchExtractionWorker } from './capture-dock.js';
 
 let activeDomainFilter = 'all';
@@ -281,6 +281,7 @@ export function renderDrawerEvolutionNotice() {
   const dismissBtn = noticeContainer.querySelector('.btn-dismiss-cluster');
   if (dismissBtn) {
     dismissBtn.onclick = () => {
+      clearTopicEvolutionNotice();
       noticeContainer.style.display = 'none';
       noticeContainer.innerHTML = '';
     };

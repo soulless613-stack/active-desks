@@ -17,6 +17,17 @@ const DISMISSED_PROMOTIONS_KEY = 'active_desks_dismissed_promotions';
 export let activeTopicEvolutionNotice = null;
 
 /**
+ * Clears the active topic evolution notice state so dismissed banners do not reappear.
+ * 
+ * @purpose Resets activeTopicEvolutionNotice to null upon user dismissal.
+ * @inputs None.
+ * @outputs {void}
+ */
+export function clearTopicEvolutionNotice() {
+  activeTopicEvolutionNotice = null;
+}
+
+/**
  * Initializes the taxonomy scanner and binds reactive state updates.
  * 
  * @purpose Evaluates captures on change to detect emerging domains and topics.
