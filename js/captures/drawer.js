@@ -250,33 +250,44 @@ export function renderDrawerEvolutionNotice() {
     return;
   }
 
-  const { domain, text, cardIds } = activeTopicEvolutionNotice;
+  const { domain, text, cardIds, domainTargets } = activeTopicEvolutionNotice;
+  const targets = Array.isArray(domainTargets) && domainTargets.length > 0
+    ? domainTargets
+    : [{ domain: domain || 'all', topic: null, count: Array.isArray(cardIds) ? cardIds.length : 0 }];
+
+  const buttonsHtml = targets.map(t => {
+    const isCurrent = activeDomainFilter === t.domain;
+    const activeStyle = isCurrent
+      ? 'background: var(--accent-cyan); color: #090d16; font-weight: 700; border-color: var(--accent-cyan);'
+      : '';
+    const label = t.count > 0
+      ? `View ${capitalize(t.domain)} (${t.count})`
+      : `View ${capitalize(t.domain)}`;
+    return `<button type="button" class="evolution-action-chip btn-view-cluster" data-target-domain="${escapeHtml(t.domain)}" data-target-topic="${escapeHtml(t.topic || '')}" style="${activeStyle}">${escapeHtml(label)}</button>`;
+  }).join('');
+
   noticeContainer.innerHTML = `
     <span>✨ <strong>Topic Evolution:</strong> ${escapeHtml(text)}</span>
-    <div style="display: flex; gap: 6px; align-items: center;">
-      <button type="button" class="evolution-action-chip btn-view-cluster">View Cards</button>
+    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+      ${buttonsHtml}
       <button type="button" class="evolution-action-chip dismiss btn-dismiss-cluster" title="Dismiss">✕</button>
     </div>
   `;
   noticeContainer.style.display = 'flex';
 
-  const viewBtn = noticeContainer.querySelector('.btn-view-cluster');
-  if (viewBtn) {
-    viewBtn.onclick = () => {
-      if (domain && domain !== 'all') {
-        activeDomainFilter = domain;
-        activeTopicFilter = 'all';
+  noticeContainer.querySelectorAll('.btn-view-cluster').forEach(btn => {
+    btn.onclick = () => {
+      const targetDomain = btn.getAttribute('data-target-domain');
+      const targetTopic = btn.getAttribute('data-target-topic');
+      if (targetDomain && targetDomain !== 'all') {
+        activeDomainFilter = targetDomain;
+        activeTopicFilter = targetTopic || 'all';
         renderDomainFilterBar();
       }
-      if (cardIds && cardIds.length > 0) {
-        const firstCard = (state.captures || []).find(c => c.id === cardIds[0]);
-        if (firstCard?.topic) {
-          activeTopicFilter = firstCard.topic;
-        }
-      }
+      renderDrawerEvolutionNotice();
       renderCapturesList();
     };
-  }
+  });
 
   const dismissBtn = noticeContainer.querySelector('.btn-dismiss-cluster');
   if (dismissBtn) {

@@ -268,17 +268,16 @@ Return strictly valid JSON with no markdown formatting:
 }
 
 /**
- * Runs the Rule of 3 Topic Cohesion Evaluation on a domain:
- * 1. Collects all cards in the domain.
+ * Runs the Rule of 3 Topic Cohesion Evaluation across one or all domains:
+ * 1. When domain === 'all', collects every domain with >= 3 ready cards; otherwise evaluates the single specified domain.
  * 2. Evaluates cluster breakouts (3+ cards) and re-evaluates 1-off strays for genuine semantic match.
  * 3. Does NOT force consolidation of distinct 1-offs.
- * 4. Autonomously executes the changes in Firestore and surfaces an informative notice for user inspection.
+ * 4. Autonomously executes the changes in Firestore and surfaces per-domain view buttons in the evolution notice.
  * 
- * @param {string} domain - Target domain to evaluate ('all' evaluates current active filter or defaults to 'recipe').
+ * @param {string} [domain='all'] - Target domain to evaluate ('all' scans every domain with >= 3 cards).
  * @returns {Promise<number>} Number of reassignments executed.
  */
 export async function runTopicCohesionEvaluation(domain = 'all') {
-  const targetDomain = domain === 'all' ? 'recipe' : domain.toLowerCase();
   const apiKey = getSetting('gemini_api_key', 'active_desks_gemini_key');
 
   if (!apiKey) {
@@ -286,22 +285,44 @@ export async function runTopicCohesionEvaluation(domain = 'all') {
     return 0;
   }
 
-  const allCaptures = state.captures || [];
-  const domainCards = allCaptures.filter(c => (c.domain || 'misc').toLowerCase() === targetDomain && c.status !== 'extracting');
+  const allCaptures = (state.captures || []).filter(c => c.status !== 'extracting');
+  const domainGroups = new Map();
 
-  if (domainCards.length < 3) {
-    alert(`Domain "${capitalize(targetDomain)}" has only ${domainCards.length} cards. Minimum 3 cards required to evaluate topic cohesion.`);
-    return 0;
+  if (domain === 'all') {
+    for (const c of allCaptures) {
+      const d = (c.domain || 'misc').toLowerCase();
+      if (!domainGroups.has(d)) domainGroups.set(d, []);
+      domainGroups.get(d).push(c);
+    }
+    for (const [d, cards] of domainGroups.entries()) {
+      if (cards.length < 3) domainGroups.delete(d);
+    }
+    if (domainGroups.size === 0) {
+      alert('No domains have 3 or more cards yet. Minimum 3 cards in a domain required to evaluate topic cohesion.');
+      return 0;
+    }
+  } else {
+    const targetDomain = domain.toLowerCase();
+    const domainCards = allCaptures.filter(c => (c.domain || 'misc').toLowerCase() === targetDomain);
+    if (domainCards.length < 3) {
+      alert(`Domain "${capitalize(targetDomain)}" has only ${domainCards.length} cards. Minimum 3 cards required to evaluate topic cohesion.`);
+      return 0;
+    }
+    domainGroups.set(targetDomain, domainCards);
   }
 
-  const cardsSummary = domainCards.map(c => ({
-    id: String(c.id),
-    title: c.title || 'Untitled',
-    currentTopic: c.topic || 'General',
-    summary: c.summary || ''
-  }));
+  const allChanges = [];
+  const changedDomains = new Set();
 
-  const prompt = `You are the Adaptive Taxonomy Engine for Active Desks.
+  for (const [targetDomain, domainCards] of domainGroups.entries()) {
+    const cardsSummary = domainCards.map(c => ({
+      id: String(c.id),
+      title: c.title || 'Untitled',
+      currentTopic: c.topic || 'General',
+      summary: c.summary || ''
+    }));
+
+    const prompt = `You are the Adaptive Taxonomy Engine for Active Desks.
 Examine the cards in domain "${targetDomain}". Evaluate their topic assignments using the Rule of 3:
 1. Cluster Crystallization: If 3 or more cards share a clear, specific sub-genre or focus (e.g., 3 books with LitRPG or Progression Fantasy), assign them to that clear sub-genre topic.
 2. 1-Off Stray Re-evaluation: For any card with a unique 1-off topic, determine if it genuinely matches and belongs with other cards in an existing topic. Do NOT force consolidation if the card is conceptually distinct; only reassign if there is a genuine semantic and conceptual fit.
@@ -322,31 +343,47 @@ Return strictly valid JSON with no markdown wrapping:
   ]
 }`;
 
-  const parsed = await callGeminiJson(prompt);
-  const changes = Array.isArray(parsed?.changes) ? parsed.changes : [];
+    const parsed = await callGeminiJson(prompt);
+    const changes = Array.isArray(parsed?.changes) ? parsed.changes : [];
 
-  if (changes.length === 0) {
-    alert(`✨ All topics in ${capitalize(targetDomain)} are well-formed and cohesive. Zero changes needed.`);
-    return 0;
-  }
-
-  // Autonomously execute changes in Firestore
-  for (const ch of changes) {
-    if (ch.id && ch.newTopic) {
-      await saveDoc('captures', ch.id, { topic: ch.newTopic });
+    for (const ch of changes) {
+      if (ch.id && ch.newTopic) {
+        await saveDoc('captures', ch.id, { topic: ch.newTopic });
+        allChanges.push({ ...ch, domain: targetDomain });
+        changedDomains.add(targetDomain);
+      }
     }
   }
 
-  // Format human-readable notification text (rendered by drawer.js finally block)
-  const summaryText = changes.length === 1
-    ? `1 card re-assigned from "${changes[0].oldTopic}" to "${changes[0].newTopic}"`
-    : `${changes.length} cards re-organized into topics: ${[...new Set(changes.map(c => c.newTopic))].join(', ')}`;
+  const scannedLabel = domain === 'all'
+    ? Array.from(domainGroups.keys()).map(capitalize).join(', ')
+    : capitalize(domain.toLowerCase());
+
+  if (allChanges.length === 0) {
+    alert(`✨ All topics in ${scannedLabel} are well-formed and cohesive. Zero changes needed.`);
+    return 0;
+  }
+
+  const domainTargets = Array.from(changedDomains).map(d => {
+    const dChanges = allChanges.filter(ch => ch.domain === d);
+    const dTopics = [...new Set(dChanges.map(ch => ch.newTopic))];
+    return {
+      domain: d,
+      topic: dTopics.length === 1 ? dTopics[0] : 'all',
+      count: dChanges.length
+    };
+  });
+
+  const summaryText = allChanges.length === 1
+    ? `1 card in ${capitalize(allChanges[0].domain)} re-assigned from "${allChanges[0].oldTopic}" to "${allChanges[0].newTopic}"`
+    : `${allChanges.length} cards across ${Array.from(changedDomains).map(capitalize).join(', ')} re-organized into topics: ${[...new Set(allChanges.map(c => c.newTopic))].join(', ')}`;
 
   activeTopicEvolutionNotice = {
-    domain: targetDomain,
+    domain: allChanges[0].domain,
     text: summaryText,
-    cardIds: changes.map(ch => ch.id)
+    cardIds: allChanges.map(ch => ch.id),
+    domainTargets
   };
 
-  return changes.length;
+  return allChanges.length;
 }
