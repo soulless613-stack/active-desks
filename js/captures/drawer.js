@@ -413,7 +413,8 @@ export function renderCapturesList() {
     } else {
       extractionTimers.delete(idKey);
     }
-    const isFallback = !isExtracting && (c.mediaStatus === 'fallback_text' || c.status === 'fallback');
+    const isFailed = !isExtracting && (c.mediaStatus === 'failed' || c.status === 'fallback');
+    const failReason = c.extractionNote || 'Media and page content could not be extracted.';
     return `
       <div class="capture-card" data-capture-id="${c.id}">
         <div class="capture-card-header">
@@ -430,10 +431,10 @@ export function renderCapturesList() {
           ${escapeHtml(c.summary || (isExtracting ? 'Autonomous extraction worker active...' : 'No summary.'))}
         </div>
 
-        ${isFallback ? `
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 10px; border-radius: 6px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-size: 0.76rem; font-weight: 600;">
-            <span>⚠️ Video Skipped (Text Fallback)</span>
-            <button type="button" class="btn-rerun-extraction" data-rerun-id="${c.id}" style="padding: 2px 7px; font-size: 0.72rem;">🔄 Re-run</button>
+        ${isFailed ? `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px; border-radius: 6px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-size: 0.75rem; font-weight: 600;">
+            <span>⚠️ Extraction Failed: ${escapeHtml(failReason)}</span>
+            <button type="button" class="btn-rerun-extraction" data-rerun-id="${c.id}" style="padding: 2px 7px; font-size: 0.72rem; flex-shrink: 0;">🔄 Re-run</button>
           </div>
         ` : ''}
 
@@ -464,9 +465,10 @@ export function renderCapturesList() {
       const target = allCaptures.find(c => String(c.id) === String(id));
       if (!target || !target.sourceUrl) return;
       extractionTimers.set(String(id), EXTRACTION_DURATION_SEC);
-      await saveDoc('captures', id, { status: 'extracting', mediaStatus: null });
+      await saveDoc('captures', id, { status: 'extracting', mediaStatus: null, extractionNote: null });
       target.status = 'extracting';
       target.mediaStatus = null;
+      target.extractionNote = null;
       await dispatchExtractionWorker(id, target.sourceUrl);
     });
   });
@@ -562,36 +564,45 @@ export function openCaptureDetailModal(capture, options = {}) {
       fallbackEl.innerHTML = `
         <span>🔁 <strong>Duplicate URL:</strong> This link was already saved. Opened your existing card.</span>
       `;
-    } else if (capture.mediaStatus === 'fallback_text' || capture.status === 'fallback') {
+    } else if (capture.mediaStatus === 'failed' || capture.status === 'fallback') {
+      const failReason = capture.extractionNote || 'Media and page content could not be extracted.';
       fallbackEl.className = 'modal-fallback-alert';
       fallbackEl.style.cssText = 'display: flex;';
       fallbackEl.innerHTML = `
-        <span>⚠️ Video skipped/throttled. Using caption &amp; search grounding.</span>
+        <span>⚠️ <strong>Extraction Failed:</strong> ${escapeHtml(failReason)}</span>
         <button type="button" class="btn-rerun-extraction">🔄 Re-run</button>
       `;
       const rerunBtn = fallbackEl.querySelector('.btn-rerun-extraction');
       if (rerunBtn) {
         rerunBtn.onclick = async () => {
           extractionTimers.set(String(capture.id), EXTRACTION_DURATION_SEC);
-          await saveDoc('captures', capture.id, { status: 'extracting', mediaStatus: null });
+          await saveDoc('captures', capture.id, { status: 'extracting', mediaStatus: null, extractionNote: null });
           capture.status = 'extracting';
           capture.mediaStatus = null;
+          capture.extractionNote = null;
           fallbackEl.innerHTML = '<span>⏳ Re-extraction dispatched to cloud runner...</span>';
           await dispatchExtractionWorker(capture.id, capture.sourceUrl);
         };
       }
     } else if (capture.sourceUrl && capture.mediaStatus === 'video_extracted') {
+      const note = capture.extractionNote || '720p OCR + Voiceover';
       fallbackEl.className = '';
       fallbackEl.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-size: 0.76rem; font-weight: 600; width: fit-content;';
-      fallbackEl.innerHTML = '<span>🎬 Media: Video &amp; Audio Analyzed (720p OCR + Voiceover)</span>';
+      fallbackEl.innerHTML = `<span>🎬 Media: Video &amp; Audio Analyzed (${escapeHtml(note)})</span>`;
     } else if (capture.sourceUrl && capture.mediaStatus === 'audio_extracted') {
       fallbackEl.className = '';
       fallbackEl.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background: rgba(99, 102, 241, 0.14); border: 1px solid rgba(99, 102, 241, 0.35); color: #a5b4fc; font-size: 0.76rem; font-weight: 600; width: fit-content;';
       fallbackEl.innerHTML = '<span>🎙️ Media: Voiceover Audio Verified</span>';
-    } else if (capture.sourceUrl && capture.mediaStatus === 'text_images') {
+    } else if (capture.sourceUrl && (capture.mediaStatus === 'web_grounded' || capture.mediaStatus === 'fallback_text')) {
+      const reason = capture.extractionNote || 'Direct media stream blocked by host; extracted via Google Search Grounding.';
       fallbackEl.className = '';
-      fallbackEl.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #7dd3fc; font-size: 0.76rem; font-weight: 600; width: fit-content;';
-      fallbackEl.innerHTML = '<span>📚 Format: Static Text &amp; Images</span>';
+      fallbackEl.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 6px; background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(14, 165, 233, 0.32); color: #38bdf8; font-size: 0.76rem; font-weight: 600; width: fit-content;';
+      fallbackEl.innerHTML = `<span>🌐 Web Grounded — ${escapeHtml(reason)}</span>`;
+    } else if (capture.sourceUrl && capture.mediaStatus === 'text_images') {
+      const reason = capture.extractionNote || 'Static post / article format (no video to extract); extracted from post text & metadata.';
+      fallbackEl.className = '';
+      fallbackEl.style.cssText = 'display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 6px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #7dd3fc; font-size: 0.76rem; font-weight: 600; width: fit-content;';
+      fallbackEl.innerHTML = `<span>📚 Text &amp; Images — ${escapeHtml(reason)}</span>`;
     } else {
       fallbackEl.style.display = 'none';
       fallbackEl.innerHTML = '';

@@ -201,7 +201,8 @@ async function run() {
       console.log('Attempting OpenGraph scraping with facebookexternalhit User-Agent...');
       const html = execSync(`curl -sL -A "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)" "${TARGET_URL}"`, {
         encoding: 'utf8',
-        timeout: 15000
+        timeout: 15000,
+        maxBuffer: 10 * 1024 * 1024
       });
 
       const ogDesc = html.match(/<meta property="og:description" content="([^"]+)"/i);
@@ -217,9 +218,20 @@ async function run() {
   const isVideo = isVideoLink(TARGET_URL);
   let mediaResult = null;
   let mediaStatus = 'text_images';
+  let extractionNote = 'Static post / article format (no video to extract); extracted from post text & metadata.';
+
   if (isVideo) {
     mediaResult = fetchMediaBuffer(TARGET_URL);
-    mediaStatus = mediaResult ? mediaResult.status : 'fallback_text';
+    if (mediaResult?.status === 'video_extracted') {
+      mediaStatus = 'video_extracted';
+      extractionNote = '720p video frames (OCR) and voiceover audio analyzed by Gemini Multimodal.';
+    } else if (mediaResult?.status === 'audio_extracted') {
+      mediaStatus = 'audio_extracted';
+      extractionNote = 'Voiceover audio track extracted and transcribed by Gemini Multimodal.';
+    } else {
+      mediaStatus = 'web_grounded';
+      extractionNote = 'Direct media download blocked by host; extracted via Google Search Grounding.';
+    }
   } else {
     console.log('Static post/article detected. Using text_images modality.');
   }
@@ -232,7 +244,7 @@ async function run() {
   } else if (mediaStatus === 'text_images') {
     mediaNotice = 'Attached Media Track: STATIC CONTENT (Post / Photo Carousel / Web Article). Extract information accurately from the post caption and Google Search grounding.';
   } else {
-    mediaNotice = 'Attached Media Track: NONE (Media download unavailable; text fallback active. Rely on creator captions and live Google Search grounding).';
+    mediaNotice = 'Attached Media Track: URL STREAM OR WEB GROUNDING (If video stream is attached via fileData, watch visual frames and listen to spoken audio closely; otherwise rely on creator captions and live Google Search grounding).';
   }
 
   // 2. Structured Extraction & Live Search Grounding via Google Gemini
@@ -296,14 +308,20 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
   ];
 
   let structuredPayload = null;
+  let groundedSourcesCount = 0;
 
   for (const model of CANDIDATE_MODELS) {
-    // Mode A: Google Search Grounding enabled
-    // Mode B: Direct JSON mode without tools
-    const attempts = [
-      { name: 'grounded', tools: [{ googleSearch: {} }] },
-      { name: 'direct', tools: [] }
-    ];
+    const attempts = (isVideo && !mediaResult)
+      ? [
+          { name: 'direct-uri-grounded', useFileUri: true, tools: [{ googleSearch: {} }] },
+          { name: 'direct-uri', useFileUri: true, tools: [] },
+          { name: 'grounded', useFileUri: false, tools: [{ googleSearch: {} }] },
+          { name: 'direct', useFileUri: false, tools: [] }
+        ]
+      : [
+          { name: 'grounded', useFileUri: false, tools: [{ googleSearch: {} }] },
+          { name: 'direct', useFileUri: false, tools: [] }
+        ];
 
     for (const attempt of attempts) {
       try {
@@ -314,6 +332,13 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
             inlineData: {
               mimeType: mediaResult.mimeType,
               data: mediaResult.data
+            }
+          });
+        } else if (attempt.useFileUri) {
+          requestParts.push({
+            fileData: {
+              fileUri: TARGET_URL,
+              mimeType: 'video/mp4'
             }
           });
         }
@@ -352,11 +377,17 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
           // Check for grounding sources
           const groundingChunks = candidate?.groundingMetadata?.groundingChunks || [];
           const groundedWeb = groundingChunks.map(c => c.web?.uri).filter(Boolean);
+          groundedSourcesCount = groundedWeb.length;
           if (groundedWeb.length > 0) {
             console.log(`✓ Grounded in web sources:`, groundedWeb);
             if (!structuredPayload.blogUrl) {
               structuredPayload.blogUrl = groundedWeb[0];
             }
+          }
+
+          if (attempt.useFileUri) {
+            mediaStatus = 'video_extracted';
+            extractionNote = 'Video & audio watched directly by Gemini via URL stream.';
           }
 
           console.log(`✓ Successfully extracted 3-tier payload via [${model}:${attempt.name}]:`, structuredPayload.title);
@@ -370,8 +401,15 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
     if (structuredPayload) break;
   }
 
+  const hasListContent =
+    (Array.isArray(structuredPayload?.ingredients) && structuredPayload.ingredients.length > 0) ||
+    (Array.isArray(structuredPayload?.steps) && structuredPayload.steps.length > 0) ||
+    (Array.isArray(structuredPayload?.keyInsights) && structuredPayload.keyInsights.length > 0);
+
   if (!structuredPayload) {
     console.error('All candidate Gemini models failed. Engaging safe fallback payload.');
+    mediaStatus = 'failed';
+    extractionNote = 'All candidate Gemini models failed to respond or parse.';
     structuredPayload = {
       domain: 'misc',
       topic: 'Unclassified',
@@ -379,6 +417,18 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
       summary: captionText.slice(0, 200) || 'Extraction fallback.',
       creator: creatorHandle || ''
     };
+  } else if (!hasListContent || (!mediaResult && mediaStatus !== 'video_extracted' && !captionText && !mediaTitle && groundedSourcesCount === 0)) {
+    mediaStatus = 'failed';
+    extractionNote = isVideo
+      ? 'Video/audio download was blocked by host, and Google Search found no matching public post.'
+      : 'Page text could not be scraped, and Google Search found no matching public page.';
+  } else if (mediaStatus === 'text_images' && !captionText && groundedSourcesCount > 0) {
+    mediaStatus = 'web_grounded';
+    extractionNote = `No media to extract; extracted via Google Search Grounding (${groundedSourcesCount} web source${groundedSourcesCount > 1 ? 's' : ''}).`;
+  } else if (mediaStatus === 'web_grounded') {
+    extractionNote = groundedSourcesCount > 0
+      ? `Direct video stream blocked by host; extracted via Google Search Grounding (${groundedSourcesCount} web source${groundedSourcesCount > 1 ? 's' : ''}).`
+      : 'Direct video stream blocked by host; extracted from post metadata & Google Search Grounding.';
   }
 
   // 3. Write directly to Cloud Firestore document
@@ -390,6 +440,7 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
     ...structuredPayload,
     status: 'ready',
     mediaStatus,
+    extractionNote,
     sourceUrl: TARGET_URL,
     updatedAt: new Date().toISOString()
   };
