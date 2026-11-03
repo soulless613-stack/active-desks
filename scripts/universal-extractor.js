@@ -4,8 +4,14 @@
  * @file universal-extractor.js
  * @description Autonomous Cloud Extractor for Active Desks v3.0.
  * Invoked by GitHub Actions on repository_dispatch or manual trigger.
- * Uses yt-dlp & ffmpeg to bypass Instagram/TikTok login walls, sends video/audio
- * & transcripts to Gemini Multimodal, and writes rich 3-tier payloads directly to Cloud Firestore.
+ * 
+ * Features 4-Stage Multi-Turn Agentic Pipeline with 3-Strikes Critic:
+ *   Stage 1: Raw Extraction (Sensory Ingestion - Transcript, OCR, Claims)
+ *   Stage 2: Deep Grounding & Investigation (Live Search past bait/funnels)
+ *   Stage 3: Composition (Synthesize into Universal Card Schema)
+ *   Stage 4: Critic & Verification (Network probe + Semantic truth check + 3 Strikes Out)
+ * 
+ * Saves final card payload + full pipelineStages audit trail directly to Cloud Firestore.
  */
 
 import fs from 'fs';
@@ -57,10 +63,6 @@ function parseJsonFromResponse(text) {
 
 /**
  * Determines whether a target URL points to a video stream (Reels, TikTok, YouTube).
- * 
- * @purpose Distinguishes video streams needing yt-dlp extraction from static posts/articles.
- * @inputs {string} url - Target capture URL.
- * @outputs {boolean} True if video stream URL.
  */
 function isVideoLink(url) {
   if (!url || typeof url !== 'string') return false;
@@ -75,10 +77,6 @@ function isVideoLink(url) {
 
 /**
  * Tiered Media Downloader via yt-dlp & ffmpeg.
- * 
- * @purpose Downloads compressed 720p MP4 video (Tier 1) or MP3 voiceover audio (Tier 2) for Gemini Multimodal.
- * @inputs {string} url - Target video URL.
- * @outputs {{ mimeType: string, data: string, status: string } | null} Base64 media payload or null on fallback.
  */
 function fetchMediaBuffer(url) {
   if (!url || typeof url !== 'string' || !isVideoLink(url)) return null;
@@ -104,7 +102,7 @@ function fetchMediaBuffer(url) {
       if (stats.size > 1000 && stats.size <= 20 * 1024 * 1024) {
         const videoBuffer = fs.readFileSync(tempVideoFile);
         fs.unlinkSync(tempVideoFile);
-        console.log(`✓ [Tier 1 Success] Extracted full video (.mp4, ${Math.round(videoBuffer.length / 1024)} KB). Vision + Audio enabled!`);
+        console.log(`✓ [Tier 1 Success] Extracted full video (.mp4, ${Math.round(videoBuffer.length / 1024)} KB).`);
         return {
           mimeType: 'video/mp4',
           data: videoBuffer.toString('base64'),
@@ -139,7 +137,7 @@ function fetchMediaBuffer(url) {
       if (stats.size > 500 && stats.size <= 15 * 1024 * 1024) {
         const audioBuffer = fs.readFileSync(tempAudioFile);
         fs.unlinkSync(tempAudioFile);
-        console.log(`✓ [Tier 2 Success] Extracted voiceover audio (.mp3, ${Math.round(audioBuffer.length / 1024)} KB). Narration listening enabled!`);
+        console.log(`✓ [Tier 2 Success] Extracted voiceover audio (.mp3, ${Math.round(audioBuffer.length / 1024)} KB).`);
         return {
           mimeType: 'audio/mp3',
           data: audioBuffer.toString('base64'),
@@ -149,22 +147,17 @@ function fetchMediaBuffer(url) {
       fs.unlinkSync(tempAudioFile);
     }
   } catch (err) {
-    console.warn(`Tier 2 audio extraction skipped/failed (${err.message}). Falling back to Tier 3 text & web search.`);
+    console.warn(`Tier 2 audio extraction skipped/failed (${err.message}).`);
     if (fs.existsSync(tempAudioFile)) {
       try { fs.unlinkSync(tempAudioFile); } catch (e) {}
     }
   }
 
-  console.log('-> [Tier 3] Relying on scraped creator caption & Google Search grounding.');
   return null;
 }
 
 /**
  * Queries Cloud Firestore to discover all built-in and user-promoted domain slugs.
- * 
- * @purpose Ensures Gemini can classify captures into newly promoted domains/desks.
- * @inputs {import('firebase/firestore').Firestore} db - Initialized Firestore instance.
- * @outputs {Promise<Array<string>>} Ordered list of available domain slugs.
  */
 async function fetchAvailableDomains(db) {
   const baseDomains = ['recipe', 'book', 'tech', 'game', 'fiber', 'misc'];
@@ -200,58 +193,376 @@ async function fetchAvailableDomains(db) {
   return Array.from(domainSet);
 }
 
+/**
+ * Centralized fresh-context caller for Gemini 3.8 Flash.
+ * Ensures each call has zero memory leakage from previous prompts.
+ */
+async function callFreshGemini(requestParts, tools = [], responseMimeType = null, model = 'gemini-3.8-flash') {
+  const bodyPayload = {
+    contents: [{ parts: requestParts }]
+  };
+  if (tools.length > 0) {
+    bodyPayload.tools = tools;
+  }
+  if (responseMimeType) {
+    bodyPayload.generationConfig = { responseMimeType };
+  }
+
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(bodyPayload)
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.text();
+    throw new Error(`Gemini HTTP ${res.status}: ${errorBody}`);
+  }
+
+  const json = await res.json();
+  const candidate = json.candidates?.[0];
+  const parts = candidate?.content?.parts || [];
+  const text = parts.map(p => p.text || '').join('\n');
+  const groundingChunks = candidate?.groundingMetadata?.groundingChunks || [];
+  const groundedUrls = groundingChunks.map(c => c.web?.uri).filter(Boolean);
+
+  return { text, groundedUrls, raw: candidate };
+}
+
+/**
+ * Tests whether a URL resolves and returns an HTTP 200 within 5 seconds.
+ */
+async function testUrlReachability(url) {
+  if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+    return { ok: false, status: 0, reason: 'Invalid URL format' };
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+      },
+      redirect: 'follow',
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (res.status >= 200 && res.status < 400) {
+      const text = await res.text().catch(() => '');
+      return { ok: true, status: res.status, text: text.slice(0, 5000), finalUrl: res.url };
+    }
+    return { ok: false, status: res.status, reason: `HTTP error status ${res.status}` };
+  } catch (err) {
+    return { ok: false, status: 0, reason: err.message };
+  }
+}
+
+/**
+ * STAGE 1: Raw Extraction (Sensory Ingestion)
+ * Completely objective transcription and cataloging of claims, on-screen text, and captions.
+ */
+async function runStage1_RawExtraction(mediaResult, targetUrl, mediaTitle, creatorHandle, captionText) {
+  console.log('-> [Stage 1: Raw Extraction] Ingesting media and transcripts verbatim...');
+  const parts = [];
+
+  if (mediaResult && mediaResult.data) {
+    parts.push({
+      inlineData: {
+        mimeType: mediaResult.mimeType,
+        data: mediaResult.data
+      }
+    });
+  } else if (isVideoLink(targetUrl)) {
+    // Attempt direct URL stream
+    parts.push({
+      fileData: {
+        fileUri: targetUrl,
+        mimeType: 'video/mp4'
+      }
+    });
+  }
+
+  const prompt = `
+You are the Sensory Ingestion Agent for Active Desks.
+Your sole job is to objectively document EVERYTHING presented in this post without summarizing or formatting into a final card.
+
+Post Metadata:
+- URL: ${targetUrl}
+- Title / Headline: ${mediaTitle || 'None'}
+- Creator: ${creatorHandle || 'Unknown'}
+- Scraped Caption / Description: ${captionText || 'None'}
+
+TASKS:
+1. AUDIO / SPEECH: Transcribe everything spoken or narrated verbatim or in high detail.
+2. VISUAL / OCR: Read all on-screen text overlays, title cards, book covers, diagrams, tool names, commands, and code snippets shown.
+3. CLAIMS & ENTITIES: List every subject, book, anime, paper, tool, or product specifically named or showcased.
+4. ENGAGEMENT / BAIT: Identify any calls to action, teasers, or promises (e.g. "Comment X to get Y", "Link in bio for full recipe", "Available at domain.com").
+
+Return ONLY a clean JSON object (enclosed in \`\`\`json ... \`\`\`):
+{
+  "transcript": "Detailed spoken transcript...",
+  "ocrText": "All text visible on screen...",
+  "identifiedEntities": ["Subject 1", "Subject 2"],
+  "creatorClaims": ["Claim or teaching 1", "Claim or teaching 2"],
+  "teasersAndCallsToAction": ["Teaser 1", "Teaser 2"]
+}
+`;
+  parts.push({ text: prompt });
+
+  try {
+    const res = await callFreshGemini(parts, [], 'application/json');
+    const parsed = parseJsonFromResponse(res.text);
+    return parsed || { rawText: res.text };
+  } catch (err) {
+    console.warn('Stage 1 fallback error:', err.message);
+    return {
+      transcript: captionText,
+      ocrText: mediaTitle,
+      identifiedEntities: [mediaTitle],
+      creatorClaims: [captionText],
+      teasersAndCallsToAction: []
+    };
+  }
+}
+
+/**
+ * STAGE 2: Deep Grounding & Investigation (Live Search)
+ * Investigates the raw claims using Google Search grounding, looking past bait/funnels.
+ */
+async function runStage2_Investigation(stage1Data, targetUrl, criticFeedback = null) {
+  console.log(`-> [Stage 2: Deep Grounding] Searching web for ground truth${criticFeedback ? ' (handling critic feedback)' : ''}...`);
+
+  const feedbackDirective = criticFeedback
+    ? `\nPREVIOUS CRITIQUE / REJECTION:
+${criticFeedback}
+The previous candidate destination or claims failed verification. You MUST actively search for the authentic underlying source, repository, paper, or recipe, OR conclude that no public destination exists.`
+    : '';
+
+  const prompt = `
+You are the Ground Truth Research Agent for Active Desks.
+Your job is to investigate the raw claims from a social media post and find the authentic underlying source material.
+
+RAW INGESTION DOSSIER:
+- URL: ${targetUrl}
+- Entities: ${JSON.stringify(stage1Data.identifiedEntities || [])}
+- Claims: ${JSON.stringify(stage1Data.creatorClaims || [])}
+- Teasers / Bait: ${JSON.stringify(stage1Data.teasersAndCallsToAction || [])}
+- Transcript & Notes: ${(stage1Data.transcript || '').slice(0, 1000)}
+${feedbackDirective}
+
+INVESTIGATION DIRECTIVES:
+1. GET PAST BAIT & FUNNELS: Creators often tease content ("Comment for link", "DM me"). Use Google Search grounding to search for the creator's actual open source material, recipe blog, GitHub repo, scientific paper (arXiv), official anime/book listing, or documentation.
+2. DO NOT GUESS DOMAINS: Never extrapolate or invent URLs from usernames (e.g. do not guess 'user.io' or 'user.gumroad.com'). Every candidate URL MUST be a real, grounded web result found via search.
+3. IDENTIFY CORE WORK: If the post shows an anime clip, game, book, or tech pattern without naming it, search to identify the real work, artist/author, and where it is found.
+
+Return ONLY a clean JSON object (enclosed in \`\`\`json ... \`\`\`):
+{
+  "investigatedSubject": "True identity of the subject being discussed or recommended",
+  "verifiedFacts": ["Fact 1", "Fact 2", "Fact 3"],
+  "candidateDestinationUrl": "Direct URL to the real destination article/recipe/repo or null",
+  "searchSummary": "1-2 sentence explanation of what was verified via live search"
+}
+`;
+
+  try {
+    const res = await callFreshGemini([{ text: prompt }], [{ googleSearch: {} }]);
+    const parsed = parseJsonFromResponse(res.text);
+    const candidateUrl = parsed?.candidateDestinationUrl || (res.groundedUrls.length > 0 ? res.groundedUrls[0] : null);
+
+    return {
+      investigatedSubject: parsed?.investigatedSubject || stage1Data.identifiedEntities?.[0] || 'Unknown',
+      verifiedFacts: parsed?.verifiedFacts || stage1Data.creatorClaims || [],
+      candidateDestinationUrl: candidateUrl && candidateUrl.startsWith('http') ? candidateUrl : null,
+      groundedSources: res.groundedUrls,
+      searchSummary: parsed?.searchSummary || 'Investigated via Google Search.'
+    };
+  } catch (err) {
+    console.warn('Stage 2 search error:', err.message);
+    return {
+      investigatedSubject: stage1Data.identifiedEntities?.[0] || 'Unknown',
+      verifiedFacts: stage1Data.creatorClaims || [],
+      candidateDestinationUrl: null,
+      groundedSources: [],
+      searchSummary: 'Search skipped due to network/model limit.'
+    };
+  }
+}
+
+/**
+ * STAGE 3: Composition (Synthesize into Card Schema)
+ * Pure synthesis of Stage 1 + Stage 2 into the universal sections schema.
+ */
+async function runStage3_Composition(stage1Data, stage2Data, availableDomains, targetUrl) {
+  console.log('-> [Stage 3: Composition] Synthesizing into universal card schema...');
+
+  const domainUnion = availableDomains.map(d => `"${d}"`).join(' | ');
+
+  const prompt = `
+You are the Composition Agent for Active Desks.
+Synthesize the verified research into a clean, structured personal card.
+
+SOURCE DOSSIER:
+- Source URL: ${targetUrl}
+- Investigated Subject: ${stage2Data.investigatedSubject}
+- Verified Facts: ${JSON.stringify(stage2Data.verifiedFacts)}
+- Raw Claims: ${JSON.stringify(stage1Data.creatorClaims || [])}
+- Transcript Excerpt: ${(stage1Data.transcript || '').slice(0, 800)}
+- Candidate Destination URL: ${stage2Data.candidateDestinationUrl || 'None'}
+
+COMPOSITION DIRECTIVES:
+1. INTENT FIRST: Focus on what the user actually wants when looking back at this card (the actual recommendations, recipe, code, steps, or review).
+2. REMOVE SOLICITATIONS: Discard any requests to comment, DM, join private paid communities (Skool, Gumroad, Stan, Discord), or purchase templates.
+3. DOMAIN: Must be one of: ${domainUnion}. If none fit, use "misc" with a specific 1-3 word "topic".
+4. SECTIONS: Create 1 to 3 logical sections matching how the information is best consumed:
+   - "checklist": Checkable supplies, ingredients (with metric gram weights in "detail", e.g. "350g"), or setup prerequisites.
+   - "numbered": Sequential instructions, ranked top-N lists, or step-by-step guides.
+   - "bullets": Reviews, series/media overviews, takeaways, or specifications.
+
+Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ... \`\`\`):
+{
+  "domain": ${domainUnion},
+  "topic": "Concise 1-3 word subject",
+  "title": "Clean, descriptive title",
+  "summary": "1-2 sentence core takeaway explaining why this was saved",
+  "creator": "Creator handle or author",
+  "destinationUrl": ${stage2Data.candidateDestinationUrl ? `"${stage2Data.candidateDestinationUrl}"` : "null"},
+  "sections": [
+    {
+      "heading": "Section heading with emoji",
+      "style": "checklist" | "numbered" | "bullets",
+      "items": [
+        { "text": "Primary item, step, or takeaway", "detail": "Optional context, measurement, or spec" }
+      ]
+    }
+  ]
+}
+`;
+
+  const res = await callFreshGemini([{ text: prompt }], [], 'application/json');
+  return parseJsonFromResponse(res.text);
+}
+
+/**
+ * STAGE 4: Critic & Verification (Automated Truth Audit)
+ * 1. Network probe: Tests if candidate URL resolves (HTTP 200).
+ * 2. Semantic check: Verifies if the page contains the actual topic vs. generic sales funnel.
+ * 3. Content audit: Verifies sections don't contain commercial sales pitch.
+ */
+async function runStage4_Critic(draftCard, targetUrl) {
+  console.log('-> [Stage 4: Critic & Verification] Auditing card against ground truth...');
+  const candidateUrl = draftCard?.destinationUrl;
+
+  // 1. If candidate URL provided, test network reachability
+  if (candidateUrl && candidateUrl.startsWith('http')) {
+    const netTest = await testUrlReachability(candidateUrl);
+    if (!netTest.ok) {
+      return {
+        passed: false,
+        strikeReason: `Candidate destination URL "${candidateUrl}" failed network verification (${netTest.reason || 'Dead link/DNS error'}).`
+      };
+    }
+
+    // 2. Semantic alignment check: Does the destination page match the card?
+    const checkPrompt = `
+You are the Truth Verification Critic.
+Verify whether an external webpage matches the content of an informational card, or if it is an unrelated sales funnel.
+
+CARD TITLE: "${draftCard.title}"
+CARD TOPIC: "${draftCard.topic}"
+CANDIDATE DESTINATION URL: ${candidateUrl}
+FETCHED WEBPAGE CONTENT EXCERPT:
+${(netTest.text || '').slice(0, 2500)}
+
+AUDIT QUESTIONS:
+1. Does this webpage actually contain the educational article, open recipe, repository, or documentation discussed in the card?
+2. Or is it merely a generic commercial landing page, paywall, digital marketing checkout, or gated community sign-up?
+
+Return ONLY a JSON object (enclosed in \`\`\`json ... \`\`\`):
+{
+  "isAuthenticMatch": true | false,
+  "reason": "Brief explanation of why it is an authentic match or a commercial mismatch"
+}
+`;
+    try {
+      const semRes = await callFreshGemini([{ text: checkPrompt }], [], 'application/json');
+      const parsed = parseJsonFromResponse(semRes.text);
+      if (parsed && parsed.isAuthenticMatch === false) {
+        return {
+          passed: false,
+          strikeReason: `Destination page "${candidateUrl}" is a commercial funnel or mismatch: ${parsed.reason}`
+        };
+      }
+    } catch (e) {
+      console.warn('Semantic check skipped due to model error:', e.message);
+    }
+  }
+
+  // 3. Section CTA Check: Ensure no commercial bait survived into sections
+  const hasCommercialBait = (draftCard.sections || []).some(s =>
+    (s.items || []).some(item => {
+      const str = `${item.text || ''} ${item.detail || ''}`.toLowerCase();
+      return str.includes('skool') || str.includes('gumroad') || str.includes('comment to get') || str.includes('dm for template');
+    })
+  );
+
+  if (hasCommercialBait) {
+    return {
+      passed: false,
+      strikeReason: 'Card sections contain commercial sales funnel or call-to-action references instead of pure technical/educational content.'
+    };
+  }
+
+  return { passed: true, strikeReason: null };
+}
+
+/**
+ * Main Orchestration Loop with 3-Strikes Enforcement
+ */
 async function run() {
-  console.log('=== Starting Active Desks v3 Autonomous Extractor ===');
+  console.log('=== Starting Active Desks v3 Multi-Turn Autonomous Extractor ===');
   console.log(`Target URL: ${TARGET_URL}`);
   console.log(`Capture ID: ${CAPTURE_ID}`);
 
-  if (!GEMINI_API_KEY) {
-    console.error('CRITICAL: GEMINI_API_KEY environment variable is missing.');
-    process.exit(1);
-  }
-
-  if (!TARGET_URL || !CAPTURE_ID) {
-    console.error('CRITICAL: TARGET_URL and CAPTURE_ID are required.');
+  if (!GEMINI_API_KEY || !TARGET_URL || !CAPTURE_ID) {
+    console.error('CRITICAL: GEMINI_API_KEY, TARGET_URL, and CAPTURE_ID are required.');
     process.exit(1);
   }
 
   const app = initializeApp(FIREBASE_CONFIG);
   const db = getFirestore(app);
   const availableDomains = await fetchAvailableDomains(db);
-  const domainUnionStr = availableDomains.map(d => `"${d}"`).join(' | ');
   console.log(`Available domains: ${availableDomains.join(', ')}`);
 
-  // 1. Gather Media Metadata & Captions via yt-dlp
+  // Gather Media Metadata & Captions via yt-dlp / curl
   let captionText = '';
   let mediaTitle = '';
   let creatorHandle = '';
 
   try {
-    console.log('Fetching media metadata via yt-dlp...');
     const rawMeta = execSync(`yt-dlp --dump-json --no-warnings "${TARGET_URL}"`, {
       encoding: 'utf8',
       timeout: 30000
     });
-
     const meta = JSON.parse(rawMeta);
     mediaTitle = meta.title || '';
     captionText = meta.description || '';
     creatorHandle = meta.uploader || meta.channel || '';
     console.log(`✓ Scraped metadata: "${mediaTitle.slice(0, 40)}" by ${creatorHandle}`);
   } catch (err) {
-    console.warn('yt-dlp extraction note:', err.message);
+    console.warn('yt-dlp note:', err.message);
   }
 
-  // If caption is empty, fallback to curl scraping with facebookexternalhit User-Agent
   if (!captionText) {
     try {
-      console.log('Attempting OpenGraph scraping with facebookexternalhit User-Agent...');
       const html = execSync(`curl -sL -A "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)" "${TARGET_URL}"`, {
         encoding: 'utf8',
         timeout: 15000,
         maxBuffer: 10 * 1024 * 1024
       });
-
       const ogDesc = html.match(/<meta property="og:description" content="([^"]+)"/i);
       const ogTitle = html.match(/<meta property="og:title" content="([^"]+)"/i);
       if (ogDesc) captionText = ogDesc[1];
@@ -261,11 +572,11 @@ async function run() {
     }
   }
 
-  // 1b. Download Multimodal Video/Audio Stream if Video Link
+  // Determine Media Track
   const isVideo = isVideoLink(TARGET_URL);
   let mediaResult = null;
   let mediaStatus = 'text_images';
-  let extractionNote = 'Static post / article format (no video to extract); extracted from post text & metadata.';
+  let extractionNote = 'Static post / article format; extracted from post text & metadata.';
 
   if (isVideo) {
     mediaResult = fetchMediaBuffer(TARGET_URL);
@@ -279,218 +590,112 @@ async function run() {
       mediaStatus = 'web_grounded';
       extractionNote = 'Direct media download blocked by host; extracted via Google Search Grounding.';
     }
-  } else {
-    console.log('Static post/article detected. Using text_images modality.');
   }
 
-  let mediaNotice = '';
-  if (mediaStatus === 'video_extracted') {
-    mediaNotice = 'Attached Media Track: FULL VIDEO (.mp4 video + audio). Watch visual frames, read on-screen text/overlays/credits, and listen to spoken narration.';
-  } else if (mediaStatus === 'audio_extracted') {
-    mediaNotice = 'Attached Media Track: AUDIO ONLY (.mp3 audio). Listen closely to spoken narration and dialogue.';
-  } else if (mediaStatus === 'text_images') {
-    mediaNotice = 'Attached Media Track: STATIC CONTENT (Post / Photo Carousel / Web Article). Extract from post text, metadata, and Google Search grounding.';
-  } else {
-    mediaNotice = 'Attached Media Track: URL STREAM OR WEB GROUNDING (If video stream is attached via fileData, watch visual frames and listen to spoken audio; otherwise rely on creator captions and live Google Search grounding).';
-  }
+  // --- STAGE 1: RAW INGESTION ---
+  const stage1Output = await runStage1_RawExtraction(mediaResult, TARGET_URL, mediaTitle, creatorHandle, captionText);
 
-  // 2. Structured Extraction & Live Search Grounding via Google Gemini
-  console.log(`Sending payload (${mediaStatus}) & caption to Google Gemini...`);
-  const prompt = `
-You are the Active Desks Universal Extractor & Knowledge Grounding Engine.
-Your goal is to identify WHY a user saved this post and organize the information they will actually want when revisiting this card later.
+  // --- 3-STRIKES MULTI-TURN LOOP (Stages 2, 3, 4) ---
+  let strikeCount = 0;
+  let criticFeedback = null;
+  let finalCard = null;
+  const auditTrail = [];
+  let stage2Output = null;
 
-URL: ${TARGET_URL}
-Title / Caption: ${mediaTitle}
-Creator: ${creatorHandle}
-Description / Notes: ${captionText}
-${mediaNotice}
+  while (strikeCount < 3) {
+    console.log(`\n--- Verification Turn (Strike Count: ${strikeCount}) ---`);
 
-EXTRACTION PRINCIPLES:
-1. EXTRACT INTENT, NOT LITERAL SCENE DESCRIPTION:
-   - Determine what the post is actually sharing, recommending, reviewing, teaching, or showcasing.
-   - NEVER merely describe literal visual scenes or b-roll (e.g., if a clip from an anime, show, movie, game, or song is shown, identify the work itself, what it is about, why it is being recommended or discussed, and where to find/watch/listen to it).
-   - Read on-screen text overlays/credits, listen to voiceover narration, and combine with captions and Google Search grounding to identify unnamed media, products, or references.
+    // Stage 2: Deep Grounding
+    stage2Output = await runStage2_Investigation(stage1Output, TARGET_URL, criticFeedback);
 
-2. RESOLVE TEASERS & EXTERNAL LINKS:
-   - If the creator uses engagement bait ("Comment LINK", "Link in bio", "DM for guide") or references an external article, recipe, repository, or store page, use Google Search grounding to locate the real destination URL ("destinationUrl") and extract the complete underlying content.
+    // Stage 3: Composition
+    finalCard = await runStage3_Composition(stage1Output, stage2Output, availableDomains, TARGET_URL);
 
-3. DOMAIN CLASSIFICATION:
-   - Available domains: ${domainUnionStr}.
-   - Choose the best matching domain from the available list. If the subject does not fit any existing specific domain, use "misc" and set a clear, specific 1-3 word "topic" (e.g., "Anime", "Music", "Fitness") so related cards cluster together.
-
-4. SELF-STRUCTURING SECTIONS ("sections"):
-   - Organize the extracted details into 1 to 3 logical sections whose "heading" (with a fitting emoji) and "style" match how the information is best presented:
-     * "checklist": For checkable items, supplies, or ingredients. Put quantities/measurements in "detail" (for culinary ingredients, always include metric gram weights in "detail", e.g. "350g").
-     * "numbered": For ordered sequences such as ranked lists, multi-item recommendations, or step-by-step instructions.
-     * "bullets": For reviews, media/source identification details, key takeaways, or specifications.
-
-Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ... \`\`\`):
-{
-  "domain": ${domainUnionStr},
-  "topic": "Concise 1-3 word subject",
-  "title": "Clear title of what is being shared, recommended, or taught",
-  "summary": "1-2 sentence takeaway explaining what this is and why it is worth saving",
-  "creator": "Creator handle or author",
-  "destinationUrl": "Direct external destination URL or null",
-  "sections": [
-    {
-      "heading": "Section heading with emoji",
-      "style": "checklist" | "numbered" | "bullets",
-      "items": [
-        { "text": "Primary item, step, or fact", "detail": "Optional secondary metadata, measurement, or context (or empty string)" }
-      ]
+    if (!finalCard || !finalCard.title) {
+      strikeCount++;
+      criticFeedback = 'Stage 3 failed to compose a valid JSON card.';
+      auditTrail.push({ strike: strikeCount, reason: criticFeedback });
+      continue;
     }
-  ]
-}
-`;
 
-  const CANDIDATE_MODELS = [
-    'gemini-3.8-flash',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash-lite'
-  ];
+    // Stage 4: Critic & Verification
+    const criticRes = await runStage4_Critic(finalCard, TARGET_URL);
 
-  let structuredPayload = null;
-  let groundedSourcesCount = 0;
+    if (criticRes.passed) {
+      console.log('✓ Stage 4 Verification PASSED! Card verified.');
+      auditTrail.push({ strike: strikeCount, passed: true, reason: 'All checks passed.' });
+      break;
+    } else {
+      strikeCount++;
+      criticFeedback = criticRes.strikeReason;
+      console.warn(`⚠️ STRIKE ${strikeCount}: ${criticFeedback}`);
+      auditTrail.push({ strike: strikeCount, passed: false, reason: criticFeedback });
+    }
+  }
 
-  for (const model of CANDIDATE_MODELS) {
-    const attempts = (isVideo && !mediaResult)
-      ? [
-          { name: 'direct-uri-grounded', useFileUri: true, tools: [{ googleSearch: {} }] },
-          { name: 'direct-uri', useFileUri: true, tools: [] },
-          { name: 'grounded', useFileUri: false, tools: [{ googleSearch: {} }] },
-          { name: 'direct', useFileUri: false, tools: [] }
-        ]
-      : [
-          { name: 'grounded', useFileUri: false, tools: [{ googleSearch: {} }] },
-          { name: 'direct', useFileUri: false, tools: [] }
-        ];
+  // 3-Strikes Out Enforcement
+  if (strikeCount >= 3) {
+    console.warn('❌ 3 STRIKES REACHED: Dropping unverified destination URL and commercial claims.');
+    if (finalCard) {
+      finalCard.destinationUrl = null;
+      finalCard.blogUrl = null;
+      finalCard.strikeCount = 3;
 
-    for (const attempt of attempts) {
-      try {
-        console.log(`Querying Gemini [${model}] in ${attempt.name} mode (media: ${mediaStatus})...`);
-        const requestParts = [];
-        if (mediaResult && mediaResult.data) {
-          requestParts.push({
-            inlineData: {
-              mimeType: mediaResult.mimeType,
-              data: mediaResult.data
-            }
-          });
-        } else if (attempt.useFileUri) {
-          requestParts.push({
-            fileData: {
-              fileUri: TARGET_URL,
-              mimeType: 'video/mp4'
-            }
-          });
-        }
-        requestParts.push({ text: prompt });
-
-        const bodyPayload = {
-          contents: [{ parts: requestParts }]
-        };
-        if (attempt.tools.length > 0) {
-          bodyPayload.tools = attempt.tools;
-        } else {
-          bodyPayload.generationConfig = { responseMimeType: 'application/json' };
-        }
-
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyPayload)
-        });
-
-        if (!res.ok) {
-          const errorBody = await res.text();
-          console.warn(`[${model}:${attempt.name}] HTTP ${res.status}: ${errorBody}`);
-          continue;
-        }
-
-        const json = await res.json();
-        const candidate = json.candidates?.[0];
-        const parts = candidate?.content?.parts || [];
-        const rawText = parts.map(p => p.text || '').join('\n');
-
-        const parsed = parseJsonFromResponse(rawText);
-        if (parsed && parsed.domain && parsed.title) {
-          structuredPayload = parsed;
-
-          // Check for grounding sources
-          const groundingChunks = candidate?.groundingMetadata?.groundingChunks || [];
-          const groundedWeb = groundingChunks.map(c => c.web?.uri).filter(Boolean);
-          groundedSourcesCount = groundedWeb.length;
-          if (groundedWeb.length > 0) {
-            console.log(`✓ Grounded in web sources:`, groundedWeb);
-          }
-
-          const resolvedDestUrl = structuredPayload.destinationUrl || structuredPayload.blogUrl || groundedWeb[0] || null;
-          structuredPayload.destinationUrl = resolvedDestUrl;
-          structuredPayload.blogUrl = resolvedDestUrl;
-
-          if (attempt.useFileUri) {
-            mediaStatus = 'video_extracted';
-            extractionNote = 'Video & audio watched directly by Gemini via URL stream.';
-          }
-
-          console.log(`✓ Successfully extracted 3-tier payload via [${model}:${attempt.name}]:`, structuredPayload.title);
-          break;
-        }
-      } catch (err) {
-        console.warn(`Model [${model}:${attempt.name}] error:`, err.message);
+      // Clean out any items mentioning commercial bait
+      if (Array.isArray(finalCard.sections)) {
+        finalCard.sections = finalCard.sections.map(sec => ({
+          ...sec,
+          items: (sec.items || []).filter(item => {
+            const str = `${item.text || ''} ${item.detail || ''}`.toLowerCase();
+            return !str.includes('skool') && !str.includes('gumroad') && !str.includes('comment') && !str.includes('dm for');
+          })
+        }));
       }
     }
-
-    if (structuredPayload) break;
+  } else if (finalCard) {
+    finalCard.strikeCount = 0;
+    finalCard.blogUrl = finalCard.destinationUrl || null;
   }
 
-  const hasListContent =
-    (Array.isArray(structuredPayload?.sections) && structuredPayload.sections.some(s => Array.isArray(s?.items) && s.items.length > 0)) ||
-    (Array.isArray(structuredPayload?.ingredients) && structuredPayload.ingredients.length > 0) ||
-    (Array.isArray(structuredPayload?.steps) && structuredPayload.steps.length > 0) ||
-    (Array.isArray(structuredPayload?.keyInsights) && structuredPayload.keyInsights.length > 0);
+  // Construct Full Firestore Document (Card + Silent Pipeline Stages Dossier)
+  const pipelineStages = {
+    stage1_raw: stage1Output,
+    stage2_investigation: {
+      investigatedSubject: stage2Output?.investigatedSubject,
+      verifiedFacts: stage2Output?.verifiedFacts,
+      groundedSources: stage2Output?.groundedSources || []
+    },
+    stage3_composition: {
+      draftTitle: finalCard?.title,
+      draftSummary: finalCard?.summary,
+      draftSectionsCount: finalCard?.sections?.length || 0
+    },
+    stage4_verification: {
+      strikeCount,
+      verified: strikeCount < 3,
+      auditTrail
+    }
+  };
 
-  if (!structuredPayload) {
-    console.error('All candidate Gemini models failed. Engaging safe fallback payload.');
-    mediaStatus = 'failed';
-    extractionNote = 'All candidate Gemini models failed to respond or parse.';
-    structuredPayload = {
+  const finalDocument = {
+    ...(finalCard || {
       domain: 'misc',
       topic: 'Unclassified',
       title: mediaTitle || 'Captured Link',
       summary: captionText.slice(0, 200) || 'Extraction fallback.',
       creator: creatorHandle || ''
-    };
-  } else if (!hasListContent || (!mediaResult && mediaStatus !== 'video_extracted' && !captionText && !mediaTitle && groundedSourcesCount === 0)) {
-    mediaStatus = 'failed';
-    extractionNote = isVideo
-      ? 'Video/audio download was blocked by host, and Google Search found no matching public post.'
-      : 'Page text could not be scraped, and Google Search found no matching public page.';
-  } else if (mediaStatus === 'text_images' && !captionText && groundedSourcesCount > 0) {
-    mediaStatus = 'web_grounded';
-    extractionNote = `No media to extract; extracted via Google Search Grounding (${groundedSourcesCount} web source${groundedSourcesCount > 1 ? 's' : ''}).`;
-  } else if (mediaStatus === 'web_grounded') {
-    extractionNote = groundedSourcesCount > 0
-      ? `Direct video stream blocked by host; extracted via Google Search Grounding (${groundedSourcesCount} web source${groundedSourcesCount > 1 ? 's' : ''}).`
-      : 'Direct video stream blocked by host; extracted from post metadata & Google Search Grounding.';
-  }
-
-  // 3. Write directly to Cloud Firestore document
-  console.log(`Writing result to Cloud Firestore captures/${CAPTURE_ID} (mediaStatus: ${mediaStatus})...`);
-
-  const finalDocument = {
-    ...structuredPayload,
+    }),
     status: 'ready',
     mediaStatus,
     extractionNote,
     sourceUrl: TARGET_URL,
+    pipelineStages,
     updatedAt: new Date().toISOString()
   };
 
+  console.log(`Writing result to Cloud Firestore captures/${CAPTURE_ID} (strikeCount: ${finalDocument.strikeCount})...`);
   await setDoc(doc(db, 'captures', String(CAPTURE_ID)), finalDocument, { merge: true });
-  console.log('✓ Firestore document updated successfully. Real-time push dispatched to client devices!');
+  console.log('✓ Firestore document updated successfully with full 4-stage research dossier!');
   process.exit(0);
 }
 

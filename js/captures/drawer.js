@@ -441,6 +441,7 @@ export function renderCapturesList() {
         <div class="capture-card-footer">
           <span>${c.creator ? `by ${escapeHtml(c.creator)}` : ''}</span>
           <div style="display: flex; gap: 6px; align-items: center;">
+            ${(c.strikeCount >= 3 && !c.destinationUrl && !c.blogUrl) ? '<span class="badge-unverified-notice" style="padding: 2px 6px; font-size: 0.68rem;" title="Destination link or secondary claims could not be verified after 3 automated attempts">3 Strikes</span>' : ''}
             ${renderExternalLinksHtml(c.destinationUrl || c.blogUrl, c.sourceUrl, true)}
           </div>
         </div>
@@ -660,6 +661,15 @@ export function openCaptureDetailModal(capture, options = {}) {
   }
 
   const destUrl = capture.destinationUrl || capture.blogUrl;
+  const strikesEl = document.getElementById('modal-capture-3strikes-badge');
+  if (strikesEl) {
+    if (capture.strikeCount >= 3 && !destUrl) {
+      strikesEl.style.display = 'inline-flex';
+    } else {
+      strikesEl.style.display = 'none';
+    }
+  }
+
   if (blogLink) {
     if (destUrl && destUrl !== capture.sourceUrl) {
       blogLink.href = destUrl;

@@ -18,7 +18,7 @@
   <header class="app-header">
     <div class="brand-section">
       <h1 class="brand-title">ACTIVE DESKS</h1>
-      <span id="brand-version-badge" class="brand-badge">v3.0.22</span>
+      <span id="brand-version-badge" class="brand-badge">v3.0.23</span>
     </div>
 
     <div class="header-actions">
@@ -182,7 +182,8 @@
 
       <div class="modal-footer" style="justify-content: space-between;">
         <button type="button" id="btn-modal-delete-capture" class="desk-action-btn" style="color: var(--accent-rose); border-color: rgba(251, 113, 133, 0.3);">🗑️ Delete</button>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span id="modal-capture-3strikes-badge" class="badge-unverified-notice" style="display: none;" title="Destination link or secondary claims could not be verified after 3 automated attempts">3 Strikes</span>
           <a id="modal-capture-blog-link" href="#" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="display: none; color: var(--accent-cyan); font-weight: 600;">📖 Blog ↗</a>
           <a id="modal-capture-source-link" href="#" target="_blank" rel="noopener noreferrer" class="desk-action-btn" style="display: none;">🔗 Source ↗</a>
           <button type="button" class="desk-action-btn" data-close-modal="capture-detail-modal">Close</button>
