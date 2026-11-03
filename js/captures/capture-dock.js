@@ -49,10 +49,11 @@ async function handleCaptureSubmission(inputEl) {
   const isUrl = /^https?:\/\//i.test(rawInput);
 
   if (isUrl) {
-    // 1A-0. Duplicate URL Check across sourceUrl and blogUrl
+    // 1A-0. Duplicate URL Check across sourceUrl, destinationUrl, and blogUrl
     const targetNorm = normalizeUrlForDedup(rawInput);
     const existing = (state.captures || []).find(c =>
       (c.sourceUrl && normalizeUrlForDedup(c.sourceUrl) === targetNorm) ||
+      (c.destinationUrl && normalizeUrlForDedup(c.destinationUrl) === targetNorm) ||
       (c.blogUrl && normalizeUrlForDedup(c.blogUrl) === targetNorm)
     );
 
@@ -147,9 +148,10 @@ export async function dispatchExtractionWorker(captureId, url) {
   }
 
   // Fallback: If no GitHub PAT or dispatch failed, use client-side Gemini heuristic
-  const prompt = `Analyze this URL for Active Desks: ${url}. Return JSON with { domain: "recipe"|"book"|"tech"|"game"|"fiber"|"misc", topic: string, title: string, summary: string, creator: string }`;
+  const prompt = `Identify why a user saved this URL for Active Desks: ${url}. Return JSON with { domain: string, topic: string, title: string, summary: string, creator: string, destinationUrl: string|null, sections: [{ heading: string, style: "checklist"|"numbered"|"bullets", items: [{ text: string, detail: string }] }] }`;
   const parsed = await callGeminiJson(prompt);
   if (parsed) {
+    if (parsed.destinationUrl && !parsed.blogUrl) parsed.blogUrl = parsed.destinationUrl;
     await saveDoc('captures', captureId, { ...parsed, status: 'ready' });
   }
 }

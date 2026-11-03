@@ -441,7 +441,7 @@ export function renderCapturesList() {
         <div class="capture-card-footer">
           <span>${c.creator ? `by ${escapeHtml(c.creator)}` : ''}</span>
           <div style="display: flex; gap: 6px; align-items: center;">
-            ${renderExternalLinksHtml(c.blogUrl, c.sourceUrl, true)}
+            ${renderExternalLinksHtml(c.destinationUrl || c.blogUrl, c.sourceUrl, true)}
           </div>
         </div>
       </div>
@@ -659,9 +659,10 @@ export function openCaptureDetailModal(capture, options = {}) {
     }
   }
 
+  const destUrl = capture.destinationUrl || capture.blogUrl;
   if (blogLink) {
-    if (capture.blogUrl && capture.blogUrl !== capture.sourceUrl) {
-      blogLink.href = capture.blogUrl;
+    if (destUrl && destUrl !== capture.sourceUrl) {
+      blogLink.href = destUrl;
       blogLink.style.display = 'inline-flex';
     } else {
       blogLink.style.display = 'none';
@@ -680,47 +681,101 @@ export function openCaptureDetailModal(capture, options = {}) {
   // Render Tier 3 payload if present
   if (tier3El) {
     let payloadHtml = '';
-    // Recipe Ingredients with Exact Gram Weights & Checklists
-    if (Array.isArray(capture.ingredients) && capture.ingredients.length > 0) {
-      payloadHtml += `
-        <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">🥣 Ingredients (Check to Strike)</div>
-        <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
-          ${capture.ingredients.map(ing => `
-            <li class="ingredient-check-item" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 4px 0;">
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
-                <input type="checkbox" class="ingredient-checkbox">
-                <span class="ingredient-label">${escapeHtml(typeof ing === 'string' ? ing : ing.item || '')}</span>
-              </label>
-              <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600; margin-left: 8px;">${ing.grams ? `${ing.grams}g` : (ing.amount || '')}</span>
-            </li>
-          `).join('')}
-        </ul>
-      `;
-    }
 
-    // Domain-Aware Primary List (Recipe Instructions / Recommended Books / Action Steps)
-    if (Array.isArray(capture.steps) && capture.steps.length > 0) {
-      const stepsHeading = domain === 'book'
-        ? '📚 Recommended Books'
-        : domain === 'recipe'
-          ? '👨‍🍳 Instructions'
-          : '🛠️ Steps & Action Items';
-      payloadHtml += `
-        <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">${stepsHeading}</div>
-        <ol style="padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; color: var(--text-secondary);">
-          ${capture.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}
-        </ol>
-      `;
-    }
+    // 1. Intent-Driven Universal Sections Schema (v3.0.22+)
+    if (Array.isArray(capture.sections) && capture.sections.length > 0) {
+      payloadHtml = capture.sections
+        .filter(sec => sec && Array.isArray(sec.items) && sec.items.length > 0)
+        .map(sec => {
+          const heading = escapeHtml(sec.heading || '📋 Details');
+          const style = (sec.style || 'bullets').toLowerCase();
 
-    // Key Insights / Tags
-    if (Array.isArray(capture.keyInsights) && capture.keyInsights.length > 0) {
-      payloadHtml += `
-        <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">💡 Key Insights</div>
-        <ul style="padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--text-secondary);">
-          ${capture.keyInsights.map(ins => `<li>${escapeHtml(ins)}</li>`).join('')}
-        </ul>
-      `;
+          if (style === 'checklist') {
+            return `
+              <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">${heading}</div>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 14px;">
+                ${sec.items.map(item => {
+                  const text = typeof item === 'string' ? item : (item?.text || item?.item || '');
+                  const detail = typeof item === 'object' && item !== null ? (item.detail || (item.grams ? `${item.grams}g` : item.amount) || '') : '';
+                  return `
+                    <li class="ingredient-check-item" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 4px 0;">
+                      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+                        <input type="checkbox" class="ingredient-checkbox">
+                        <span class="ingredient-label">${escapeHtml(text)}</span>
+                      </label>
+                      ${detail ? `<span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600; margin-left: 8px;">${escapeHtml(detail)}</span>` : ''}
+                    </li>
+                  `;
+                }).join('')}
+              </ul>
+            `;
+          }
+
+          if (style === 'numbered') {
+            return `
+              <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">${heading}</div>
+              <ol style="padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 14px;">
+                ${sec.items.map(item => {
+                  const text = typeof item === 'string' ? item : (item?.text || '');
+                  const detail = typeof item === 'object' && item !== null ? (item.detail || '') : '';
+                  return `<li>${escapeHtml(text)}${detail ? ` <span style="color: var(--text-muted); font-family: var(--font-mono); font-size: 0.78rem;">— ${escapeHtml(detail)}</span>` : ''}</li>`;
+                }).join('')}
+              </ol>
+            `;
+          }
+
+          return `
+            <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">${heading}</div>
+            <ul style="padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 14px;">
+              ${sec.items.map(item => {
+                const text = typeof item === 'string' ? item : (item?.text || '');
+                const detail = typeof item === 'object' && item !== null ? (item.detail || '') : '';
+                return `<li>${escapeHtml(text)}${detail ? ` <span style="color: var(--text-muted); font-family: var(--font-mono); font-size: 0.78rem;">— ${escapeHtml(detail)}</span>` : ''}</li>`;
+              }).join('')}
+            </ul>
+          `;
+        }).join('');
+    } else {
+      // 2. Legacy Fallback (ingredients / steps / keyInsights)
+      if (Array.isArray(capture.ingredients) && capture.ingredients.length > 0) {
+        payloadHtml += `
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">🥣 Ingredients (Check to Strike)</div>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+            ${capture.ingredients.map(ing => `
+              <li class="ingredient-check-item" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 4px 0;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+                  <input type="checkbox" class="ingredient-checkbox">
+                  <span class="ingredient-label">${escapeHtml(typeof ing === 'string' ? ing : ing.item || '')}</span>
+                </label>
+                <span style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600; margin-left: 8px;">${ing.grams ? `${ing.grams}g` : (ing.amount || '')}</span>
+              </li>
+            `).join('')}
+          </ul>
+        `;
+      }
+
+      if (Array.isArray(capture.steps) && capture.steps.length > 0) {
+        const stepsHeading = domain === 'book'
+          ? '📚 Recommended Books'
+          : domain === 'recipe'
+            ? '👨‍🍳 Instructions'
+            : '🛠️ Steps & Action Items';
+        payloadHtml += `
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">${stepsHeading}</div>
+          <ol style="padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; color: var(--text-secondary);">
+            ${capture.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}
+          </ol>
+        `;
+      }
+
+      if (Array.isArray(capture.keyInsights) && capture.keyInsights.length > 0) {
+        payloadHtml += `
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 8px;">💡 Key Insights</div>
+          <ul style="padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--text-secondary);">
+            ${capture.keyInsights.map(ins => `<li>${escapeHtml(ins)}</li>`).join('')}
+          </ul>
+        `;
+      }
     }
 
     if (payloadHtml) {

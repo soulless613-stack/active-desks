@@ -13,7 +13,7 @@ import path from 'path';
 import os from 'os';
 import { execSync, execFileSync } from 'child_process';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, collection, getDocs } from 'firebase/firestore';
 
 const FIREBASE_CONFIG = {
   apiKey: process.env.FIREBASE_API_KEY || "AIzaSyCEZkpK58N93cpExYcycGPW1sOyUNM2OAg",
@@ -159,6 +159,47 @@ function fetchMediaBuffer(url) {
   return null;
 }
 
+/**
+ * Queries Cloud Firestore to discover all built-in and user-promoted domain slugs.
+ * 
+ * @purpose Ensures Gemini can classify captures into newly promoted domains/desks.
+ * @inputs {import('firebase/firestore').Firestore} db - Initialized Firestore instance.
+ * @outputs {Promise<Array<string>>} Ordered list of available domain slugs.
+ */
+async function fetchAvailableDomains(db) {
+  const baseDomains = ['recipe', 'book', 'tech', 'game', 'fiber', 'misc'];
+  const domainSet = new Set(baseDomains);
+  const canonicalReverse = {
+    reading: 'book',
+    kitchen: 'recipe',
+    gaming: 'game',
+    fiber: 'fiber',
+    tech: 'tech'
+  };
+
+  try {
+    const desksSnap = await getDocs(collection(db, 'desks'));
+    desksSnap.forEach(docSnap => {
+      if (docSnap.id === 'active_selection') return;
+      const data = docSnap.data() || {};
+      const raw = (data.domain || docSnap.id || '').toLowerCase().trim();
+      const slug = canonicalReverse[raw] || raw;
+      if (slug && slug !== 'link') domainSet.add(slug);
+    });
+
+    const capturesSnap = await getDocs(collection(db, 'captures'));
+    capturesSnap.forEach(docSnap => {
+      const data = docSnap.data() || {};
+      const raw = (data.domain || '').toLowerCase().trim();
+      if (raw && raw !== 'link') domainSet.add(raw);
+    });
+  } catch (err) {
+    console.warn('Could not query dynamic domains from Firestore; using base domains:', err.message);
+  }
+
+  return Array.from(domainSet);
+}
+
 async function run() {
   console.log('=== Starting Active Desks v3 Autonomous Extractor ===');
   console.log(`Target URL: ${TARGET_URL}`);
@@ -173,6 +214,12 @@ async function run() {
     console.error('CRITICAL: TARGET_URL and CAPTURE_ID are required.');
     process.exit(1);
   }
+
+  const app = initializeApp(FIREBASE_CONFIG);
+  const db = getFirestore(app);
+  const availableDomains = await fetchAvailableDomains(db);
+  const domainUnionStr = availableDomains.map(d => `"${d}"`).join(' | ');
+  console.log(`Available domains: ${availableDomains.join(', ')}`);
 
   // 1. Gather Media Metadata & Captions via yt-dlp
   let captionText = '';
@@ -238,20 +285,20 @@ async function run() {
 
   let mediaNotice = '';
   if (mediaStatus === 'video_extracted') {
-    mediaNotice = 'Attached Media Track: FULL VIDEO (.mp4 video attached). Watch visual frames closely (read on-screen text overlays, title cards, book covers, board game boxes, 3D printer slicer temps/speeds/tolerances, ingredient measurement graphics) and simultaneously listen to the spoken voiceover narration.';
+    mediaNotice = 'Attached Media Track: FULL VIDEO (.mp4 video + audio). Watch visual frames, read on-screen text/overlays/credits, and listen to spoken narration.';
   } else if (mediaStatus === 'audio_extracted') {
-    mediaNotice = 'Attached Media Track: AUDIO ONLY (.mp3 audio attached). Listen closely to transcribe all spoken recommendations, book titles/authors, rules, tolerances, and measurements.';
+    mediaNotice = 'Attached Media Track: AUDIO ONLY (.mp3 audio). Listen closely to spoken narration and dialogue.';
   } else if (mediaStatus === 'text_images') {
-    mediaNotice = 'Attached Media Track: STATIC CONTENT (Post / Photo Carousel / Web Article). Extract information accurately from the post caption and Google Search grounding.';
+    mediaNotice = 'Attached Media Track: STATIC CONTENT (Post / Photo Carousel / Web Article). Extract from post text, metadata, and Google Search grounding.';
   } else {
-    mediaNotice = 'Attached Media Track: URL STREAM OR WEB GROUNDING (If video stream is attached via fileData, watch visual frames and listen to spoken audio closely; otherwise rely on creator captions and live Google Search grounding).';
+    mediaNotice = 'Attached Media Track: URL STREAM OR WEB GROUNDING (If video stream is attached via fileData, watch visual frames and listen to spoken audio; otherwise rely on creator captions and live Google Search grounding).';
   }
 
   // 2. Structured Extraction & Live Search Grounding via Google Gemini
   console.log(`Sending payload (${mediaStatus}) & caption to Google Gemini...`);
   const prompt = `
-You are the Active Desks Autonomous Universal Extractor & Knowledge Grounding Engine.
-Extract rich, structured 3-tier data from this social media post or article:
+You are the Active Desks Universal Extractor & Knowledge Grounding Engine.
+Your goal is to identify WHY a user saved this post and organize the information they will actually want when revisiting this card later.
 
 URL: ${TARGET_URL}
 Title / Caption: ${mediaTitle}
@@ -259,45 +306,42 @@ Creator: ${creatorHandle}
 Description / Notes: ${captionText}
 ${mediaNotice}
 
-CRITICAL MULTIMODAL, ANTI-BAIT & LIVE SEARCH GROUNDING INSTRUCTIONS:
-1. MULTIMODAL COMPREHENSION (CRITICAL):
-   - IF FULL VIDEO IS ATTACHED:
-     * READ ON-SCREEN TEXT (OCR): Look closely at on-screen text overlays, title cards, book covers held up or displayed, board game boxes, 3D printer slicer settings, yarn labels, and ingredient lists shown on screen.
-     * LISTEN TO SPOKEN VOICEOVER: Transcribe and integrate all spoken recommendations, book titles, authors, ingredient amounts, and creator tips.
-   - IF AUDIO IS ATTACHED:
-     * Listen closely to the speaker's voiceover for crucial details missing from captions (book titles, authors, rules, tolerances, exact measurements).
+EXTRACTION PRINCIPLES:
+1. EXTRACT INTENT, NOT LITERAL SCENE DESCRIPTION:
+   - Determine what the post is actually sharing, recommending, reviewing, teaching, or showcasing.
+   - NEVER merely describe literal visual scenes or b-roll (e.g., if a clip from an anime, show, movie, game, or song is shown, identify the work itself, what it is about, why it is being recommended or discussed, and where to find/watch/listen to it).
+   - Read on-screen text overlays/credits, listen to voiceover narration, and combine with captions and Google Search grounding to identify unnamed media, products, or references.
 
-2. INTERACTION BAIT RESOLUTION:
-   - Creators frequently use engagement bait (e.g. "Comment RECIPE/LINK to get the link in your DMs", "Link in broadcast channel", "DM for guide", "Link in bio").
-   - DO NOT leave the user with an incomplete teaser or placeholder!
-   - Use Google Search grounding to search for the creator's actual food blog, GitHub repository, project site, Substack, or documentation.
-   - If found, extract the FULL authentic recipe, code, steps, or article directly from the grounded web results and set "blogUrl" to the real destination URL.
+2. RESOLVE TEASERS & EXTERNAL LINKS:
+   - If the creator uses engagement bait ("Comment LINK", "Link in bio", "DM for guide") or references an external article, recipe, repository, or store page, use Google Search grounding to locate the real destination URL ("destinationUrl") and extract the complete underlying content.
 
-3. DOMAIN & METRIC ACCURACY:
-   - Domain must strictly be one of: "recipe", "book", "tech", "game", "fiber", "misc".
-   - If recipe:
-     * Extract ALL ingredients with exact metric gram weights (grams: number) wherever stated or estimable.
-     * Step-by-step cooking instructions in "steps".
-     * Realistic macros (calories, protein, carbs, fat) if available.
-   - If book:
-     * Extract EVERY book recommended, shown on screen, or spoken in the voiceover into "steps" (formatted as "'Book Title' by Author — 1-sentence reason why it is recommended").
-     * Do NOT substitute generic web recommendations if specific books are shown or spoken in the attached media.
-   - If tech / tool / game / fiber:
-     * Extract specific tools, steps, commands, and actionable insights into "steps" and "keyInsights".
+3. DOMAIN CLASSIFICATION:
+   - Available domains: ${domainUnionStr}.
+   - Choose the best matching domain from the available list. If the subject does not fit any existing specific domain, use "misc" and set a clear, specific 1-3 word "topic" (e.g., "Anime", "Music", "Fitness") so related cards cluster together.
+
+4. SELF-STRUCTURING SECTIONS ("sections"):
+   - Organize the extracted details into 1 to 3 logical sections whose "heading" (with a fitting emoji) and "style" match how the information is best presented:
+     * "checklist": For checkable items, supplies, or ingredients. Put quantities/measurements in "detail" (for culinary ingredients, always include metric gram weights in "detail", e.g. "350g").
+     * "numbered": For ordered sequences such as ranked lists, multi-item recommendations, or step-by-step instructions.
+     * "bullets": For reviews, media/source identification details, key takeaways, or specifications.
 
 Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ... \`\`\`):
 {
-  "domain": "recipe" | "book" | "tech" | "game" | "fiber" | "misc",
-  "topic": "Concise 2-3 word topic",
-  "title": "Clean, descriptive title",
-  "summary": "1-2 sentence core value or high-protein macro summary",
+  "domain": ${domainUnionStr},
+  "topic": "Concise 1-3 word subject",
+  "title": "Clear title of what is being shared, recommended, or taught",
+  "summary": "1-2 sentence takeaway explaining what this is and why it is worth saving",
   "creator": "Creator handle or author",
-  "blogUrl": "Direct destination link/URL or null",
-  "ingredients": [
-    { "item": "Chicken breast", "grams": 350, "amount": "350g" }
-  ],
-  "steps": [ "Step 1 or Book 1...", "Step 2 or Book 2..." ],
-  "keyInsights": [ "Key takeaway 1", "Key takeaway 2" ]
+  "destinationUrl": "Direct external destination URL or null",
+  "sections": [
+    {
+      "heading": "Section heading with emoji",
+      "style": "checklist" | "numbered" | "bullets",
+      "items": [
+        { "text": "Primary item, step, or fact", "detail": "Optional secondary metadata, measurement, or context (or empty string)" }
+      ]
+    }
+  ]
 }
 `;
 
@@ -380,10 +424,11 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
           groundedSourcesCount = groundedWeb.length;
           if (groundedWeb.length > 0) {
             console.log(`✓ Grounded in web sources:`, groundedWeb);
-            if (!structuredPayload.blogUrl) {
-              structuredPayload.blogUrl = groundedWeb[0];
-            }
           }
+
+          const resolvedDestUrl = structuredPayload.destinationUrl || structuredPayload.blogUrl || groundedWeb[0] || null;
+          structuredPayload.destinationUrl = resolvedDestUrl;
+          structuredPayload.blogUrl = resolvedDestUrl;
 
           if (attempt.useFileUri) {
             mediaStatus = 'video_extracted';
@@ -402,6 +447,7 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
   }
 
   const hasListContent =
+    (Array.isArray(structuredPayload?.sections) && structuredPayload.sections.some(s => Array.isArray(s?.items) && s.items.length > 0)) ||
     (Array.isArray(structuredPayload?.ingredients) && structuredPayload.ingredients.length > 0) ||
     (Array.isArray(structuredPayload?.steps) && structuredPayload.steps.length > 0) ||
     (Array.isArray(structuredPayload?.keyInsights) && structuredPayload.keyInsights.length > 0);
@@ -433,8 +479,6 @@ Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ...
 
   // 3. Write directly to Cloud Firestore document
   console.log(`Writing result to Cloud Firestore captures/${CAPTURE_ID} (mediaStatus: ${mediaStatus})...`);
-  const app = initializeApp(FIREBASE_CONFIG);
-  const db = getFirestore(app);
 
   const finalDocument = {
     ...structuredPayload,
