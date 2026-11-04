@@ -352,18 +352,20 @@ RAW INGESTION DOSSIER:
 - Claims: ${JSON.stringify(stage1Data.creatorClaims || [])}
 - Teasers / Bait: ${JSON.stringify(stage1Data.teasersAndCallsToAction || [])}
 - Transcript & Notes: ${(stage1Data.transcript || '').slice(0, 1000)}
+- Visual On-Screen Text (OCR): ${(stage1Data.ocrText || '').slice(0, 2500)}
 ${feedbackDirective}
 
 INVESTIGATION DIRECTIVES:
 1. GET PAST BAIT & FUNNELS: Creators often tease content ("Comment for link", "DM me"). Use Google Search grounding to search for the creator's actual open source material, recipe blog, GitHub repo, scientific paper (arXiv), official anime/book listing, or documentation.
 2. DO NOT GUESS DOMAINS: Never extrapolate or invent URLs from usernames (e.g. do not guess 'user.io' or 'user.gumroad.com'). Every candidate URL MUST be a real, grounded web result found via search.
 3. IDENTIFY CORE WORK: If the post shows an anime clip, game, book, or tech pattern without naming it, search to identify the real work, artist/author, and where it is found.
+4. NO FORCED CANDIDATE URL: If the post is self-contained (e.g. tips, short clip) and has no external blog, article, or repository, return "candidateDestinationUrl": null. Do NOT return arbitrary search result pages or social media redirects.
 
 Return ONLY a clean JSON object (enclosed in \`\`\`json ... \`\`\`):
 {
   "investigatedSubject": "True identity of the subject being discussed or recommended",
   "verifiedFacts": ["Fact 1", "Fact 2", "Fact 3"],
-  "candidateDestinationUrl": "Direct URL to the real destination article/recipe/repo or null",
+  "candidateDestinationUrl": "Direct URL to the real destination article/recipe/repo or null if none exists",
   "searchSummary": "1-2 sentence explanation of what was verified via live search"
 }
 `;
@@ -371,12 +373,14 @@ Return ONLY a clean JSON object (enclosed in \`\`\`json ... \`\`\`):
   try {
     const res = await callFreshGemini([{ text: prompt }], [{ googleSearch: {} }]);
     const parsed = parseJsonFromResponse(res.text);
-    const candidateUrl = parsed?.candidateDestinationUrl || (res.groundedUrls.length > 0 ? res.groundedUrls[0] : null);
+    const candidateUrl = (parsed?.candidateDestinationUrl && typeof parsed.candidateDestinationUrl === 'string' && parsed.candidateDestinationUrl.startsWith('http'))
+      ? parsed.candidateDestinationUrl
+      : null;
 
     return {
       investigatedSubject: parsed?.investigatedSubject || stage1Data.identifiedEntities?.[0] || 'Unknown',
       verifiedFacts: parsed?.verifiedFacts || stage1Data.creatorClaims || [],
-      candidateDestinationUrl: candidateUrl && candidateUrl.startsWith('http') ? candidateUrl : null,
+      candidateDestinationUrl: candidateUrl,
       groundedSources: res.groundedUrls,
       searchSummary: parsed?.searchSummary || 'Investigated via Google Search.'
     };
@@ -410,17 +414,19 @@ SOURCE DOSSIER:
 - Investigated Subject: ${stage2Data.investigatedSubject}
 - Verified Facts: ${JSON.stringify(stage2Data.verifiedFacts)}
 - Raw Claims: ${JSON.stringify(stage1Data.creatorClaims || [])}
-- Transcript Excerpt: ${(stage1Data.transcript || '').slice(0, 800)}
+- Transcript Excerpt: ${(stage1Data.transcript || '').slice(0, 1000)}
+- Visual On-Screen Text (OCR & Code): ${(stage1Data.ocrText || '').slice(0, 2500)}
 - Candidate Destination URL: ${stage2Data.candidateDestinationUrl || 'None'}
 
 COMPOSITION DIRECTIVES:
-1. INTENT FIRST: Focus on what the user actually wants when looking back at this card (the actual recommendations, recipe, code, steps, or review).
-2. REMOVE SOLICITATIONS: Discard any requests to comment, DM, join private paid communities (Skool, Gumroad, Stan, Discord), or purchase templates.
-3. DOMAIN: Must be one of: ${domainUnion}. If none fit, use "misc" with a specific 1-3 word "topic".
-4. SECTIONS: Create 1 to 3 logical sections matching how the information is best consumed:
+1. INTENT FIRST: Focus on what the user actually wants when looking back at this card (the actual recommendations, recipe, code snippets, installation/CLI commands, steps, or review).
+2. MULTI-SECTION DEPTH: When the source contains technical tools, commands, or recipes, do not flatten into a single brief list. Provide 2 to 3 rich, structured sections (e.g. 1 section for the curated tools/items, and 1 section for actionable setup steps/terminal commands or pro-tips).
+3. REMOVE SOLICITATIONS: Discard any requests to comment, DM, join private paid communities (Skool, Gumroad, Stan, Discord), or purchase templates.
+4. DOMAIN: Must be one of: ${domainUnion}. If none fit, use "misc" with a specific 1-3 word "topic".
+5. SECTIONS: Create 1 to 3 logical sections matching how the information is best consumed:
    - "checklist": Checkable supplies, ingredients (with metric gram weights in "detail", e.g. "350g"), or setup prerequisites.
-   - "numbered": Sequential instructions, ranked top-N lists, or step-by-step guides.
-   - "bullets": Reviews, series/media overviews, takeaways, or specifications.
+   - "numbered": Sequential instructions, ranked top-N lists, terminal workflow commands, or step-by-step guides.
+   - "bullets": Reviews, series/media overviews, key takeaways/pro-tips, or technical specifications.
 
 Return ONLY a valid JSON object matching this schema (enclosed in \`\`\`json ... \`\`\`):
 {
