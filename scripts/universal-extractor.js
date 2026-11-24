@@ -316,10 +316,13 @@ Return ONLY a clean JSON object (enclosed in \`\`\`json ... \`\`\`):
   try {
     const res = await callFreshGemini(parts, [], 'application/json');
     const parsed = parseJsonFromResponse(res.text);
-    return parsed || { rawText: res.text };
+    const result = parsed || { rawText: res.text };
+    result.caption = captionText;
+    return result;
   } catch (err) {
     console.warn('Stage 1 fallback error:', err.message);
     return {
+      caption: captionText,
       transcript: captionText,
       ocrText: mediaTitle,
       identifiedEntities: [mediaTitle],
@@ -348,6 +351,7 @@ Your job is to investigate the raw claims from a social media post and find the 
 
 RAW INGESTION DOSSIER:
 - URL: ${targetUrl}
+- Post Caption & Description: ${(stage1Data.caption || '').slice(0, 2500)}
 - Entities: ${JSON.stringify(stage1Data.identifiedEntities || [])}
 - Claims: ${JSON.stringify(stage1Data.creatorClaims || [])}
 - Teasers / Bait: ${JSON.stringify(stage1Data.teasersAndCallsToAction || [])}
@@ -411,6 +415,7 @@ Synthesize the verified research into a clean, structured personal card.
 
 SOURCE DOSSIER:
 - Source URL: ${targetUrl}
+- Post Caption & Description: ${(stage1Data.caption || '').slice(0, 2500)}
 - Investigated Subject: ${stage2Data.investigatedSubject}
 - Verified Facts: ${JSON.stringify(stage2Data.verifiedFacts)}
 - Raw Claims: ${JSON.stringify(stage1Data.creatorClaims || [])}
